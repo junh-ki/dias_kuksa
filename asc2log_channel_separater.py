@@ -2,7 +2,7 @@
 This script is to separate a logfile according to the CAN channel
 and convert the results to the log-formatted files.
 
-example.asc > ch1_example.log, ch2_example.log
+example.asc > ch0_example.log, ch1_example.log
 
 (e.g., 'python3 asc2log_channel_separater.py example.asc vcan0')
 
