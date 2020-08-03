@@ -6,7 +6,6 @@ Vehicle.AfterTreatment.NOxLevel.NOxIntake2: 6d37b7d7e40a50dcb0ef515a591e27f5
 Vehicle.AfterTreatment.NOxLevel.NOxOutlet1: e2c26e6a379d58ce9bdf391e1fe924ca
 Vehicle.AfterTreatment.NOxLevel.NOxOutlet2: 06b83f57f84e5021a1acef1dce81b40e
 Vehicle.AfterTreatment.UreaTankLevel: 2e88b2ef7b475d849604a85a8133dbb7
-Vehicle.AfterTreatment.Vehicle.AfterTreatment.UreaTankLevel: 4be9475a889f5caf9f15ecdb168fc36b
 Vehicle.AmbientAirTemperature: 2ffcbc2e6ea75dd991e3ae80b29a1d85
 Vehicle.AmbientAirTemperatureVector: 61a43967683c590f88d6bac572cadbf6
 Vehicle.Drivetrain: c7de3ba4e7d353928949f8b7fcde2029
@@ -21,6 +20,7 @@ Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngReferenceTorqueVector: 330
 Vehicle.Drivetrain.InternalCombustionEngine.Engine.NominalFrictionPercentTorque: c7597c67fe79529c86a0de42a7ba7017
 Vehicle.Drivetrain.InternalCombustionEngine.Engine.NominalFrictionPercentTorqueVector: 34ee64330eb254ff9ef577a472fe6076
 Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed: 2664f056995755f8bd40653f5d6b7a09
+Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedVector: bb76b544d2025d7bb17efb5faa131d47
 Vehicle.OBD: 7ad7c512ed5d52c8b31944d2d47a4bc3
 Vehicle.OBD.BarometricPressure: 1966bfff4d235767bfd9a21afb445ac7
 Vehicle.OBD.BarometricPressureVector: 7c0be182e5e5557c91ec960d7dfcc026
@@ -33,10 +33,3 @@ Vehicle.OBD.IntakeTemp: 7c108305178b5854b430a23e125588bd
 Vehicle.OBD.IntakeTempVector: 94e31af2952554138c477ae30aa73256
 Vehicle.OBD.TimeSinceDTCsCleared: 7a162acab18f5827b8a5448bc2667077
 Vehicle.OBD.TripEngRunningTime: 8609cdfeb0d85194a8fe80c229e816f0
-Vehicle.Vehicle.AfterTreatment: 0b57eacbea0650a9894d227e4a484dd6
-Vehicle.Vehicle.AfterTreatment.NOxLevel: ab0a411692365659b0c212d4ee149c12
-Vehicle.Vehicle.AfterTreatment.NOxLevel.NOxIntake1: 357cd181a6e15e4d82fc820895683bb7
-Vehicle.Vehicle.AfterTreatment.NOxLevel.NOxIntake2: d7a91d1b0016573eba66eca159bb846b
-Vehicle.Vehicle.AfterTreatment.NOxLevel.NOxOutlet1: 03473b93d2d35ee8a535137450bad1b7
-Vehicle.Vehicle.AfterTreatment.NOxLevel.NOxOutlet2: c02e48f4a7885b2cb337580ace2a17a8
-Vehicle.Vehicle.AfterTreatment.UreaTankLevel: a58a00d5941f524a89186e7fdceec13d

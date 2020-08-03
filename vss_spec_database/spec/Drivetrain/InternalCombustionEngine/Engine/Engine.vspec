@@ -57,7 +57,7 @@
   unit: rpm
   description: Engine Speed
   
-- Engine.Speed:
+- Engine.SpeedVector:
   datatype: float
   type: sensor
   unit: rpm
