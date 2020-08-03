@@ -1,0 +1,64 @@
+
+- Engine:
+  type: branch
+  description: Signals from the engine
+  
+- Engine.ActualEngPercentTorque:
+  datatype: float
+  type: sensor
+  unit: "%"
+  description: ActualEngPercentTorque??
+  
+- Engine.ActualEngPercentTorqueVector:
+  datatype: float
+  type: sensor
+  unit: "%"
+  description: ActualEngPercentTorque?? (Vector)
+  
+- Engine.EngIntakeManifold1AbsPress:
+  datatype: float
+  type: sensor
+  unit: kPa
+  description: EngIntakeManifold1AbsPress??
+  
+- Engine.EngIntakeManifold2AbsPress:
+  datatype: float
+  type: sensor
+  unit: kPa
+  description: EngIntakeManifold2AbsPress??
+  
+- Engine.EngReferenceTorque:
+  datatype: float
+  type: sensor
+  unit: Nm
+  description: EngReferenceTorque??
+  
+- Engine.EngReferenceTorqueVector:
+  datatype: float
+  type: sensor
+  unit: Nm
+  description: EngReferenceTorque?? (Vector)
+
+- Engine.NominalFrictionPercentTorque:
+  datatype: float
+  type: sensor
+  unit: "%"
+  description: NominalFrictionPercentTorque??
+
+- Engine.NominalFrictionPercentTorqueVector:
+  datatype: float
+  type: sensor
+  unit: "%"
+  description: NominalFrictionPercentTorque?? (Vector)
+  
+- Engine.Speed:
+  datatype: float
+  type: sensor
+  unit: rpm
+  description: Engine Speed
+  
+- Engine.Speed:
+  datatype: float
+  type: sensor
+  unit: rpm
+  description: Engine Speed (Vector)

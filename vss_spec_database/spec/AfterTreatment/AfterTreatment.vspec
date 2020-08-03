@@ -1,0 +1,12 @@
+
+- AfterTreatment:
+  type: branch
+  description: Signals from the Aftertreatment system (UreaLevel, NOx)
+  
+- AfterTreatment.UreaTankLevel:
+  datatype: float
+  type: sensor
+  unit: "%"
+  description: Level of the vehicle's urea tank
+
+#include AfterTreatment/NOxLevel.vspec AfterTreatment
