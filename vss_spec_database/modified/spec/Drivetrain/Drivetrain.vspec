@@ -1,0 +1,7 @@
+
+- Drivetrain:
+  type: branch
+  description: Signals from the drivetrain system
+  
+#include InternalCombustionEngine/InternalCombustionEngine.vspec Drivetrain
+#include FuelSystem/FuelSystem.vspec Drivetrain

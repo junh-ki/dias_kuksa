@@ -1,0 +1,40 @@
+
+- Engine:
+  type: branch
+  description: Signals from the engine
+  
+- Engine.ActualEngPercentTorque:
+  datatype: float
+  type: sensor
+  unit: "%"
+  description: ActualEngPercentTorque??
+  
+- Engine.EngReferenceTorque:
+  datatype: float
+  type: sensor
+  unit: Nm
+  description: EngReferenceTorque??
+
+- Engine.NominalFrictionPercentTorque:
+  datatype: float
+  type: sensor
+  unit: "%"
+  description: NominalFrictionPercentTorque??
+  
+- Engine.Speed:
+  datatype: float
+  type: sensor
+  unit: rpm
+  description: Engine Speed
+
+- Engine.SpeedAtIdle:
+  datatype: float
+  type: sensor
+  unit: rpm
+  description: Engine Speed At Idle
+
+- Engine.SpeedAtKickIn:
+  datatype: float
+  type: sensor
+  unit: rpm
+  description: Engine Speed At High Speed Governor Kick In Point(2)

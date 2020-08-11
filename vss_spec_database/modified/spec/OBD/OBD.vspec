@@ -1,0 +1,22 @@
+
+- OBD:
+  type: branch
+  description: Signals from the On-Board Dignostics system
+  
+- OBD.BarometricPressure:
+  datatype: float
+  type: sensor
+  unit: kPa
+  description: The pressure within the atmosphere of Earth
+
+- OBD.CoolantTemperature:
+  datatype: float
+  type: sensor
+  unit: "°C"
+  description: The vehicle's current engine coolant temperature
+
+- OBD.EngPercentLoadAtCurrentSpeed:
+  datatype: float
+  type: sensor
+  unit: "%"
+  description: Engine load percentage at the current speed

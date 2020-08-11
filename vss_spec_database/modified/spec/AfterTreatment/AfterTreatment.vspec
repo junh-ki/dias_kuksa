@@ -1,0 +1,12 @@
+
+- AfterTreatment:
+  type: branch
+  description: Signals from the Aftertreatment system (UreaLevel, NOx)
+  
+- ExhaustMassFlow:
+  datatype: float
+  type: sensor
+  unit: "kg/h"
+  description: Aftertreatment Exhaust Gas Mass Flow
+
+#include AfterTreatment/NOxLevel.vspec AfterTreatment
