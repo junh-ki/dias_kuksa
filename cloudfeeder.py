@@ -61,8 +61,7 @@ while True:
 	####### - can0 - #######
 	sigDictCH1["AmbientAirTemp"] = ambientAirTemp
 	sigDictCH1["ActualEngPercentTorque"] = percentTorque
-	sigDictCH1["BarometricPress"] = baro
-	metricPress
+	sigDictCH1["BarometricPress"] = barometricPress
 	sigDictCH1["EngAirIntakeTemp"] = airIntakeTemp
 	sigDictCH1["EngCoolantTemp"] = coolantTemp
 	sigDictCH1["EngFuelRate"] = fuelRate
