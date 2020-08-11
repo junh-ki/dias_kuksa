@@ -7,7 +7,6 @@ is also located: ~/kuksa.val/vss-testclient/
 
 Prior to running this script, the following lines should be added to 
 testclient.py:
-
 # At the end of - 'def do_getValue(self, args)'
 datastore = json.loads(resp)
 return datastore
