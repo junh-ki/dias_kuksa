@@ -1,0 +1,71 @@
+# Map OBD values to tree
+
+AmbientAirTemp:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.AmbientAirTemperature
+
+Aftertreatment1IntakeNOx:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.AfterTreatment.NOxLevel.NOxIntake1
+
+Aftertreatment1OutletNOx:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.AfterTreatment.NOxLevel.NOxOutlet1
+
+TimeSinceEngineStart:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.Drivetrain.FuelSystem.TimeSinceStart
+
+ActualEngPercentTorque:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.Drivetrain.InternalCombustionEngine.Engine.ActualEngPercentTorque
+
+EngReferenceTorque:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngReferenceTorque
+
+NominalFrictionPercentTorque:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.Drivetrain.InternalCombustionEngine.Engine.NominalFrictionPercentTorque
+    
+EngSpeed:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed
+
+EngSpeedAtIdlePoint1:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtIdle
+
+EngSpeedAtPoint2:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtKickIn
+
+Aftrtratment1ExhaustGasMassFlow:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.ExhaustMassFlow
+
+BarometricPress:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.OBD.BarometricPressure
+
+EngCoolantTemp:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.OBD.CoolantTemperature
+
+EngPercentLoadAtCurrentSpeed:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.OBD.EngPercentLoadAtCurrentSpeed
