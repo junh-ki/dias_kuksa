@@ -24,13 +24,70 @@ def checkPath(path):
 		return float(val)
 
 def printSignalValues(ch0_dic, ch1_dic):
-	print("######################## Channel-1 ########################")
+	print("######################## Channel-0 ########################")
 	for signal, value in ch0_dic.items():
 		print(signal, ": ", str(value))
-	print("######################## Channel-2 ########################")	
+	print("######################## Channel-1 ########################")	
 	for signal, value in ch1_dic.items():
 		print(signal, ": ", str(value))
 	print("###########################################################")
+
+def selectBin(xAxisVal, yAxisVal):
+	# Check X-axis first and then Y-axis
+	if 0 <= xAxisVal < 25:
+		if 0 <= yAxisVal < 33:
+			return 1
+		elif 33 <= yAxisVal <= 66:
+			return 5
+		elif 66 < yAxisVal <= 100:
+			return 9
+		else:
+			print("Y-axis Value Error.")
+	elif 25 <= xAxisVal < 50:
+		if 0 <= yAxisVal < 33:
+			return 2
+		elif 33 <= yAxisVal <= 66:
+			return 6
+		elif 66 < yAxisVal <= 100:
+			return 10
+		else:
+			print("Y-axis Value Error.")
+	elif 50 <= xAxisVal < 75:
+		if 0 <= yAxisVal < 33:
+			return 3
+		elif 33 <= yAxisVal <= 66:
+			return 7
+		elif 66 < yAxisVal <= 100:
+			return 11
+		else:
+			print("Y-axis Value Error.")
+	elif 75 <= xAxisVal <= 100:
+		if 0 <= yAxisVal < 33:
+			return 4
+		elif 33 <= yAxisVal <= 66:
+			return 8
+		elif 66 < yAxisVal <= 100:
+			return 12
+		else:
+			print("Y-axis Value Error.")
+	else:
+		print("X-axis Value Error.")
+	return 0
+
+def getXAxisVal(speed, hsGovKickInSpeed, idleSpeed):
+	numerator = speed - idleSpeed
+	denominator = hsGovKickInSpeed - idleSpeed
+	if numerator < 0:
+		print("The current speed can not be smaller than the engine speed at idle.")
+		return -1
+	if denominator <= 0:
+		print("The engine speed at high speed governor kick in point can not be equal or smaller than the engine speed at idle.")
+		return -1
+	return numerator/denominator
+	
+def getYAxisVal(actualEngPercentTorque):
+	return actualEngPercentTorque
+	
 
 # Create a testclient instance and connect to the running vss server
 tclient = testclient.VSSTestClient()
@@ -50,22 +107,14 @@ while True:
 	coolantTemp = checkPath("Vehicle.OBD.CoolantTemperature")
 	loadAtCurrentSpeed = checkPath("Vehicle.OBD.EngPercentLoadAtCurrentSpeed")
 	timeSinceStart = checkPath("Vehicle.Drivetrain.FuelSystem.TimeSinceStart")
-	actualTorque = checkPath(
-		"Vehicle.Drivetrain.InternalCombustionEngine.Engine.ActualEngPercentTorque")
-	referenceTorque = checkPath(
-		"Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngReferenceTorque")
-	nomFrictionTorque = checkPath(
-		"Vehicle.Drivetrain.InternalCombustionEngine.Engine.NominalFrictionPercentTorque")
-	engSpeed = checkPath(
-		"Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed")
-	engSpeedAtIdle = checkPath(
-		"Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtIdle")
-	engSpeedAtKickIn = checkPath(
-		"Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtKickIn")
-	noxIntake = checkPath(
-		"Vehicle.AfterTreatment.NOxLevel.NOxIntake1")
-	noxOutlet = checkPath(
-		"Vehicle.AfterTreatment.NOxLevel.NOxOutlet1")
+	actualTorque = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.ActualEngPercentTorque")
+	referenceTorque = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngReferenceTorque")
+	nomFrictionTorque = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.NominalFrictionPercentTorque")
+	engSpeed = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed")
+	engSpeedAtIdle = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtIdle")
+	engSpeedAtKickIn = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtKickIn")
+	noxIntake = checkPath("Vehicle.AfterTreatment.NOxLevel.NOxIntake1")
+	noxOutlet = checkPath("Vehicle.AfterTreatment.NOxLevel.NOxOutlet1")
 	
 	# 2. Store newly retrieved data to the dictionary keys
 	## A. Calculate integrated NOx mass
@@ -102,73 +151,42 @@ while True:
 		or sigDictCH0["AmbientAirTemp"] < -7 
 		or sigDictCH0["BarometricPress"] * 10 < 750 
 		or sigDictCH0["EngCoolantTemp"] < 180):
-		print("Bad Mapping")
+		print("Bad Mapping Active")
 	elif (sigDictCH0["TimeSinceEngineStart"] >= 180 
 		and sigDictCH0["AmbientAirTemp"] >= -7 
 		and sigDictCH0["BarometricPress"] * 10 >= 750):
 		if 180 <= sigDictCH0["EngCoolantTemp"] < 220:
-			print("Intermediate Mapping")
+			print("Intermediate Mapping Active")
 		elif sigDictCH0["EngCoolantTemp"] >= 220:
-			print("Good Mapping")
+			print("Good Mapping Active")
 	## B. Old Concept
 	# * Fault active part is omitted
 	if (sigDictCH0["TimeSinceEngineStart"] >= 1800
 		and sigDictCH0["AmbientAirTemp"] >= -7
 		and sigDictCH0["BarometricPress"] * 10 >= 750):
-		print("Old Concept Good Mapping")
+		print("Old Concept Good Mapping Active")
 	## C. PEMS Concept
 	if (sigDictCH0["TimeSinceEngineStart"] >= 60
 		and sigDictCH0["AmbientAirTemp"] >= -7 
 		and sigDictCH0["BarometricPress"] * 10 >= 750):
 		if 30 <= sigDictCH0["EngCoolantTemp"] < 70:
-			print("PEMS - cold start part")
+			print("PEMS - Cold Start Active")
 		elif sigDictCH0["EngCoolantTemp"] >= 70:
-			print("PEMS - hot start part")
+			print("PEMS - Hot Start Active")
 	
-	# 5. Time delay
+	# 5. Select a bin (in the bin map)
+	# To create the bin map, you need EngSpeed and Engine Output Torque.
+	# EngineOutputTorque = (ActualEngineTorque - NominalFrictionPercentTorque) * EngineReferenceTorque
+	# <assumption>
+	# X-Axis: is not Engine Speed. but a percentage of: (EngSpeed-EngSpeedAtIdlePoint1)/(EngSpeedAtPoint2-EngSpeedAtIdlePoint1)
+	# Y-Axis: it could either be 
+	xAxisVal = getXAxisVal(sigDictCH0["EngSpeed"], sigDictCH0["EngSpeedAtPoint2"], sigDictCH0["EngSpeedAtIdlePoint1"])
+	yAxisVal = getYAxisVal(sigDictCH0["ActualEngPercentTorque"])
+	if xAxisVal == -1 or yAxisVal < 0:
+		print("Bin Selecting Failed...")
+	else:
+		binNumVal = selectBin(xAxisVal, yAxisVal)
+		print("binNumVal: " + binNumVal)
+	
+	# X. Time delay
 	time.sleep(1)
-
-
-
-"""
-	# <Old Version>
-	# 1. Save signals' values from the target path signal dictionaries
-	####### - can0 - #######
-	ambientAirTemp = checkPath("Vehicle.AmbientAirTemperature")
-	percentTorque = checkPath(
-		"Vehicle.Drivetrain.InternalCombustionEngine.Engine.ActualEngPercentTorque")
-	barometricPress = checkPath("Vehicle.OBD.BarometricPressure")
-	airIntakeTemp = checkPath("Vehicle.OBD.IntakeTemp")
-	coolantTemp = checkPath("Vehicle.OBD.CoolantTemperature")
-	fuelRate = checkPath("Vehicle.OBD.FuelRate")
-	percentLoadAtSpeed = checkPath(
-		"Vehicle.OBD.EngPercentLoadAtCurrentSpeed")
-	engSpeed = checkPath(
-		"Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed")
-	frictionPercentTorque = checkPath(
-		"Vehicle.Drivetrain.InternalCombustionEngine.Engine.NominalFrictionPercentTorque")
-	####### - can1 - #######
-	intakeNOx = checkPath(
-		"Vehicle.AfterTreatment.NOxLevel.NOxIntake1")
-	outletNOx = checkPath(
-		"Vehicle.AfterTreatment.NOxLevel.NOxOutlet1")
-	frictionPercentTorqueVector = checkPath(
-		"Vehicle.Drivetrain.InternalCombustionEngine.Engine.NominalFrictionPercentTorqueVector")
-
-	# 2. Store newly retrieved data to the dictionary keys
-	####### - can0 - #######
-	sigDictCH0["AmbientAirTemp"] = ambientAirTemp
-	sigDictCH0["ActualEngPercentTorque"] = percentTorque
-	sigDictCH0["BarometricPress"] = barometricPress
-	sigDictCH0["EngAirIntakeTemp"] = airIntakeTemp
-	sigDictCH0["EngCoolantTemp"] = coolantTemp
-	sigDictCH0["EngFuelRate"] = fuelRate
-	sigDictCH0["EngPercentLoadAtCurrentSpeed"] = percentLoadAtSpeed
-	sigDictCH0["EngSpeed"] = engSpeed
-	sigDictCH0["NominalFrictionPercentTorque"] = frictionPercentTorque
-	####### - can1 - #######
-	sigDictCH1["Aftertreatment1IntakeNOx"] = intakeNOx
-	sigDictCH1["Aftertreatment1OutletNOx"] = outletNOx
-	sigDictCH1["NominalFrictionPercentTorque"
-		] = frictionPercentTorqueVector
-"""
