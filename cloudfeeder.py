@@ -23,6 +23,15 @@ def checkPath(path):
 	else:
 		return float(val)
 
+def printSignalValues(ch0_dic, ch1_dic):
+	print("######################## Channel-1 ########################")
+	for signal, value in ch0_dic.items():
+		print(signal, ": ", str(value))
+	print("######################## Channel-2 ########################")	
+	for signal, value in ch0_dic.items():
+		print(signal, ": ", str(value))
+	print("###########################################################")
+
 # Create a testclient instance and connect to the running vss server
 tclient = testclient.VSSTestClient()
 tclient.do_connect("--insecure")
@@ -59,34 +68,64 @@ while True:
 		"Vehicle.AfterTreatment.NOxLevel.NOxOutlet1")
 	
 	# 2. Store newly retrieved data to the dictionary keys
-	####### - can0 - #######
-	sigDictCH1["AmbientAirTemp"] = ambientAirTemp
+	## A. Calculate integrated NOx mass
 	sigDictCH1["Aftrtratment1ExhaustGasMassFlow"] = exhaustMessFlow
+	sigDictCH2["Aftertreatment1IntakeNOx"] = noxIntake 
+	sigDictCH2["Aftertreatment1OutletNOx"] = noxOutlet
+	## B. Calculate engine work
+	sigDictCH1["EngReferenceTorque"] = referenceTorque # Missing
+	## C. Map switch over
+	sigDictCH1["AmbientAirTemp"] = ambientAirTemp
 	sigDictCH1["BarometricPress"] = barometricPress
 	sigDictCH1["EngCoolantTemp"] = coolantTemp
+	## D. Bin selection
 	sigDictCH1["EngPercentLoadAtCurrentSpeed"] = loadAtCurrentSpeed
-	sigDictCH1["TimeSinceEngineStart"] = timeSinceStart
-	sigDictCH1["ActualEngPercentTorque"] = actualTorque
-	sigDictCH1["EngReferenceTorque"] = referenceTorque
-	sigDictCH1["NominalFrictionPercentTorque"] = nomFrictionTorque
+	sigDictCH1["EngSpeedAtIdlePoint1"] = engSpeedAtIdle # Missing
+	sigDictCH1["EngSpeedAtPoint2"] = engSpeedAtKickIn # Missing
+	## A & B & C
 	sigDictCH1["EngSpeed"] = engSpeed
-	sigDictCH1["EngSpeedAtIdlePoint1"] = engSpeedAtIdle
-	sigDictCH1["EngSpeedAtPoint2"] = engSpeedAtKickIn
-	
-	####### - can1 - #######
-	sigDictCH2["Aftertreatment1IntakeNOx"] = noxIntake
-	sigDictCH2["Aftertreatment1OutletNOx"] = noxOutlet
+	## B & D
+	sigDictCH1["ActualEngPercentTorque"] = actualTorque
+	sigDictCH1["NominalFrictionPercentTorque"] = nomFrictionTorque
+	## C - case 2 & Sampling duration tracking per bin
+	sigDictCH1["TimeSinceEngineStart"] = timeSinceStart # Missing
 	
 	# 3. Print the corresponding variable's value
-	print("######################## Channel-1 ########################")
-	for signal, value in sigDictCH1.items():
-		print(signal, ": ", str(value))
-	print("######################## Channel-2 ########################")
-	for signal, value in sigDictCH2.items():
-		print(signal, ": ", str(value))
-	print("###########################################################")
+	printSignalValues(sigDictCH1, sigDictCH2)
 	
-	# 4. Time delay
+	# 4. Select a mapping (bad / intermediate / good) (cold / hot start)
+	# * Fault active part is omitted
+	## A. New Concept
+	### barometric (kpa): mbar = 10 x kPa
+	### * Assuming T_SCR == EngCoolantTemp (THIS IS PROBABLY NOT CORRECT)
+	if (sigDictCH1["TimeSinceEngineStart"] < 180 
+		or sigDictCH1["AmbientAirTemp"] < -7 
+		or sigDictCH1["BarometricPress"] * 10 < 750 
+		or sigDictCH1["EngCoolantTemp"] < 180):
+		print("Bad Mapping")
+	elif (sigDictCH1["TimeSinceEngineStart"] >= 180 
+		and sigDictCH1["AmbientAirTemp"] >= -7 
+		and sigDictCH1["BarometricPress"] * 10 >= 750):
+		if 180 <= sigDictCH1["EngCoolantTemp"] < 220:
+			print("Intermediate Mapping")
+		elif sigDictCH1["EngCoolantTemp"] >= 220:
+			print("Good Mapping")
+	## B. Old Concept
+	# * Fault active part is omitted
+	if (sigDictCH1["TimeSinceEngineStart"] >= 1800
+		and sigDictCH1["AmbientAirTemp"] >= -7
+		and sigDictCH1["BarometricPress"] * 10 >= 750):
+		print("Old Concept Good Mapping")
+	## C. PEMS Concept
+	if (sigDictCH1["TimeSinceEngineStart"] >= 60
+		and sigDictCH1["AmbientAirTemp"] >= -7 
+		and sigDictCH1["BarometricPress"] * 10 >= 750):
+		if 30 <= sigDictCH1["EngCoolantTemp"] < 70:
+			print("PEMS - cold start part")
+		elif sigDictCH1["EngCoolantTemp"] >= 70:
+			print("PEMS - hot start part")
+	
+	# 5. Time delay
 	time.sleep(1)
 
 
