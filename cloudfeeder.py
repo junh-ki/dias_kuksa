@@ -35,6 +35,65 @@ sigDictCH1 = {}
 sigDictCH2 = {}
 while True:
 	# 1. Save signals' values from the target path signal dictionaries
+	ambientAirTemp = checkPath("Vehicle.AmbientAirTemperature")
+	exhaustMessFlow = checkPath("Vehicle.ExhaustMassFlow")
+	barometricPress = checkPath("Vehicle.OBD.BarometricPressure")
+	coolantTemp = checkPath("Vehicle.OBD.CoolantTemperature")
+	loadAtCurrentSpeed = checkPath("Vehicle.OBD.EngPercentLoadAtCurrentSpeed")
+	timeSinceStart = checkPath("Vehicle.Drivetrain.FuelSystem.TimeSinceStart")
+	actualTorque = checkPath(
+		"Vehicle.Drivetrain.InternalCombustionEngine.Engine.ActualEngPercentTorque")
+	referenceTorque = checkPath(
+		"Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngReferenceTorque")
+	nomFrictionTorque = checkPath(
+		"Vehicle.Drivetrain.InternalCombustionEngine.Engine.NominalFrictionPercentTorque")
+	engSpeed = checkPath(
+		"Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed")
+	engSpeedAtIdle = checkPath(
+		"Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtIdle")
+	engSpeedAtKickIn = checkPath(
+		"Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtKickIn")
+	noxIntake = checkPath(
+		"Vehicle.AfterTreatment.NOxLevel.NOxIntake1")
+	noxOutlet = checkPath(
+		"Vehicle.AfterTreatment.NOxLevel.NOxOutlet1")
+	
+	# 2. Store newly retrieved data to the dictionary keys
+	####### - can0 - #######
+	sigDictCH1["AmbientAirTemp"] = ambientAirTemp
+	sigDictCH1["Aftrtratment1ExhaustGasMassFlow"] = exhaustMessFlow
+	sigDictCH1["BarometricPress"] = barometricPress
+	sigDictCH1["EngCoolantTemp"] = coolantTemp
+	sigDictCH1["EngPercentLoadAtCurrentSpeed"] = loadAtCurrentSpeed
+	sigDictCH1["TimeSinceEngineStart"] = timeSinceStart
+	sigDictCH1["ActualEngPercentTorque"] = actualTorque
+	sigDictCH1["EngReferenceTorque"] = referenceTorque
+	sigDictCH1["NominalFrictionPercentTorque"] = nomFrictionTorque
+	sigDictCH1["EngSpeed"] = engSpeed
+	sigDictCH1["EngSpeedAtIdlePoint1"] = engSpeedAtIdle
+	sigDictCH1["EngSpeedAtPoint2"] = engSpeedAtKickIn
+	
+	####### - can1 - #######
+	sigDictCH2["Aftertreatment1IntakeNOx"] = noxIntake
+	sigDictCH2["Aftertreatment1OutletNOx"] = noxOutlet
+	
+	# 3. Print the corresponding variable's value
+	print("######################## Channel-1 ########################")
+	for signal, value in sigDictCH1.items():
+		print(signal, ": ", str(value))
+	print("######################## Channel-2 ########################")
+	for signal, value in sigDictCH2.items():
+		print(signal, ": ", str(value))
+	print("###########################################################")
+	
+	# 4. Time delay
+	time.sleep(1)
+
+
+
+"""
+	# <Old Version>
+	# 1. Save signals' values from the target path signal dictionaries
 	####### - can0 - #######
 	ambientAirTemp = checkPath("Vehicle.AmbientAirTemperature")
 	percentTorque = checkPath(
@@ -73,15 +132,4 @@ while True:
 	sigDictCH2["Aftertreatment1OutletNOx"] = outletNOx
 	sigDictCH2["NominalFrictionPercentTorque"
 		] = frictionPercentTorqueVector
-	
-	# 3. Print the corresponding variable's value
-	print("######################## Channel-1 ########################")
-	for signal, value in sigDictCH1.items():
-		print(signal, ": ", str(value))
-	print("######################## Channel-2 ########################")
-	for signal, value in sigDictCH2.items():
-		print(signal, ": ", str(value))
-	print("###########################################################")
-	
-	# 4. Time delay
-	time.sleep(1)
+"""
