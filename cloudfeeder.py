@@ -28,7 +28,7 @@ def printSignalValues(ch0_dic, ch1_dic):
 	for signal, value in ch0_dic.items():
 		print(signal, ": ", str(value))
 	print("######################## Channel-2 ########################")	
-	for signal, value in ch0_dic.items():
+	for signal, value in ch1_dic.items():
 		print(signal, ": ", str(value))
 	print("###########################################################")
 
