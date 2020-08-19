@@ -186,7 +186,7 @@ while True:
 		print("Bin Selecting Failed...")
 	else:
 		binNumVal = selectBin(xAxisVal, yAxisVal)
-		print("binNumVal: " + binNumVal)
+		print("binNumVal: " + str(binNumVal))
 	
 	# X. Time delay
 	time.sleep(1)
