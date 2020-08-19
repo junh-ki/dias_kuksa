@@ -33,17 +33,10 @@ def printSignalValues(ch0_dic, ch1_dic):
 	print("###########################################################")
 
 def catalystEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tSCR):
-	if (timeAfterEngStart < 180 
-		or tAmbient < -7 
-		or pAmbient < 750
-		or isFaultActive == True
-		or tSCR < 180):
+	if timeAfterEngStart < 180 or tAmbient < -7 or pAmbient < 750 or isFaultActive == True or tSCR < 180:
 		print("Catalyst Mapping - Bad (Active)")
 		return 1
-	elif (timeAfterEngStart >= 180 
-		and tAmbient >= -7 
-		and pAmbient >= 750
-		and isFaultActive == False):
+	elif timeAfterEngStart >= 180 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
 		if 180 <= tSCR < 220:
 			print("Catalyst Evalution - Intermediate (Active)")
 			return 2
@@ -52,19 +45,13 @@ def catalystEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tSCR):
 			return 3
 
 def oldGoodEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive):
-	if (timeAfterEngStart >= 1800
-		and tAmbient >= -7
-		and pAmbient >= 750
-		and isFaultActive == False):
+	if timeAfterEngStart >= 1800 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
 		print("Old Evalution - Good (Active)")
 		return 1
 	return 0
 
 def pemsEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tCoolant):	
-	if (timeAfterEngStart >= 60
-		and tAmbient >= -7 
-		and pAmbient >= 750
-		and isFaultActive == False):
+	if timeAfterEngStart >= 60 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
 		if 30 <= tCoolant < 70:
 			print("PEMS Evalution - Cold Start (Active)")
 			return 1
