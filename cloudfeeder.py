@@ -32,6 +32,47 @@ def printSignalValues(ch0_dic, ch1_dic):
 		print(signal, ": ", str(value))
 	print("###########################################################")
 
+def catalystEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tSCR):
+	if (timeAfterEngStart < 180 
+		or tAmbient < -7 
+		or pAmbient < 750
+		or isFaultActive == True
+		or tSCR < 180):
+		print("Catalyst Mapping - Bad (Active)")
+		return 1
+	elif (timeAfterEngStart >= 180 
+		and tAmbient >= -7 
+		and pAmbient >= 750
+		and isFaultActive == False):
+		if 180 <= tSCR < 220:
+			print("Catalyst Evalution - Intermediate (Active)")
+			return 2
+		elif tSCR >= 220:
+			print("Catalyst Evalution - Good (Active)")
+			return 3
+
+def oldGoodEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive):
+	if (timeAfterEngStart >= 1800
+		and tAmbient >= -7
+		and pAmbient >= 750
+		and isFaultActive == False):
+		print("Old Evalution - Good (Active)")
+		return 1
+	return 0
+
+def pemsEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tCoolant):	
+	if (timeAfterEngStart >= 60
+		and tAmbient >= -7 
+		and pAmbient >= 750
+		and isFaultActive == False):
+		if 30 <= tCoolant < 70:
+			print("PEMS Evalution - Cold Start (Active)")
+			return 1
+		elif tCoolant >= 70:
+			print("PEMS Evalution - Hot Start (Active)")
+			return 2
+	return 0
+
 def selectBin(xAxisVal, yAxisVal):
 	# Check X-axis first and then Y-axis
 	if 0 <= xAxisVal < 25:
@@ -86,8 +127,7 @@ def getXAxisVal(speed, hsGovKickInSpeed, idleSpeed):
 	return numerator/denominator
 	
 def getYAxisVal(actualEngPercentTorque):
-	return actualEngPercentTorque
-	
+	return actualEngPercentTorque	
 
 # Create a testclient instance and connect to the running vss server
 tclient = testclient.VSSTestClient()
@@ -144,35 +184,18 @@ while True:
 	
 	# 4. Select a mapping (bad / intermediate / good) (cold / hot start)
 	# * Fault active part is omitted
+	# * barometric (kpa): mbar = 10 x kPa
 	## A. New Concept
-	### barometric (kpa): mbar = 10 x kPa
-	### * Assuming T_SCR == EngCoolantTemp (THIS IS PROBABLY NOT CORRECT)
-	if (sigDictCH0["TimeSinceEngineStart"] < 180 
-		or sigDictCH0["AmbientAirTemp"] < -7 
-		or sigDictCH0["BarometricPress"] * 10 < 750 
-		or sigDictCH0["EngCoolantTemp"] < 180):
-		print("Bad Mapping Active")
-	elif (sigDictCH0["TimeSinceEngineStart"] >= 180 
-		and sigDictCH0["AmbientAirTemp"] >= -7 
-		and sigDictCH0["BarometricPress"] * 10 >= 750):
-		if 180 <= sigDictCH0["EngCoolantTemp"] < 220:
-			print("Intermediate Mapping Active")
-		elif sigDictCH0["EngCoolantTemp"] >= 220:
-			print("Good Mapping Active")
+	tSCR = 10
+	catEvalNum = catalystEval(sigDictCH0["TimeSinceEngineStart"], sigDictCH0["AmbientAirTemp"], sigDictCH0["BarometricPress"] * 10, False, tSCR)
+	### 1 bad / 2 intermediate / 3 good
 	## B. Old Concept
-	# * Fault active part is omitted
-	if (sigDictCH0["TimeSinceEngineStart"] >= 1800
-		and sigDictCH0["AmbientAirTemp"] >= -7
-		and sigDictCH0["BarometricPress"] * 10 >= 750):
-		print("Old Concept Good Mapping Active")
+	isOldEvalActive = oldGoodEval(sigDictCH0["TimeSinceEngineStart"], sigDictCH0["AmbientAirTemp"], sigDictCH0["BarometricPress"] * 10, False)
+	### 0 OldEvalInactive / 1 OldEvalActive
 	## C. PEMS Concept
-	if (sigDictCH0["TimeSinceEngineStart"] >= 60
-		and sigDictCH0["AmbientAirTemp"] >= -7 
-		and sigDictCH0["BarometricPress"] * 10 >= 750):
-		if 30 <= sigDictCH0["EngCoolantTemp"] < 70:
-			print("PEMS - Cold Start Active")
-		elif sigDictCH0["EngCoolantTemp"] >= 70:
-			print("PEMS - Hot Start Active")
+	pemsEvalNum = pemsEval(sigDictCH0["TimeSinceEngineStart"], sigDictCH0["AmbientAirTemp"], sigDictCH0["BarometricPress"] * 10, False, sigDictCH0["EngCoolantTemp"])
+	### 0 PEMS-inactive / 1 PEMS-cold / 2 PEMS-hot
+	print("catEvalNum: " + str(catEvalNum) + " / " + "isOldEvalActive: " + str(isOldEvalActive) + " / " + "pemsEvalNum: " + str(pemsEvalNum))
 	
 	# 5. Select a bin (in the bin map)
 	# To create the bin map, you need EngSpeed and Engine Output Torque.
