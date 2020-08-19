@@ -173,15 +173,15 @@ while True:
 	# * Fault active part is omitted
 	# * barometric (kpa): mbar = 10 x kPa
 	## A. New Concept
+	### 1 bad / 2 intermediate / 3 good
 	tSCR = 10
 	catEvalNum = catalystEval(sigDictCH0["TimeSinceEngineStart"], sigDictCH0["AmbientAirTemp"], sigDictCH0["BarometricPress"] * 10, False, tSCR)
-	### 1 bad / 2 intermediate / 3 good
 	## B. Old Concept
-	isOldEvalActive = oldGoodEval(sigDictCH0["TimeSinceEngineStart"], sigDictCH0["AmbientAirTemp"], sigDictCH0["BarometricPress"] * 10, False)
 	### 0 OldEvalInactive / 1 OldEvalActive
+	isOldEvalActive = oldGoodEval(sigDictCH0["TimeSinceEngineStart"], sigDictCH0["AmbientAirTemp"], sigDictCH0["BarometricPress"] * 10, False)
 	## C. PEMS Concept
-	pemsEvalNum = pemsEval(sigDictCH0["TimeSinceEngineStart"], sigDictCH0["AmbientAirTemp"], sigDictCH0["BarometricPress"] * 10, False, sigDictCH0["EngCoolantTemp"])
 	### 0 PEMS-inactive / 1 PEMS-cold / 2 PEMS-hot
+	pemsEvalNum = pemsEval(sigDictCH0["TimeSinceEngineStart"], sigDictCH0["AmbientAirTemp"], sigDictCH0["BarometricPress"] * 10, False, sigDictCH0["EngCoolantTemp"])
 	print("catEvalNum: " + str(catEvalNum) + " / " + "isOldEvalActive: " + str(isOldEvalActive) + " / " + "pemsEvalNum: " + str(pemsEvalNum))
 	
 	# 5. Select a bin (in the bin map)
@@ -197,6 +197,13 @@ while True:
 	else:
 		binNumVal = selectBin(xAxisVal, yAxisVal)
 		print("binNumVal: " + str(binNumVal))
+		
+	# 6. bin mapping with dictionary.
+	# Now I know the mapping condition and the bin number.
+	# - A bin needs to be a dictionary. (so it can contain a variety of data, this also includes binNumVal)
+	# - A bin can be mapped to one to three different maps every cycle.
+	# - The total number of maps is 6. Therefore you need 6 dictionary maps 
+	# each dictionary map would contain bins and each bin contains singal info as well as coordinate info(binNumVal)
 	
 	# X. Time delay
 	time.sleep(1)
