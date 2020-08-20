@@ -48,8 +48,8 @@ def catalystEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tSCR):
 def oldGoodEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive):
 	if timeAfterEngStart >= 1800 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
 		print("Old Evalution - Good (Active)")
-		return 1
-	return 0
+		return True
+	return False
 
 def pemsEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tCoolant):	
 	if timeAfterEngStart >= 60 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
@@ -127,8 +127,16 @@ tclient.do_authorize(super_admin_token)
 
 sigDictCH0 = {}
 sigDictCH1 = {}
-cumulativeNOx_g = 0
+cumulativeNOxDS_g = 0
+cumulativeNOxUS_g = 0
 cumulativePower_J = 0
+
+catEvalMap_bad = []
+catEvalMap_intermediate = []
+catEvalMap_good = []
+oldGoodEvalMap = []
+pemsEvalMap_cold = []
+pemsEvalMap_hot = []
 while True:
 	# 1. Store signals' values from the target path to the dictionary keys
 	## A. Calculate integrated NOx mass
@@ -154,7 +162,7 @@ while True:
 	sigDictCH0["TimeSinceEngineStart"] = checkPath("Vehicle.Drivetrain.FuelSystem.TimeSinceStart") # Missing
 	
 	# 2. Print the corresponding variable's value
-	printSignalValues(sigDictCH0, sigDictCH1)
+	# printSignalValues(sigDictCH0, sigDictCH1)
 	
 	# 3. Select a mapping (bad / intermediate / good) (cold / hot start)
 	# * Fault active part is omitted
@@ -164,7 +172,7 @@ while True:
 	tSCR = 10
 	catEvalNum = catalystEval(sigDictCH0["TimeSinceEngineStart"], sigDictCH0["AmbientAirTemp"], sigDictCH0["BarometricPress"] * 10, False, tSCR)
 	## B. Old Concept
-	### 0 OldEvalInactive / 1 OldEvalActive
+	### False OldEvalInactive / True OldEvalActive
 	isOldEvalActive = oldGoodEval(sigDictCH0["TimeSinceEngineStart"], sigDictCH0["AmbientAirTemp"], sigDictCH0["BarometricPress"] * 10, False)
 	## C. PEMS Concept
 	### 0 PEMS-inactive / 1 PEMS-cold / 2 PEMS-hot
@@ -179,18 +187,23 @@ while True:
 	# Y-Axis: it could either be 
 	xAxisVal = getXAxisVal(sigDictCH0["EngSpeed"], sigDictCH0["EngSpeedAtPoint2"], sigDictCH0["EngSpeedAtIdlePoint1"])
 	yAxisVal = getYAxisVal(sigDictCH0["ActualEngPercentTorque"])
+	binPosVal = 0
 	if xAxisVal == -1 or yAxisVal < 0:
 		print("Bin Selecting Failed...")
 	else:
 		binPosVal = selectBin(xAxisVal, yAxisVal)
 		print("binPosVal: " + str(binPosVal))
 		
-	# 5. Create a bin
+	# 5. Create a bin with dictionary
 	bin_basic = {}
 	bin_basic["CumulativeSamplingTime"] = sigDictCH0["TimeSinceEngineStart"]
-	nox_gs = 0.001588 * sigDictCH1["Aftertreatment1OutletNOx"] * sigDictCH0["Aftrtratment1ExhaustGasMassFlow"] / 3600
-	cumulativeNOx_g += nox_gs
-	bin_basic["CumulativeNOxEmission"] = cumulativeNOx_g
+	## Cumulative NOx (DownStream) in g
+	noxDS_gs = 0.001588 * sigDictCH1["Aftertreatment1OutletNOx"] * sigDictCH0["Aftrtratment1ExhaustGasMassFlow"] / 3600
+	cumulativeNOxDS_g += noxDS_gs
+	## Cumulative NOx (UpStream) in g
+	noxUS_gs = 0.001588 * sigDictCH1["Aftertreatment1IntakeNOx"] * sigDictCH0["Aftrtratment1ExhaustGasMassFlow"] / 3600
+	cumulativeNOxUS_g += noxUS_gs
+	bin_basic["CumulativeNOxDSEmissionGram"] = cumulativeNOxDS_g
 	outputTorque = (sigDictCH0["ActualEngPercentTorque"] - sigDictCH0["NominalFrictionPercentTorque"]) * sigDictCH0["EngReferenceTorque"]
 	# should the unit for sigDictCH0["EngSpeed"] be converted to 1/s ? ASK!!
 	# RPM = Revolutions Per Minute
@@ -198,21 +211,47 @@ while True:
 	power_Js = outputTorque * sigDictCH0["EngSpeed"] * 2 * math.pi
 	cumulativePower_J += power_Js
 	bin_basic["CumulativeWork"] = cumulativePower_J
-	# When tSCR evaluation is "good" (3)
-	bin_extension = {}
-	if catEvalNum == 3:
-		bin_extension["CumulativeSamplingTime"] = sigDictCH0["TimeSinceEngineStart"]
-		bin_extension["CumulativeNOxEmission"] = cumulativeNOx_g
-		bin_extension["CumulativeWork"] = cumulativePower_J
-		# From here extra for upstream
-		
+	if binPosVal != 0:
+		bin_basic["BinPosition"] = binPosVal
 	
-	# 6. bin mapping with dictionary.
-	# Now I know the mapping condition and the bin number.
-	# - A bin needs to be a dictionary. (so it can contain a variety of data, this also includes binPosVal)
-	# - A bin can be mapped to one to three different maps every cycle.
-	# - The total number of maps is 6. Therefore you need 6 dictionary maps 
-	# each dictionary map would contain bins and each bin contains singal info as well as coordinate info(binPosVal)
+	# 6. Map the bin with list
+	## New Concept (T_SCR)
+	if catEvalNum == 1:
+		catEvalMap_bad.append(bin_basic)
+	elif catEvalNum == 2:
+		catEvalMap_intermediate.append(bin_basic)
+	elif catEvalNum == 3:
+		# When tSCR evaluation is "good"
+		bin_extension = {}
+		bin_extension["CumulativeSamplingTime"] = sigDictCH0["TimeSinceEngineStart"]
+		bin_extension["CumulativeNOxDSEmissionGram"] = cumulativeNOxDS_g
+		# extended attribute: NOxDS in ppm
+		bin_extension["CumulativeNOxDSEmissionPPM"] = bin_extension["CumulativeNOxDSEmissionGram"] / 1000
+		bin_extension["CumulativeWork"] = cumulativePower_J
+		# extended attribute: NOxUS in g
+		bin_extension["CumulativeNOxUSEmissionGram"] = cumulativeNOxUS_g
+		# extended attribute: NOxUS in ppm
+		bin_extension["CumulativeNOxUSEmissionPPM"] = bin_extension["CumulativeNOxUSEmissionGram"] / 1000
+		bin_extension["BinPosition"] = binPosVal
+		catEvalMap_good.append(bin_extension)
+	## Old Concept (Good)
+	if isOldEvalActive:
+		oldGoodEvalMap.append(bin_basic)
+	## PEMS Style Concept
+	if pemsEvalNum == 1:
+		pemsEvalMap_cold.append(bin_basic)
+	elif pemsEvalNum == 2:
+		pemsEvalMap_hot.append(bin_basic)
+	
+	print("##################################")
+	print("BIN_BASIC: " + str(bin_basic))
+	print("catEvalMap_bad: " + str(len(catEvalMap_bad)))
+	print("catEvalMap_intermediate: " + str(len(catEvalMap_intermediate)))
+	print("catEvalMap_good: " + str(len(catEvalMap_good)))
+	print("oldGoodEvalMap: " + str(len(oldGoodEvalMap)))
+	print("pemsEvalMap_cold: " + str(len(pemsEvalMap_cold)))
+	print("pemsEvalMap_hot: " + str(len(pemsEvalMap_hot)))
+	print("##################################")
 	
 	# X. Time delay
 	time.sleep(1)
