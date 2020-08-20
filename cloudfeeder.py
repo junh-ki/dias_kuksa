@@ -15,6 +15,7 @@ return datastore
 
 import time
 import testclient
+import math
 
 def checkPath(path):
 	val = tclient.do_getValue(path)['value']
@@ -126,50 +127,36 @@ tclient.do_authorize(super_admin_token)
 
 sigDictCH0 = {}
 sigDictCH1 = {}
+cumulativeNOx_g = 0
+cumulativePower_J = 0
 while True:
-	# 1. Save signals' values from the target path signal dictionaries
-	ambientAirTemp = checkPath("Vehicle.AmbientAirTemperature")
-	exhaustMessFlow = checkPath("Vehicle.ExhaustMassFlow")
-	barometricPress = checkPath("Vehicle.OBD.BarometricPressure")
-	coolantTemp = checkPath("Vehicle.OBD.CoolantTemperature")
-	loadAtCurrentSpeed = checkPath("Vehicle.OBD.EngPercentLoadAtCurrentSpeed")
-	timeSinceStart = checkPath("Vehicle.Drivetrain.FuelSystem.TimeSinceStart")
-	actualTorque = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.ActualEngPercentTorque")
-	referenceTorque = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngReferenceTorque")
-	nomFrictionTorque = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.NominalFrictionPercentTorque")
-	engSpeed = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed")
-	engSpeedAtIdle = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtIdle")
-	engSpeedAtKickIn = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtKickIn")
-	noxIntake = checkPath("Vehicle.AfterTreatment.NOxLevel.NOxIntake1")
-	noxOutlet = checkPath("Vehicle.AfterTreatment.NOxLevel.NOxOutlet1")
-	
-	# 2. Store newly retrieved data to the dictionary keys
+	# 1. Store signals' values from the target path to the dictionary keys
 	## A. Calculate integrated NOx mass
-	sigDictCH0["Aftrtratment1ExhaustGasMassFlow"] = exhaustMessFlow
-	sigDictCH1["Aftertreatment1IntakeNOx"] = noxIntake 
-	sigDictCH1["Aftertreatment1OutletNOx"] = noxOutlet
+	sigDictCH0["Aftrtratment1ExhaustGasMassFlow"] = checkPath("Vehicle.ExhaustMassFlow")
+	sigDictCH1["Aftertreatment1IntakeNOx"] = checkPath("Vehicle.AfterTreatment.NOxLevel.NOxIntake1")
+	sigDictCH1["Aftertreatment1OutletNOx"] = checkPath("Vehicle.AfterTreatment.NOxLevel.NOxOutlet1")
 	## B. Calculate engine work
-	sigDictCH0["EngReferenceTorque"] = referenceTorque # Missing
+	sigDictCH0["EngReferenceTorque"] = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngReferenceTorque") # Missing
 	## C. Map switch over
-	sigDictCH0["AmbientAirTemp"] = ambientAirTemp
-	sigDictCH0["BarometricPress"] = barometricPress
-	sigDictCH0["EngCoolantTemp"] = coolantTemp
+	sigDictCH0["AmbientAirTemp"] = checkPath("Vehicle.AmbientAirTemperature")
+	sigDictCH0["BarometricPress"] = checkPath("Vehicle.OBD.BarometricPressure")
+	sigDictCH0["EngCoolantTemp"] = checkPath("Vehicle.OBD.CoolantTemperature")
 	## D. Bin selection
-	sigDictCH0["EngPercentLoadAtCurrentSpeed"] = loadAtCurrentSpeed
-	sigDictCH0["EngSpeedAtIdlePoint1"] = engSpeedAtIdle # Missing
-	sigDictCH0["EngSpeedAtPoint2"] = engSpeedAtKickIn # Missing
+	sigDictCH0["EngPercentLoadAtCurrentSpeed"] = checkPath("Vehicle.OBD.EngPercentLoadAtCurrentSpeed")
+	sigDictCH0["EngSpeedAtIdlePoint1"] = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtIdle") # Missing
+	sigDictCH0["EngSpeedAtPoint2"] = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtKickIn") # Missing
 	## A & B & C
-	sigDictCH0["EngSpeed"] = engSpeed
+	sigDictCH0["EngSpeed"] = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed")
 	## B & D
-	sigDictCH0["ActualEngPercentTorque"] = actualTorque
-	sigDictCH0["NominalFrictionPercentTorque"] = nomFrictionTorque
+	sigDictCH0["ActualEngPercentTorque"] = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.ActualEngPercentTorque")
+	sigDictCH0["NominalFrictionPercentTorque"] = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.NominalFrictionPercentTorque")
 	## C - case 2 & Sampling duration tracking per bin
-	sigDictCH0["TimeSinceEngineStart"] = timeSinceStart # Missing
+	sigDictCH0["TimeSinceEngineStart"] = checkPath("Vehicle.Drivetrain.FuelSystem.TimeSinceStart") # Missing
 	
-	# 3. Print the corresponding variable's value
+	# 2. Print the corresponding variable's value
 	printSignalValues(sigDictCH0, sigDictCH1)
 	
-	# 4. Select a mapping (bad / intermediate / good) (cold / hot start)
+	# 3. Select a mapping (bad / intermediate / good) (cold / hot start)
 	# * Fault active part is omitted
 	# * barometric (kpa): mbar = 10 x kPa
 	## A. New Concept
@@ -184,7 +171,7 @@ while True:
 	pemsEvalNum = pemsEval(sigDictCH0["TimeSinceEngineStart"], sigDictCH0["AmbientAirTemp"], sigDictCH0["BarometricPress"] * 10, False, sigDictCH0["EngCoolantTemp"])
 	print("catEvalNum: " + str(catEvalNum) + " / " + "isOldEvalActive: " + str(isOldEvalActive) + " / " + "pemsEvalNum: " + str(pemsEvalNum))
 	
-	# 5. Select a bin (in the bin map)
+	# 4. Select a bin position (in the bin map)
 	# To create the bin map, you need EngSpeed and Engine Output Torque.
 	# EngineOutputTorque = (ActualEngineTorque - NominalFrictionPercentTorque) * EngineReferenceTorque
 	# <assumption>
@@ -195,9 +182,31 @@ while True:
 	if xAxisVal == -1 or yAxisVal < 0:
 		print("Bin Selecting Failed...")
 	else:
-		binNumVal = selectBin(xAxisVal, yAxisVal)
-		print("binNumVal: " + str(binNumVal))
+		binPosVal = selectBin(xAxisVal, yAxisVal)
+		print("binPosVal: " + str(binPosVal))
 		
+	# 5. Create a bin
+	bin_basic = {}
+	bin_basic["CumulativeSamplingTime"] = sigDictCH0["TimeSinceEngineStart"]
+	nox_gs = 0.001588 * sigDictCH1["Aftertreatment1OutletNOx"] * sigDictCH0["Aftrtratment1ExhaustGasMassFlow"] / 3600
+	cumulativeNOx_g += nox_gs
+	bin_basic["CumulativeNOxEmission"] = cumulativeNOx_g
+	outputTorque = (sigDictCH0["ActualEngPercentTorque"] - sigDictCH0["NominalFrictionPercentTorque"]) * sigDictCH0["EngReferenceTorque"]
+	# should the unit for sigDictCH0["EngSpeed"] be converted to 1/s ? ASK!!
+	# RPM = Revolutions Per Minute
+	# convert to cycles per second? - sigDictCH0["EngSpeed"]/60
+	power_Js = outputTorque * sigDictCH0["EngSpeed"] * 2 * math.pi
+	cumulativePower_J += power_Js
+	bin_basic["CumulativeWork"] = cumulativePower_J
+	# When tSCR evaluation is "good" (3)
+	bin_extension = {}
+	if catEvalNum == 3:
+		bin_extension["CumulativeSamplingTime"] = sigDictCH0["TimeSinceEngineStart"]
+		bin_extension["CumulativeNOxEmission"] = cumulativeNOx_g
+		bin_extension["CumulativeWork"] = cumulativePower_J
+		# From here extra for upstream
+		
+	
 	# 6. bin mapping with dictionary.
 	# Now I know the mapping condition and the bin number.
 	# - A bin needs to be a dictionary. (so it can contain a variety of data, this also includes binNumVal)
