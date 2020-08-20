@@ -209,10 +209,10 @@ while True:
 	
 	# 6. bin mapping with dictionary.
 	# Now I know the mapping condition and the bin number.
-	# - A bin needs to be a dictionary. (so it can contain a variety of data, this also includes binNumVal)
+	# - A bin needs to be a dictionary. (so it can contain a variety of data, this also includes binPosVal)
 	# - A bin can be mapped to one to three different maps every cycle.
 	# - The total number of maps is 6. Therefore you need 6 dictionary maps 
-	# each dictionary map would contain bins and each bin contains singal info as well as coordinate info(binNumVal)
+	# each dictionary map would contain bins and each bin contains singal info as well as coordinate info(binPosVal)
 	
 	# X. Time delay
 	time.sleep(1)
