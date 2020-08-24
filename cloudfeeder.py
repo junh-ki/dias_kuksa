@@ -35,29 +35,29 @@ def printSignalValues(ch0_dic, ch1_dic):
 
 def catalystEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tSCR):
 	if timeAfterEngStart < 180 or tAmbient < -7 or pAmbient < 750 or isFaultActive == True or tSCR < 180:
-		print("Catalyst Mapping - Bad (Active)")
+		# print("Catalyst Mapping - Bad (Active)")
 		return 1
 	elif timeAfterEngStart >= 180 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
 		if 180 <= tSCR < 220:
-			print("Catalyst Evalution - Intermediate (Active)")
+			# print("Catalyst Evalution - Intermediate (Active)")
 			return 2
 		elif tSCR >= 220:
-			print("Catalyst Evalution - Good (Active)")
+			# print("Catalyst Evalution - Good (Active)")
 			return 3
 
 def oldGoodEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive):
 	if timeAfterEngStart >= 1800 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
-		print("Old Evalution - Good (Active)")
+		# print("Old Evalution - Good (Active)")
 		return True
 	return False
 
 def pemsEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tCoolant):	
 	if timeAfterEngStart >= 60 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
 		if 30 <= tCoolant < 70:
-			print("PEMS Evalution - Cold Start (Active)")
+			# print("PEMS Evalution - Cold Start (Active)")
 			return 1
 		elif tCoolant >= 70:
-			print("PEMS Evalution - Hot Start (Active)")
+			# print("PEMS Evalution - Hot Start (Active)")
 			return 2
 	return 0
 
@@ -70,8 +70,6 @@ def selectBin(xAxisVal, yAxisVal):
 			return 5
 		elif 66 < yAxisVal <= 100:
 			return 9
-		else:
-			print("Y-axis Value Error.")
 	elif 25 <= xAxisVal < 50:
 		if 0 <= yAxisVal < 33:
 			return 2
@@ -79,8 +77,6 @@ def selectBin(xAxisVal, yAxisVal):
 			return 6
 		elif 66 < yAxisVal <= 100:
 			return 10
-		else:
-			print("Y-axis Value Error.")
 	elif 50 <= xAxisVal < 75:
 		if 0 <= yAxisVal < 33:
 			return 3
@@ -88,8 +84,6 @@ def selectBin(xAxisVal, yAxisVal):
 			return 7
 		elif 66 < yAxisVal <= 100:
 			return 11
-		else:
-			print("Y-axis Value Error.")
 	elif 75 <= xAxisVal <= 100:
 		if 0 <= yAxisVal < 33:
 			return 4
@@ -97,26 +91,37 @@ def selectBin(xAxisVal, yAxisVal):
 			return 8
 		elif 66 < yAxisVal <= 100:
 			return 12
-		else:
-			print("Y-axis Value Error.")
-	else:
-		print("X-axis Value Error.")
+	# print("Axis Value Error.")
 	return 0
 
 def getXAxisVal(speed, hsGovKickInSpeed, idleSpeed):
 	numerator = speed - idleSpeed
 	denominator = hsGovKickInSpeed - idleSpeed
 	if numerator < 0:
-		print("The current speed can not be smaller than the engine speed at idle.")
+		# print("The current speed can not be smaller than the engine speed at idle.")
 		return -1
 	if denominator <= 0:
-		print("The engine speed at high speed governor kick in point can not be equal or smaller than the engine speed at idle.")
+		# print("The engine speed at high speed governor kick in point can not be equal or smaller than the engine speed at idle.")
 		return -1
 	return numerator/denominator
 	
 def getYAxisVal(actualEngPercentTorque):
-	return actualEngPercentTorque	
+	return actualEngPercentTorque
 
+def printBinMapNumResult(binPosVal, binBasic, cBad, cInter, cGood, oGood, pCold, pHot):
+	print("###########################################################")
+	if binPosVal != 0:
+		print("BIN_BASIC(Collected): " + str(binBasic))
+	else:
+		print("BIN_BASIC(Not Collected): " + str(binBasic))
+	print("catEvalMap_bad: " + str(len(cBad)))
+	print("catEvalMap_intermediate: " + str(len(cInter)))
+	print("catEvalMap_good: " + str(len(cGood)))
+	print("oldGoodEvalMap: " + str(len(oGood)))
+	print("pemsEvalMap_cold: " + str(len(pCold)))
+	print("pemsEvalMap_hot: " + str(len(pHot)))
+	print("###########################################################")
+	
 # Create a testclient instance and connect to the running vss server
 tclient = testclient.VSSTestClient()
 tclient.do_connect("--insecure")
@@ -161,10 +166,7 @@ while True:
 	## C - case 2 & Sampling duration tracking per bin
 	sigDictCH0["TimeSinceEngineStart"] = checkPath("Vehicle.Drivetrain.FuelSystem.TimeSinceStart") # Missing
 	
-	# 2. Print the corresponding variable's value
-	# printSignalValues(sigDictCH0, sigDictCH1)
-	
-	# 3. Select a mapping (bad / intermediate / good) (cold / hot start)
+	# 2. Select a mapping (bad / intermediate / good) (cold / hot start)
 	# * Fault active part is omitted
 	# * barometric (kpa): mbar = 10 x kPa
 	## A. New Concept
@@ -177,9 +179,9 @@ while True:
 	## C. PEMS Concept
 	### 0 PEMS-inactive / 1 PEMS-cold / 2 PEMS-hot
 	pemsEvalNum = pemsEval(sigDictCH0["TimeSinceEngineStart"], sigDictCH0["AmbientAirTemp"], sigDictCH0["BarometricPress"] * 10, False, sigDictCH0["EngCoolantTemp"])
-	print("catEvalNum: " + str(catEvalNum) + " / " + "isOldEvalActive: " + str(isOldEvalActive) + " / " + "pemsEvalNum: " + str(pemsEvalNum))
+	# print("catEvalNum: " + str(catEvalNum) + " / " + "isOldEvalActive: " + str(isOldEvalActive) + " / " + "pemsEvalNum: " + str(pemsEvalNum))
 	
-	# 4. Select a bin position (in the bin map)
+	# 3. Select a bin position (in the bin map)
 	# To create the bin map, you need EngSpeed and Engine Output Torque.
 	# EngineOutputTorque = (ActualEngineTorque - NominalFrictionPercentTorque) * EngineReferenceTorque
 	# <assumption>
@@ -187,14 +189,10 @@ while True:
 	# Y-Axis: it could either be 
 	xAxisVal = getXAxisVal(sigDictCH0["EngSpeed"], sigDictCH0["EngSpeedAtPoint2"], sigDictCH0["EngSpeedAtIdlePoint1"])
 	yAxisVal = getYAxisVal(sigDictCH0["ActualEngPercentTorque"])
-	binPosVal = 0
-	if xAxisVal == -1 or yAxisVal < 0:
-		print("Bin Selecting Failed...")
-	else:
-		binPosVal = selectBin(xAxisVal, yAxisVal)
-		print("binPosVal: " + str(binPosVal))
+	binPosVal = selectBin(xAxisVal, yAxisVal)
+	# print("binPosVal: " + str(binPosVal))
 		
-	# 5. Create a bin with dictionary
+	# 4. Create a bin with dictionary
 	bin_basic = {}
 	bin_basic["CumulativeSamplingTime"] = sigDictCH0["TimeSinceEngineStart"]
 	## Cumulative NOx (DownStream) in g
@@ -214,44 +212,39 @@ while True:
 	if binPosVal != 0:
 		bin_basic["BinPosition"] = binPosVal
 	
-	# 6. Map the bin with list
+	# 5. Map the bin with list
 	## New Concept (T_SCR)
-	if catEvalNum == 1:
-		catEvalMap_bad.append(bin_basic)
-	elif catEvalNum == 2:
-		catEvalMap_intermediate.append(bin_basic)
-	elif catEvalNum == 3:
-		# When tSCR evaluation is "good"
-		bin_extension = {}
-		bin_extension["CumulativeSamplingTime"] = sigDictCH0["TimeSinceEngineStart"]
-		bin_extension["CumulativeNOxDSEmissionGram"] = cumulativeNOxDS_g
-		# extended attribute: NOxDS in ppm
-		bin_extension["CumulativeNOxDSEmissionPPM"] = bin_extension["CumulativeNOxDSEmissionGram"] / 1000
-		bin_extension["CumulativeWork"] = cumulativePower_J
-		# extended attribute: NOxUS in g
-		bin_extension["CumulativeNOxUSEmissionGram"] = cumulativeNOxUS_g
-		# extended attribute: NOxUS in ppm
-		bin_extension["CumulativeNOxUSEmissionPPM"] = bin_extension["CumulativeNOxUSEmissionGram"] / 1000
-		bin_extension["BinPosition"] = binPosVal
-		catEvalMap_good.append(bin_extension)
-	## Old Concept (Good)
-	if isOldEvalActive:
-		oldGoodEvalMap.append(bin_basic)
-	## PEMS Style Concept
-	if pemsEvalNum == 1:
-		pemsEvalMap_cold.append(bin_basic)
-	elif pemsEvalNum == 2:
-		pemsEvalMap_hot.append(bin_basic)
+	if binPosVal != 0:
+		if catEvalNum == 1:
+			catEvalMap_bad.append(bin_basic)
+		elif catEvalNum == 2:
+			catEvalMap_intermediate.append(bin_basic)
+		elif catEvalNum == 3:
+			# When tSCR evaluation is "good"
+			bin_extension = {}
+			bin_extension["CumulativeSamplingTime"] = sigDictCH0["TimeSinceEngineStart"]
+			bin_extension["CumulativeNOxDSEmissionGram"] = cumulativeNOxDS_g
+			# extended attribute: NOxDS in ppm
+			bin_extension["CumulativeNOxDSEmissionPPM"] = bin_extension["CumulativeNOxDSEmissionGram"] / 1000
+			bin_extension["CumulativeWork"] = cumulativePower_J
+			# extended attribute: NOxUS in g
+			bin_extension["CumulativeNOxUSEmissionGram"] = cumulativeNOxUS_g
+			# extended attribute: NOxUS in ppm
+			bin_extension["CumulativeNOxUSEmissionPPM"] = bin_extension["CumulativeNOxUSEmissionGram"] / 1000
+			bin_extension["BinPosition"] = binPosVal
+			catEvalMap_good.append(bin_extension)
+			## Old Concept (Good)
+		if isOldEvalActive:
+			oldGoodEvalMap.append(bin_basic)
+		## PEMS Style Concept
+		if pemsEvalNum == 1:
+			pemsEvalMap_cold.append(bin_basic)
+		elif pemsEvalNum == 2:
+			pemsEvalMap_hot.append(bin_basic)
 	
-	print("##################################")
-	print("BIN_BASIC: " + str(bin_basic))
-	print("catEvalMap_bad: " + str(len(catEvalMap_bad)))
-	print("catEvalMap_intermediate: " + str(len(catEvalMap_intermediate)))
-	print("catEvalMap_good: " + str(len(catEvalMap_good)))
-	print("oldGoodEvalMap: " + str(len(oldGoodEvalMap)))
-	print("pemsEvalMap_cold: " + str(len(pemsEvalMap_cold)))
-	print("pemsEvalMap_hot: " + str(len(pemsEvalMap_hot)))
-	print("##################################")
+	# 6. Show the the result
+	printSignalValues(sigDictCH0, sigDictCH1)
+	printBinMapNumResult(binPosVal, bin_basic, catEvalMap_bad, catEvalMap_intermediate, catEvalMap_good, oldGoodEvalMap, pemsEvalMap_cold, pemsEvalMap_hot)
 	
 	# X. Time delay
 	time.sleep(1)
