@@ -17,6 +17,9 @@ import time
 import testclient
 import math
 
+import matplotlib.pyplot as plt
+import random
+
 def checkPath(path):
 	val = tclient.do_getValue(path)['value']
 	if val == "---":
@@ -121,7 +124,7 @@ def printBinMapNumResult(binPosVal, binBasic, cBad, cInter, cGood, oGood, pCold,
 	print("pemsEvalMap_cold: " + str(len(pCold)))
 	print("pemsEvalMap_hot: " + str(len(pHot)))
 	print("###########################################################")
-	
+
 # Create a testclient instance and connect to the running vss server
 tclient = testclient.VSSTestClient()
 tclient.do_connect("--insecure")
@@ -142,6 +145,31 @@ catEvalMap_good = []
 oldGoodEvalMap = []
 pemsEvalMap_cold = []
 pemsEvalMap_hot = []
+
+fig = plt.figure()
+newB = fig.add_subplot(331)
+newI = fig.add_subplot(332)
+newG = fig.add_subplot(333)
+oldG = fig.add_subplot(334)
+pemC = fig.add_subplot(337)
+pemH = fig.add_subplot(338)
+newB.set_ylim([0,100])
+newB.set_xlim([0,100])
+newI.set_ylim([0,100])
+newI.set_xlim([0,100])
+newG.set_ylim([0,100])
+newG.set_xlim([0,100])
+oldG.set_ylim([0,100])
+oldG.set_xlim([0,100])
+pemC.set_ylim([0,100])
+pemC.set_xlim([0,100])
+pemH.set_ylim([0,100])
+pemH.set_xlim([0,100])
+dat = [0,70] # THIS NEEDS TO BE CHANGED (LINEAR MAPPING X BIN MAPPING O)
+Ln, = newB.plot(dat) # THIS NEEDS TO BE CHANGED (LINEAR MAPPING X BIN MAPPING O)
+plt.ion()
+plt.show()
+
 while True:
 	# 1. Store signals' values from the target path to the dictionary keys
 	## A. Calculate integrated NOx mass
@@ -246,5 +274,14 @@ while True:
 	printSignalValues(sigDictCH0, sigDictCH1)
 	printBinMapNumResult(binPosVal, bin_basic, catEvalMap_bad, catEvalMap_intermediate, catEvalMap_good, oldGoodEvalMap, pemsEvalMap_cold, pemsEvalMap_hot)
 	
+	# 7. Plot the real-time map
+	## T_SCR
+	## Old_Good
+	## PEMS
+	dat.append(random.uniform(0,70))
+	Ln.set_ydata(dat)
+	Ln.set_xdata(range(len(dat))) 
+	plt.pause(1) # with this, you don't need time.sleep(1)
+	
 	# X. Time delay
-	time.sleep(1)
+	#time.sleep(1)
