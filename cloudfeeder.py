@@ -18,7 +18,6 @@ import testclient
 import math
 
 import matplotlib.pyplot as plt
-import random
 
 def checkPath(path):
 	val = tclient.do_getValue(path)['value']
@@ -148,28 +147,44 @@ pemsEvalMap_hot = []
 
 fig = plt.figure()
 newB = fig.add_subplot(331)
-newI = fig.add_subplot(332)
-newG = fig.add_subplot(333)
-oldG = fig.add_subplot(334)
-pemC = fig.add_subplot(337)
-pemH = fig.add_subplot(338)
-newB.set_ylim([0,100])
+newB.set_title('T_SCR (Bad)')
+newB.set_xlabel('Engine Speed')
+newB.set_ylabel('Engine Load')
 newB.set_xlim([0,100])
-newI.set_ylim([0,100])
+newB.set_ylim([0,100])
+newI = fig.add_subplot(332)
+newI.set_title('T_SCR (Intermediate)')
+newI.set_xlabel('Engine Speed')
+newI.set_ylabel('Engine Load')
 newI.set_xlim([0,100])
-newG.set_ylim([0,100])
+newI.set_ylim([0,100])
+newG = fig.add_subplot(333)
+newG.set_title('T_SCR (Good)')
+newG.set_xlabel('Engine Speed')
+newG.set_ylabel('Engine Load')
 newG.set_xlim([0,100])
-oldG.set_ylim([0,100])
+newG.set_ylim([0,100])
+oldG = fig.add_subplot(334)
+oldG.set_title('Old Concept (Good)')
+oldG.set_xlabel('Engine Speed')
+oldG.set_ylabel('Engine Load')
 oldG.set_xlim([0,100])
-pemC.set_ylim([0,100])
+oldG.set_ylim([0,100])
+pemC = fig.add_subplot(337)
+pemC.set_title('PEMS (Cold)')
+pemC.set_xlabel('Engine Speed')
+pemC.set_ylabel('Engine Load')
 pemC.set_xlim([0,100])
-pemH.set_ylim([0,100])
+pemC.set_ylim([0,100])
+pemH = fig.add_subplot(338)
+pemH.set_title('PEMS (Hot)')
+pemH.set_xlabel('Engine Speed')
+pemH.set_ylabel('Engine Load')
 pemH.set_xlim([0,100])
-dat = [0,70] # THIS NEEDS TO BE CHANGED (LINEAR MAPPING X BIN MAPPING O)
-Ln, = newB.plot(dat) # THIS NEEDS TO BE CHANGED (LINEAR MAPPING X BIN MAPPING O)
-plt.ion()
-plt.show()
+pemH.set_ylim([0,100])
+fig.tight_layout()
 
+x = 10
 while True:
 	# 1. Store signals' values from the target path to the dictionary keys
 	## A. Calculate integrated NOx mass
@@ -278,10 +293,11 @@ while True:
 	## T_SCR
 	## Old_Good
 	## PEMS
-	dat.append(random.uniform(0,70))
-	Ln.set_ydata(dat)
-	Ln.set_xdata(range(len(dat))) 
+	newB.scatter(xAxisVal + x, yAxisVal + x, s=10)
+	x += 1
 	plt.pause(1) # with this, you don't need time.sleep(1)
 	
 	# X. Time delay
 	#time.sleep(1)
+
+plt.show()
