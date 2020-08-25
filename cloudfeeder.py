@@ -18,6 +18,7 @@ import testclient
 import math
 
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
 def checkPath(path):
 	val = tclient.do_getValue(path)['value']
@@ -145,43 +146,25 @@ oldGoodEvalMap = []
 pemsEvalMap_cold = []
 pemsEvalMap_hot = []
 
-fig = plt.figure()
-newB = fig.add_subplot(331)
-newB.set_title('T_SCR (Bad)')
-newB.set_xlabel('Engine Speed')
-newB.set_ylabel('Engine Load')
-newB.set_xlim([0,100])
-newB.set_ylim([0,100])
-newI = fig.add_subplot(332)
-newI.set_title('T_SCR (Intermediate)')
-newI.set_xlabel('Engine Speed')
-newI.set_ylabel('Engine Load')
-newI.set_xlim([0,100])
-newI.set_ylim([0,100])
-newG = fig.add_subplot(333)
-newG.set_title('T_SCR (Good)')
-newG.set_xlabel('Engine Speed')
-newG.set_ylabel('Engine Load')
-newG.set_xlim([0,100])
-newG.set_ylim([0,100])
-oldG = fig.add_subplot(334)
-oldG.set_title('Old Concept (Good)')
-oldG.set_xlabel('Engine Speed')
-oldG.set_ylabel('Engine Load')
-oldG.set_xlim([0,100])
-oldG.set_ylim([0,100])
-pemC = fig.add_subplot(337)
-pemC.set_title('PEMS (Cold)')
-pemC.set_xlabel('Engine Speed')
-pemC.set_ylabel('Engine Load')
-pemC.set_xlim([0,100])
-pemC.set_ylim([0,100])
-pemH = fig.add_subplot(338)
-pemH.set_title('PEMS (Hot)')
-pemH.set_xlabel('Engine Speed')
-pemH.set_ylabel('Engine Load')
-pemH.set_xlim([0,100])
-pemH.set_ylim([0,100])
+fig = plt.figure(constrained_layout=True)
+fig.suptitle('NOx Maps')
+spec2 = gridspec.GridSpec(ncols=3, nrows=2, figure=fig)
+subList = []
+for i in range(0, 2):
+	for j in range(0, 3):
+		subplot = fig.add_subplot(spec2[i, j])
+		subList.append(subplot)
+subList[0].set_title('T_SCR (Bad)')
+subList[1].set_title('T_SCR (Intermediate)')
+subList[2].set_title('T_SCR (Good)')
+subList[3].set_title('Old Concept (Good)')
+subList[4].set_title('PEMS (Cold)')
+subList[5].set_title('PEMS (Hot)')
+for subplot in subList:
+	subplot.set_xlabel('Engine Speed')
+	subplot.set_ylabel('Engine Load')
+	subplot.set_xlim([0,100])
+	subplot.set_ylim([0,100])
 fig.tight_layout()
 
 x = 10
@@ -290,10 +273,10 @@ while True:
 	printBinMapNumResult(binPosVal, bin_basic, catEvalMap_bad, catEvalMap_intermediate, catEvalMap_good, oldGoodEvalMap, pemsEvalMap_cold, pemsEvalMap_hot)
 	
 	# 7. Plot the real-time map
-	## T_SCR
-	## Old_Good
-	## PEMS
-	newB.scatter(xAxisVal + x, yAxisVal + x, s=10)
+	## T_SCR: subList[0] - Bad, subList[1] - Intermediate, subList[2] - Good
+	## Old_Good: subList[3]
+	## PEMS: subList[4] - Cold, subList[5] - Hot
+	subList[0].scatter(xAxisVal + x, yAxisVal + x, s=10)
 	x += 1
 	plt.pause(1) # with this, you don't need time.sleep(1)
 	
