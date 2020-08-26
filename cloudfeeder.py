@@ -16,6 +16,7 @@ return datastore
 import time
 import testclient
 import math
+import json
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -111,7 +112,7 @@ def getXAxisVal(speed, hsGovKickInSpeed, idleSpeed):
 def getYAxisVal(actualEngPercentTorque):
 	return actualEngPercentTorque
 
-def selectBin(xAxisVal, yAxisVal):
+def selectBinPos(xAxisVal, yAxisVal):
 	# Check X-axis first and then Y-axis
 	if 0 <= xAxisVal < 25:
 		if 0 <= yAxisVal < 33:
@@ -173,7 +174,7 @@ def createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binP
 	else:
 		tBin["Extension"] = 0
 	tBin["Coordinates"] = (xAxisVal, yAxisVal)
-	tBin["BinPosition"] = selectBin(xAxisVal, yAxisVal)
+	tBin["BinPosition"] = selectBinPos(xAxisVal, yAxisVal)
 	return tBin
 
 def printSignalValues(binPro):
@@ -185,7 +186,7 @@ def printSignalValues(binPro):
 		print(signal, ": ", str(value))
 	print("###########################################################")
 
-def printBinInfo(tBin, binPro):
+def printBinInfo(tBin):
 	print("###########################################################")
 	if tBin["BinPosition"] != 0:
 		print("BIN(Collected): " + str(tBin))
@@ -193,7 +194,7 @@ def printBinInfo(tBin, binPro):
 		print("BIN(Not Collected): " + str(tBin))
 	print("###########################################################")
 
-def plotMap(tBin, binPro):
+def plotBinMap(tBin, binPro):
 	# Plot the real-time map (subList)
 	## T_SCR: [0] - Bad, [1] - Intermediate, [2] - Good
 	## Old_Good: [3]
@@ -280,14 +281,16 @@ while True:
 	
 	# 3. Show the result
 	printSignalValues(binPro)
-	printBinInfo(tBin, binPro)
+	printBinInfo(tBin)
 	
-	# 4. Plot the real-time map (subList)
-	plotMap(tBin, binPro)
+	# 4 Send the result bin to the cloud. (in a JSON format)
+	tBin_json = json.dumps(tBin)
+	#print("JSON: " + tBin_json)
+	# MQTT Topic Communication part will be described here
+	
+	# 5. Plot the real-time map (In-vehicle) (subList)
+	plotBinMap(tBin, binPro)
 	plt.pause(1) # with this, you don't need time.sleep(1)
-	
-	# X-1. Send the result to the cloud. (Json File)
-	# the final result = tBin
 	
 	# X. Time delay
 	# time.sleep(1) # You don't need this when plotting is active
