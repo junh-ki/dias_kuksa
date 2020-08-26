@@ -29,7 +29,6 @@ class BinInfoProvider:
 		self.cumulativeNOxUS_g = 0
 		self.cumulativePower_J = 0
 		# 0: cbad, 1: cint, 2: cgoodm, 3: oldgood, 4: pemscold, 5: pemshot
-		self.mapList = [[], [], [], [], [], []]
 		self.subList = []
 		
 		self.fig = plt.figure(constrained_layout=True)
@@ -145,83 +144,37 @@ def selectBin(xAxisVal, yAxisVal):
 	# print("Axis Value Error.")
 	return 0
 
-def createBin(xAxisVal, yAxisVal, binPro):
-	bin_basic = {}
-	bin_basic["CumulativeSamplingTime"] = binPro.sigCH0["TimeSinceEngineStart"]
+def createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binPro):
+	tBin = {}
+	tBin["CumulativeSamplingTime"] = binPro.sigCH0["TimeSinceEngineStart"]
 	## Cumulative NOx (DownStream) in g
 	noxDS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1OutletNOx"] * binPro.sigCH0["Aftrtratment1ExhaustGasMassFlow"] / 3600
 	binPro.cumulativeNOxDS_g += noxDS_gs
 	## Cumulative NOx (UpStream) in g
 	noxUS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1IntakeNOx"] * binPro.sigCH0["Aftrtratment1ExhaustGasMassFlow"] / 3600
 	binPro.cumulativeNOxUS_g += noxUS_gs
-	bin_basic["CumulativeNOxDSEmissionGram"] = binPro.cumulativeNOxDS_g
+	tBin["CumulativeNOxDSEmissionGram"] = binPro.cumulativeNOxDS_g
 	outputTorque = (binPro.sigCH0["ActualEngPercentTorque"] - binPro.sigCH0["NominalFrictionPercentTorque"]) * binPro.sigCH0["EngReferenceTorque"]
 	# should the unit for binPro.sigCH0["EngSpeed"] be converted to 1/s ? ASK!!
 	# RPM = Revolutions Per Minute
 	# convert to cycles per second? - sigDictCH0["EngSpeed"]/60
 	power_Js = outputTorque * binPro.sigCH0["EngSpeed"] * 2 * math.pi
 	binPro.cumulativePower_J += power_Js
-	bin_basic["CumulativeWork"] = binPro.cumulativePower_J
-	bin_basic["Coordinates"] = (xAxisVal, yAxisVal)
-	bin_basic["BinPosition"] = selectBin(xAxisVal, yAxisVal)
-	return bin_basic
-
-def mapBin(catEvalNum, isOldEvalActive, pemsEvalNum, bin_basic, binPro):
-	# Map the bin with list (mapList)
-	## T_SCR: [0] - Bad, [1] - Intermediate, [2] - Good
-	## Old_Good: [3]
-	## PEMS: [4] - Cold, [5] - Hot
-	if bin_basic["BinPosition"] != 0:
-		## New Concept (T_SCR)
-		if catEvalNum == 1:
-			binPro.mapList[0].append(bin_basic)
-		elif catEvalNum == 2:
-			binPro.mapList[1].append(bin_basic)
-		elif catEvalNum == 3:
-			# When tSCR evaluation is "good"
-			bin_extension = {}
-			bin_extension["CumulativeSamplingTime"] = bin_basic["CumulativeSamplingTime"]
-			bin_extension["CumulativeNOxDSEmissionGram"] = bin_basic["CumulativeNOxDSEmissionGram"]
-			# extended attribute: NOxDS in ppm
-			bin_extension["CumulativeNOxDSEmissionPPM"] = bin_basic["CumulativeNOxDSEmissionGram"] / 1000
-			bin_extension["CumulativeWork"] = binPro.cumulativePower_J
-			# extended attribute: NOxUS in g
-			bin_extension["CumulativeNOxUSEmissionGram"] = binPro.cumulativeNOxUS_g
-			# extended attribute: NOxUS in ppm
-			bin_extension["CumulativeNOxUSEmissionPPM"] = bin_extension["CumulativeNOxUSEmissionGram"] / 1000
-			bin_extension["Coordinates"] = bin_basic["Coordinates"]
-			bin_extension["BinPosition"] = binPosVal
-			binPro.mapList[2].append(bin_extension)
-		## Old Concept (Good)
-		if isOldEvalActive:
-			binPro.mapList[3].append(bin_basic)
-		## PEMS Style Concept
-		if pemsEvalNum == 1:
-			binPro.mapList[4].append(bin_basic)
-		elif pemsEvalNum == 2:
-			binPro.mapList[5].append(bin_basic)
-
-def plotMap(catEvalNum, isOldEvalActive, pemsEvalNum, bin_basic, binPro):
-	# Plot the real-time map (subList)
-	## T_SCR: [0] - Bad, [1] - Intermediate, [2] - Good
-	## Old_Good: [3]
-	## PEMS: [4] - Cold, [5] - Hot
-	if bin_basic["BinPosition"] != 0:
-		## New Concept (T_SCR)
-		if catEvalNum == 1:
-			binPro.subList[0].scatter(bin_basic["Coordinates"][0], bin_basic["Coordinates"][1], s=10)
-		elif catEvalNum == 2:
-			binPro.subList[1].scatter(bin_basic["Coordinates"][0], bin_basic["Coordinates"][1], s=10)
-		elif catEvalNum == 3:
-			binPro.subList[2].scatter(bin_extension["Coordinates"][0], bin_extension["Coordinates"][1], s=10)
-		## Old Concept (Good)
-		if isOldEvalActive:
-			binPro.subList[3].scatter(bin_basic["Coordinates"][0], bin_basic["Coordinates"][1], s=10)
-		## PEMS Style Concept
-		if pemsEvalNum == 1:
-			binPro.subList[4].scatter(bin_basic["Coordinates"][0], bin_basic["Coordinates"][1], s=10)
-		elif pemsEvalNum == 2:
-			binPro.subList[5].scatter(bin_basic["Coordinates"][0], bin_basic["Coordinates"][1], s=10)
+	tBin["CumulativeWork"] = binPro.cumulativePower_J
+	## catEvalNum(T_SCR): 1 - Bad, 2 - Intermediate, 3 - Good
+	## isOldEvalActive(Old_Good): True - Active, False - Inactive
+	## pemsEvalNum(PEMS): 0 - Inactive, 1 - Cold, 2 - Hot
+	tBin["MapType"] = (catEvalNum, isOldEvalActive, pemsEvalNum)
+	if tBin["MapType"][0] == 2:
+		tBin["Extension"] = {}
+		tBin["Extension"]["CumulativeNOxDSEmissionPPM"] = tBin["CumulativeNOxDSEmissionGram"] / 1000
+		tBin["Extension"]["CumulativeNOxUSEmissionGram"] = binPro.cumulativeNOxUS_g
+		tBin["Extension"]["CumulativeNOxUSEmissionPPM"] = tBin["Extension"]["CumulativeNOxUSEmissionGram"] / 1000
+	else:
+		tBin["Extension"] = 0
+	tBin["Coordinates"] = (xAxisVal, yAxisVal)
+	tBin["BinPosition"] = selectBin(xAxisVal, yAxisVal)
+	return tBin
 
 def printSignalValues(binPro):
 	print("######################## Channel-0 ########################")
@@ -232,19 +185,35 @@ def printSignalValues(binPro):
 		print(signal, ": ", str(value))
 	print("###########################################################")
 
-def printBinMapNumResult(bin_basic, binPro):
+def printBinInfo(tBin, binPro):
 	print("###########################################################")
-	if bin_basic["BinPosition"] != 0:
-		print("BIN_BASIC(Collected): " + str(bin_basic))
+	if tBin["BinPosition"] != 0:
+		print("BIN(Collected): " + str(tBin))
 	else:
-		print("BIN_BASIC(Not Collected): " + str(bin_basic))
-	print("catEvalMap_bad: " + str(len(binPro.mapList[0])))
-	print("catEvalMap_intermediate: " + str(len(binPro.mapList[1])))
-	print("catEvalMap_good: " + str(len(binPro.mapList[2])))
-	print("oldGoodEvalMap: " + str(len(binPro.mapList[3])))
-	print("pemsEvalMap_cold: " + str(len(binPro.mapList[4])))
-	print("pemsEvalMap_hot: " + str(len(binPro.mapList[5])))
+		print("BIN(Not Collected): " + str(tBin))
 	print("###########################################################")
+
+def plotMap(tBin, binPro):
+	# Plot the real-time map (subList)
+	## T_SCR: [0] - Bad, [1] - Intermediate, [2] - Good
+	## Old_Good: [3]
+	## PEMS: [4] - Cold, [5] - Hot
+	if tBin["BinPosition"] != 0:
+		## New Concept (T_SCR)
+		if tBin["MapType"][0] == 1:
+			binPro.subList[0].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
+		elif tBin["MapType"][0] == 2:
+			binPro.subList[1].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
+		elif tBin["MapType"][0] == 3:
+			binPro.subList[2].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
+		## Old Concept (Good)
+		if tBin["MapType"][1]:
+			binPro.subList[3].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
+		## PEMS Style Concept
+		if tBin["MapType"][2] == 1:
+			binPro.subList[4].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
+		elif tBin["MapType"][2] == 2:
+			binPro.subList[5].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
 
 # Create a testclient instance and connect to the running vss server
 tclient = testclient.VSSTestClient()
@@ -279,7 +248,8 @@ while True:
 	## C - case 2 & Sampling duration tracking per bin
 	binPro.sigCH0["TimeSinceEngineStart"] = checkPath("Vehicle.Drivetrain.FuelSystem.TimeSinceStart") # Missing
 	
-	# 2. Select a mapping (bad / intermediate / good) (cold / hot start)
+	# 2. Get map type info, decide the position and create a bin with dictionary (in the bin map)
+	# map type: (bad / intermediate / good) (oldgood) (cold / hot start)
 	# * Fault active part is omitted
 	# * barometric (kpa): mbar = 10 x kPa
 	## A. New Concept
@@ -292,38 +262,32 @@ while True:
 	## C. PEMS Concept
 	### 0 PEMS-inactive / 1 PEMS-cold / 2 PEMS-hot
 	pemsEvalNum = pemsEval(binPro.sigCH0["TimeSinceEngineStart"], binPro.sigCH0["AmbientAirTemp"], binPro.sigCH0["BarometricPress"] * 10, False, binPro.sigCH0["EngCoolantTemp"])
-	# print("catEvalNum: " + str(catEvalNum) + " / " + "isOldEvalActive: " + str(isOldEvalActive) + " / " + "pemsEvalNum: " + str(pemsEvalNum))
-	
-	# 3. Decide the position and create a bin with dictionary (in the bin map)
-	# To create the bin map, you need EngSpeed and Engine Output Torque.
-	# EngineOutputTorque = (ActualEngineTorque - NominalFrictionPercentTorque) * EngineReferenceTorque
 	# <assumption>
 	# X-Axis: is not Engine Speed. but a percentage of: (EngSpeed-EngSpeedAtIdlePoint1)/(EngSpeedAtPoint2-EngSpeedAtIdlePoint1)
-	# Y-Axis: it could either be 
+	# Y-Axis: it could either be ActualEngPercentTorque or EngineOutputTorque
+	# To create the bin map, you need EngSpeed and Engine Output Torque?
+	# EngineOutputTorque = (ActualEngineTorque - NominalFrictionPercentTorque) * EngineReferenceTorque
 	xAxisVal = getXAxisVal(binPro.sigCH0["EngSpeed"], binPro.sigCH0["EngSpeedAtPoint2"], binPro.sigCH0["EngSpeedAtIdlePoint1"])
 	yAxisVal = getYAxisVal(binPro.sigCH0["ActualEngPercentTorque"])
-	### For Manual Mapping Test ###
-	catEvalNum = 2
-	isOldEvalActive = True
-	pemsEvalNum = 2
-	xAxisVal = 33
-	yAxisVal = 45
-	###############################
-	bin_basic = createBin(xAxisVal, yAxisVal, binPro)
+	# ### For Manual Mapping Test ###
+	# catEvalNum = 2
+	# isOldEvalActive = True
+	# pemsEvalNum = 2
+	# xAxisVal = 33
+	# yAxisVal = 45
+	# ###############################
+	tBin = createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binPro)
 	
-	# 4. Map the bin with list (mapList)
-	mapBin(catEvalNum, isOldEvalActive, pemsEvalNum, bin_basic, binPro)
-	
-	# 5. Show the result
+	# 3. Show the result
 	printSignalValues(binPro)
-	printBinMapNumResult(bin_basic, binPro)
+	printBinInfo(tBin, binPro)
 	
-	# 6. Plot the real-time map (subList)
-	plotMap(catEvalNum, isOldEvalActive, pemsEvalNum, bin_basic, binPro)
-	plt.pause(0.5) # with this, you don't need time.sleep(1)
+	# 4. Plot the real-time map (subList)
+	plotMap(tBin, binPro)
+	plt.pause(1) # with this, you don't need time.sleep(1)
 	
 	# X-1. Send the result to the cloud. (Json File)
-	# the final result = binPro.mapList
+	# the final result = tBin
 	
 	# X. Time delay
 	# time.sleep(1) # You don't need this when plotting is active
