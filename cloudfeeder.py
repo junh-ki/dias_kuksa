@@ -21,6 +21,8 @@ import json
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
+import paho.mqtt.client as mqtt
+
 class BinInfoProvider:
 	"""A class that provides info to create a bin"""	
 	def __init__(self):
@@ -224,7 +226,19 @@ tclient.do_connect("--insecure")
 super_admin_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJrdWtzYS52YWwiLCJpc3MiOiJFY2xpcHNlIEtVS1NBIERldiIsImFkbWluIjp0cnVlLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MTYwNjIzOTAyMiwidzNjLXZzcyI6eyIqIjoicncifX0.bUcEW4o3HiBHZAdy71qCWcu9oBSZClntI1ZXq7HAM8i8nDtiUP4up-VXxt3S3n8AKJQOZVlHudP_ixGTb1HBKa3_CD0HFurP_Wf2Jnrgguhqi1sUItvGjgq4BPpuBsu9kV1Ds-JDmCPBBuHfRtCck353BmMyv6CHn2CCgVQH-DwW6k7wOqcFkxfxfkClO-nrUSQbad_MrxNHhrnflb3N8bc4r61BQ8gHiEyl7JJIuLhAb7bLgarjqcHABkw6T2TkwfWFsddMR2GL_PYBP4D3_r-2IHAhixiEiO758lxA2-o2D0jtte-KmTHjeEUpaWr-ryv1whZXnE243iV1lMajvjgWq5ZnsYTG4Ff7GsR_4SKyd9j6wInkog5Kkx5tFJr2P9kh7HupXQeUzbuoJ7lZAgpGyD8icxZg7c8VTpLzTs5zowjJwbxze5JAylWcXLXOA3vQKpn8E3MseD_31LoVZGEvD9p372IgVmJ0ui4qT8_ZHeGPc8bV2Iy0vDkdAhjf-4Lwf4rDGDksYpK_PO70KylGRmZ9TqiKqstUI6AWG50Jii8MPnnr8qyNO3FD8Rv7E8BnL8ioLoN5VI9eyxy1HpW2SfLKUuCaLB9iKd6fv4U_DhF1AS-Y-iu8-kOovxkTk801DhDxWJN0nyRwmhqn8exjikNB1jnW5mFWLTeagNA"
 tclient.do_authorize(super_admin_token)
 
+# Create a BinInfoProvider instance
 binPro = BinInfoProvider()
+
+# Configure a MQTT publisher instance
+topic = "test/json_test"
+client = mqtt.Client("test_publisher")
+# Connecting to the MQTT broker (should be aligned with the publisher)
+mqtt_broker = "test.mosquitto.org" # (can be changed)
+print("Connecting to broker ", mqtt_broker)
+client.connect(mqtt_broker)
+client.loop_start()
+time.sleep(1)
+
 while True:
 	# 1. Store signals' values from the target path to the dictionary keys
 	## A. Calculate integrated NOx mass
@@ -283,16 +297,17 @@ while True:
 	printSignalValues(binPro)
 	printBinInfo(tBin)
 	
-	# 4 Send the result bin to the cloud. (in a JSON format)
+	# 4. MQTT: Send the result bin to the cloud. (in a JSON format)
 	tBin_json = json.dumps(tBin)
 	#print("JSON: " + tBin_json)
-	# MQTT Topic Communication part will be described here
+	client.publish(topic, tBin_json)
 	
 	# 5. Plot the real-time map (In-vehicle) (subList)
 	plotBinMap(tBin, binPro)
 	plt.pause(1) # with this, you don't need time.sleep(1)
 	
 	# X. Time delay
-	# time.sleep(1) # You don't need this when plotting is active
+	#time.sleep(1) # You don't need this when plotting is active
 
+client.loop_stop()
 plt.show()
