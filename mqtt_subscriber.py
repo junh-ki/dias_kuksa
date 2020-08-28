@@ -1,7 +1,11 @@
 """
-This is a test subscriber script that reads a JSON string 
-sent by cloudfeeder.py (Most probably will be located in Eclipse HONO)
-MQTT Broker used: test.mosquitto.org (latency problem is outstanding...)
+* Hono & InfluxDB Connector *
+(Intermediary Application between Hono & InfluxDB)
+This is a test mqtt-subscriber script that reads a JSON string from 
+a MQTT Broker (Eclipse Hono) that is originally sent by cloudfeeder.py 
+and process the JSON string to be compliant with InfluxDB and send 
+the result to InfluxDB.
+(This should be located in-between Eclipse Hono and InfluxDB)
 Refer to the following link:
 https://stackoverflow.com/questions/32540670/is-mqtt-support-both-one-to-many-and-many-to-one
 
@@ -27,7 +31,7 @@ client = mqtt.Client("test_subscriber")
 # on_message runs in a new thread
 client.on_message=on_message
 # Connecting to the MQTT broker (should be aligned with the publisher)
-mqtt_broker = "test.mosquitto.org" # (can be changed)
+mqtt_broker = "test.mosquitto.org" # latency problem is outstanding...
 print("Connecting to broker ", mqtt_broker)
 client.connect(mqtt_broker)
 client.loop_start()
