@@ -233,9 +233,11 @@ binPro = BinInfoProvider()
 topic = "test/json_test"
 client = mqtt.Client("test_publisher")
 # Connecting to the MQTT broker (should be aligned with the publisher)
-mqtt_broker = "test.mosquitto.org" # (can be changed)
+# mqtt_broker = "test.mosquitto.org" # (can be changed)
+mqtt_broker = "mqtt.bosch-iot-hub.com" ### this line should be modified
 print("Connecting to broker ", mqtt_broker)
-client.connect(mqtt_broker)
+#client.connect(mqtt_broker)
+client.connect(mqtt_broker, port=8883) ### this line should be modified
 client.loop_start()
 time.sleep(1)
 

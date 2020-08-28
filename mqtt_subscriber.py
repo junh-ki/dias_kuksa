@@ -31,9 +31,11 @@ client = mqtt.Client("test_subscriber")
 # on_message runs in a new thread
 client.on_message=on_message
 # Connecting to the MQTT broker (should be aligned with the publisher)
-mqtt_broker = "test.mosquitto.org" # latency problem is outstanding...
+# mqtt_broker = "test.mosquitto.org" # latency problem is outstanding...
+mqtt_broker = "mqtt.bosch-iot-hub.com" ### this line should be modified
 print("Connecting to broker ", mqtt_broker)
-client.connect(mqtt_broker)
+# client.connect(mqtt_broker)
+client.connect(mqtt_broker, port=8883) ### this line should be modified
 client.loop_start()
 time.sleep(3)
 
