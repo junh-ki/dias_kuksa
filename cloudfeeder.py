@@ -17,11 +17,12 @@ import time
 import testclient
 import math
 import json
+import os
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-import paho.mqtt.client as mqtt
+import paho.mqtt.client as mqtt		#import client library
 
 class BinInfoProvider:
 	"""A class that provides info to create a bin"""	
@@ -218,6 +219,17 @@ def plotBinMap(tBin, binPro):
 		elif tBin["MapType"][2] == 2:
 			binPro.subList[5].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
 
+# def on_connect(client, userdata, flags, rc):
+	# if rc == 0:
+		# client.connected_flag = True	# set flag
+		# client.bad_connection_flag = False
+		# print("connected OK, Returned code=", rc)
+		# # client.subscribe(topic)
+	# else:
+		# client.connected_flag = False
+		# client.bad_connection_flag = True
+		# print("Bad connection, Returned code=", rc)
+
 # Create a testclient instance and connect to the running vss server
 tclient = testclient.VSSTestClient()
 tclient.do_connect("--insecure")
@@ -229,17 +241,31 @@ tclient.do_authorize(super_admin_token)
 # Create a BinInfoProvider instance
 binPro = BinInfoProvider()
 
-# Configure a MQTT publisher instance
-topic = "test/json_test"
-client = mqtt.Client("test_publisher")
-# Connecting to the MQTT broker (should be aligned with the publisher)
-# mqtt_broker = "test.mosquitto.org" # (can be changed)
-mqtt_broker = "mqtt.bosch-iot-hub.com" ### this line should be modified
-print("Connecting to broker ", mqtt_broker)
-#client.connect(mqtt_broker)
-client.connect(mqtt_broker, port=8883) ### this line should be modified
-client.loop_start()
-time.sleep(1)
+# # Configure a MQTT publisher instance
+# topic = "test/json_test"
+# client = mqtt.Client("test_publisher")
+# client.connected_flag = False
+# client.bad_connection_flag = False
+# client.on_connect = on_connect	# bind call back function
+# # Connecting to the MQTT broker (should be aligned with the publisher)
+# # mqtt_broker = "test.mosquitto.org" # (can be changed)
+# mqtt_broker = "mqtt.bosch-iot-hub.com" ### this line should be modified
+# client.username_pw_set(username="pc01@t20babfe7fb2840119f69e692f184127d", password="junhyungki@123")
+# print("Connecting to broker ", mqtt_broker)
+# #client.connect(mqtt_broker)
+# client.connect(mqtt_broker, port=8883) ### this line should be modified
+# while not client.connected_flag and client.bad_connection_flag:
+	# print("In wait loop")
+	# time.sleep(1)
+# print("In main loop")
+# client.loop_start()
+# time.sleep(1)
+
+# Setting a Bosch IoT Hub instance: https://youtu.be/j_znt1jeY-c
+# Sending device data via MQTT(Device to Cloud): https://docs.bosch-iot-suite.com/hub/getting-started/device-to-cloud/sendmqtt.html
+
+# Get the command for sending device data ready
+cmd = 'mosquitto_pub -d -h mqtt.bosch-iot-hub.com -p 8883 -u pc01@t20babfe7fb2840119f69e692f184127d -P junhyungki@123 --cafile iothub.crt -t telemetry -m ' # message to be continued...
 
 while True:
 	# 1. Store signals' values from the target path to the dictionary keys
@@ -301,8 +327,11 @@ while True:
 	
 	# 4. MQTT: Send the result bin to the cloud. (in a JSON format)
 	tBin_json = json.dumps(tBin)
-	#print("JSON: " + tBin_json)
-	client.publish(topic, tBin_json)
+	# print("JSON: " + tBin_json)
+	# client.publish(topic, tBin_json)
+	# Sending device data via MQTT(Device to Cloud)
+	command = cmd + "'" + tBin_json + "'"
+	os.system(command)
 	
 	# 5. Plot the real-time map (In-vehicle) (subList)
 	plotBinMap(tBin, binPro)
