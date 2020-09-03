@@ -32,7 +32,7 @@ public class ExampleConsumer {
     private Vertx vertx;
 
     @Autowired
-    private ApplicationClientFactory clientFactory;
+    private ApplicationClientFactory clientFactory; // A factory for creating clients for Hono's north bound APIs.
 
     private long reconnectTimerId = -1;
 
@@ -99,5 +99,8 @@ public class ExampleConsumer {
 
         LOG.info("Received message [device: {}, content-type: {}]: {}", deviceId, msg.getContentType(), content);
         LOG.info("... with application properties: {}", msg.getApplicationProperties());
+        
+        /* Post-processing Part (Send the data to InfluxDB) */
+        LOG.info("Post-processing part. Find the way to send this string to InfluxDB: {}", content);
     }
 }
