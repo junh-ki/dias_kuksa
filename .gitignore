@@ -1,5 +1,5 @@
-maven.consumer.hono/target/
-maven.consumer.hono/.settings/
-maven.consumer.hono/.vertx/
-maven.consumer.hono/.classpath
-maven.consumer.hono/.project
+utils/maven.consumer.hono/target/
+utils/maven.consumer.hono/.settings/
+utils/maven.consumer.hono/.vertx/
+utils/maven.consumer.hono/.classpath
+utils/maven.consumer.hono/.project
