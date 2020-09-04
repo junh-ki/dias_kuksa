@@ -7,7 +7,7 @@ The script is intended not only to read but also store and make the data availab
 
 An existing IoT Hub (Hono) service instance and a valid tenant ID are needed to run the example application. Please refer to [Bosch IoT Hub - Getting Started](https://docs.bosch-iot-suite.com/hub/getting-started/prerequisites.html) to create a service instance.
 
-# Prerequisites  
+## Prerequisites  
 
 following software must be installed:
 
