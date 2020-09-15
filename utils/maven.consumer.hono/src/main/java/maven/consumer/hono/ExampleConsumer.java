@@ -11,7 +11,6 @@ import org.eclipse.hono.client.ApplicationClientFactory;
 import org.eclipse.hono.client.DisconnectListener;
 import org.eclipse.hono.client.HonoConnection;
 import org.eclipse.hono.client.MessageConsumer;
-import org.eclipse.hono.util.MessageHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,15 +100,16 @@ public class ExampleConsumer {
         connectWithRetry();
     }
 
-    private void handleMessage(final Message msg) {
-        final String deviceId = MessageHelper.getDeviceId(msg);
+    @SuppressWarnings("unchecked")
+	private void handleMessage(final Message msg) {
+        // final String deviceId = MessageHelper.getDeviceId(msg);
         String content = ((Data) msg.getBody()).getValue().toString();
         
         /* Post-processing Part (Send the data to InfluxDB) */
         Map<String, Object> response = null;
         try {
 			response = new ObjectMapper().readValue(content, HashMap.class);
-			LOG.info("----- Message successfully received. -----");
+			LOG.info("-------- Message successfully received. ---------");
 			for (Map.Entry<String,Object> entry : response.entrySet()) {
 				String key = entry.getKey();
 				if (key == "Extension") {
@@ -127,6 +127,7 @@ public class ExampleConsumer {
 			e1.printStackTrace();
 		}
         
+        /* Storing data in the InfluxDB server */
         String url = "\'http://localhost:8086/write?db=statsdemo\'";
         String command = "curl -X POST -d " + "\'" + content + "\'" + " " + url;
         Process process;
@@ -134,7 +135,7 @@ public class ExampleConsumer {
 			process = Runtime.getRuntime().exec(command);
 	        process.getInputStream();
 	        process.destroy();
-	        LOG.info("----- Data stored in InfluxDB -----\n");
+	        LOG.info("----- Data successfully stored in InfluxDB. -----\n");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
