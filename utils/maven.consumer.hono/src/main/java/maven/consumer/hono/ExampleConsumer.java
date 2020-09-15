@@ -18,6 +18,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import javax.annotation.PostConstruct;
 
 @Component
@@ -96,11 +104,40 @@ public class ExampleConsumer {
     private void handleMessage(final Message msg) {
         final String deviceId = MessageHelper.getDeviceId(msg);
         String content = ((Data) msg.getBody()).getValue().toString();
-
-        LOG.info("Received message [device: {}, content-type: {}]: {}", deviceId, msg.getContentType(), content);
-        LOG.info("... with application properties: {}", msg.getApplicationProperties());
         
         /* Post-processing Part (Send the data to InfluxDB) */
-        LOG.info("Post-processing part. Find the way to send this string to InfluxDB: {}", content);
+        Map<String, Object> response = null;
+        try {
+			response = new ObjectMapper().readValue(content, HashMap.class);
+			LOG.info("----- Message successfully received. -----");
+			for (Map.Entry<String,Object> entry : response.entrySet()) {
+				String key = entry.getKey();
+				if (key == "Extension") {
+					if (entry.getValue().getClass().equals(String.class)) {
+						// TODO: make a map again for the nested dictionary (Extended Bin's Attributes).
+					}
+				}
+				LOG.info(key + ": " + entry.getValue());
+	        }
+		} catch (JsonMappingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (JsonProcessingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+        
+        String url = "\'http://localhost:8086/write?db=statsdemo\'";
+        String command = "curl -X POST -d " + "\'" + content + "\'" + " " + url;
+        Process process;
+		try {
+			process = Runtime.getRuntime().exec(command);
+	        process.getInputStream();
+	        process.destroy();
+	        LOG.info("----- Data stored in InfluxDB -----\n");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 }
