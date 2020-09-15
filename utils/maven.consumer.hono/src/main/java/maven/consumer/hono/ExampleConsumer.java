@@ -17,8 +17,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -106,11 +112,11 @@ public class ExampleConsumer {
         String content = ((Data) msg.getBody()).getValue().toString();
         
         /* Post-processing Part (Send the data to InfluxDB) */
-        Map<String, Object> response = null;
+        Map<String, Object> map = null;
         try {
-			response = new ObjectMapper().readValue(content, HashMap.class);
+        	map = new ObjectMapper().readValue(content, HashMap.class);
 			LOG.info("-------- Message successfully received. ---------");
-			for (Map.Entry<String,Object> entry : response.entrySet()) {
+			for (Map.Entry<String,Object> entry : map.entrySet()) {
 				String key = entry.getKey();
 				if (key == "Extension") {
 					if (entry.getValue().getClass().equals(String.class)) {
@@ -128,17 +134,35 @@ public class ExampleConsumer {
 		}
         
         /* Storing data in the InfluxDB server */
+        // (e.g., CumulativeNOxDSEmissionGram)
+        final double samt = (double) map.get("CumulativeSamplingTime");
+        final double nox = (double) map.get("CumulativeNOxDSEmissionGram");
+        final List bco = (ArrayList) map.get("Coordinates");
+        final int bpos = (int) map.get("BinPosition");
+        final List mtyp = (ArrayList) map.get("MapType");
+        final double cwork = (double) map.get("CumulativeWork");
         String url = "\'http://localhost:8086/write?db=statsdemo\'";
-        String command = "curl -X POST -d " + "\'" + content + "\'" + " " + url;
-        Process process;
-		try {
-			process = Runtime.getRuntime().exec(command);
-	        process.getInputStream();
-	        process.destroy();
-	        LOG.info("----- Data successfully stored in InfluxDB. -----\n");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        String dat = "\'cumulative_nox,host=can0 value=" + nox + "\'";
+        // String command = "curl -X POST -d " + "\'" + content + "\'" + " " + url;
+        String command = "curl -i -XPOST " + url + " --data-binary " + dat;
+       
+        
+        // TODO: CURL part not working... (15/09/2020)
+        ProcessBuilder process = new ProcessBuilder(command.split(" "));
+        Process p;
+        try {
+        	p = process.start();
+        	BufferedReader reader =  new BufferedReader(new InputStreamReader(p.getInputStream()));
+        	StringBuilder builder = new StringBuilder();
+        	String line = null;
+        	while ( (line = reader.readLine()) != null) {
+        		builder.append(line);
+        		builder.append(System.getProperty("line.separator"));
+        	}
+        	LOG.info("----- Data successfully stored in InfluxDB. -----\n");
+        } catch (IOException e) {   
+        	System.out.print("error");
+            e.printStackTrace();
+        }
     }
 }
