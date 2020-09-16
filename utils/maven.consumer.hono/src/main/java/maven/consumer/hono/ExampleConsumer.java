@@ -16,20 +16,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import javax.annotation.PostConstruct;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import javax.annotation.PostConstruct;
 
 @Component
 public class ExampleConsumer {
@@ -104,18 +99,39 @@ public class ExampleConsumer {
         connectWithRetry();
     }
 
-    @SuppressWarnings("unchecked")
+    
 	private void handleMessage(final Message msg) {
         // final String deviceId = MessageHelper.getDeviceId(msg);
         String content = ((Data) msg.getBody()).getValue().toString();
         
         /* Post-processing Part (Send the data to InfluxDB) */
-        Map<String, Object> map = null;
+        Map<String, Object> map = mapJSONDictionary(content);
+        
+        /* Storing data in the InfluxDB server */
+        final double samt = (double) map.get("CumulativeSamplingTime");
+        final double nox = (double) map.get("CumulativeNOxDSEmissionGram");
+        final List bco = (ArrayList) map.get("Coordinates");
+        final int bpos = (int) map.get("BinPosition");
+        final List mtyp = (ArrayList) map.get("MapType");
+        final double cwork = (double) map.get("CumulativeWork");
+        curlWriteInfluxDBMetrics("statsdemo", "cumulative_nox", "test_host0", nox);
+    }
+    
+	/**
+	 * To get a map from JSON dictionary string
+	 * @param dict		Target JSON dictionary string
+	 * @return			mapped data set
+	 */
+	@SuppressWarnings("unchecked")
+    private Map<String, Object> mapJSONDictionary(String dict) {
+    	Map<String, Object> map = null;
         try {
-        	map = new ObjectMapper().readValue(content, HashMap.class);
+        	map = new ObjectMapper().readValue(dict, HashMap.class);
 			LOG.info("-------- Message successfully received. ---------");
+			// map the bin (JSON dictionary)
 			for (Map.Entry<String,Object> entry : map.entrySet()) {
 				String key = entry.getKey();
+				// this part is case-specific
 				if (key == "Extension") {
 					if (entry.getValue().getClass().equals(String.class)) {
 						// TODO: make a map again for the nested dictionary (Extended Bin's Attributes).
@@ -130,37 +146,43 @@ public class ExampleConsumer {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-        
-        /* Storing data in the InfluxDB server */
-        // (e.g., CumulativeNOxDSEmissionGram)
-        final double samt = (double) map.get("CumulativeSamplingTime");
-        final double nox = (double) map.get("CumulativeNOxDSEmissionGram");
-        final List bco = (ArrayList) map.get("Coordinates");
-        final int bpos = (int) map.get("BinPosition");
-        final List mtyp = (ArrayList) map.get("MapType");
-        final double cwork = (double) map.get("CumulativeWork");
-        String url = "\'http://localhost:8086/write?db=statsdemo\'";
-        String dat = "\'cumulative_nox,host=can0 value=" + nox + "\'";
-        // String command = "curl -X POST -d " + "\'" + content + "\'" + " " + url;
-        String command = "curl -i -XPOST " + url + " --data-binary " + dat;
-       
-        
-        // TODO: CURL part not working... (15/09/2020)
-        ProcessBuilder process = new ProcessBuilder(command.split(" "));
-        Process p;
-        try {
-        	p = process.start();
-        	BufferedReader reader =  new BufferedReader(new InputStreamReader(p.getInputStream()));
-        	StringBuilder builder = new StringBuilder();
-        	String line = null;
-        	while ( (line = reader.readLine()) != null) {
-        		builder.append(line);
-        		builder.append(System.getProperty("line.separator"));
-        	}
-        	LOG.info("----- Data successfully stored in InfluxDB. -----\n");
-        } catch (IOException e) {   
-        	System.out.print("error");
-            e.printStackTrace();
-        }
+        return map;
+    }
+    
+    /**
+     * To run a curl call to write metrics data to the target InfluxDB database.
+     * @param db			target database name
+     * @param metrics		target metrics name
+     * @param host			source can channel (can0 or can1) // null works
+     * @param val			target metrics value
+     */
+    private void curlWriteInfluxDBMetrics(String db, String metrics, String host, double val) {
+    	String url = "http://localhost:8086/write?db=" + db;
+    	ProcessBuilder pb;
+    	if (host != null) {
+    		pb = new ProcessBuilder(
+            		"curl",
+                    "-i",
+                    "-XPOST",
+                    url,
+                    "--data-binary",
+                    metrics + ",host=" + host + " value="+val);
+    	} else {
+    		pb = new ProcessBuilder(
+            		"curl",
+                    "-i",
+                    "-XPOST",
+                    url,
+                    "--data-binary",
+                    metrics + " value="+val);
+    	}
+    	try {
+			pb.start();
+			// pb.redirectErrorStream(true);
+			LOG.info("----- Data successfully stored in InfluxDB. -----\n");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 }
