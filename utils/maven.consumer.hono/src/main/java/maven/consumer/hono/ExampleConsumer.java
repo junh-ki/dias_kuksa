@@ -99,7 +99,6 @@ public class ExampleConsumer {
         connectWithRetry();
     }
 
-    
 	private void handleMessage(final Message msg) {
         // final String deviceId = MessageHelper.getDeviceId(msg);
         String content = ((Data) msg.getBody()).getValue().toString();
