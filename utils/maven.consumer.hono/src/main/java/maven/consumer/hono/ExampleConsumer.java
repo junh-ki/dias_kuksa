@@ -113,7 +113,10 @@ public class ExampleConsumer {
         final int bpos = (int) map.get("BinPosition");
         final List mtyp = (ArrayList) map.get("MapType");
         final double cwork = (double) map.get("CumulativeWork");
+        curlWriteInfluxDBMetrics("statsdemo", "sampling_time", "test_host0", samt);
         curlWriteInfluxDBMetrics("statsdemo", "cumulative_nox", "test_host0", nox);
+        curlWriteInfluxDBMetrics("statsdemo", "bin_position", "test_host0", bpos);
+        curlWriteInfluxDBMetrics("statsdemo", "cumulative_work", "test_host0", cwork);
     }
     
 	/**
