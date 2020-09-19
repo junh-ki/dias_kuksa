@@ -18,11 +18,51 @@ import testclient
 import math
 import json
 import os
+import argparse
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-import paho.mqtt.client as mqtt		#import client library
+def getConfig():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--host", help="Host URL", type=str) # "mqtt.bosch-iot-hub.com"
+    parser.add_argument("--port", help="Protocol Port Number", type=str) # "mqtt.bosch-iot-hub.com"
+    parser.add_argument("--username", help="Credential Authorization Username (e.g., {username}@{tenant-id} ) / Configured in \"Bosch IoT Hub Management API\"", type=str) # "mqtt.bosch-iot-hub.com"
+    parser.add_argument("--password", help="Credential Authorization Password / Configured in \"Bosch IoT Hub Management API\"", type=str) # "junhyungki@123"
+    parser.add_argument("--cafile", help="Server Certificate File (e.g., MQTT TLS Encryption)", type=str) # "iothub.crt"
+    parser.add_argument("--telemetry", help="telemetry or event", type=str) # "telemetry"
+    args = parser.parse_args()
+    return args
+
+def makePrefixCommand(args):
+	cmd = 'mosquitto_pub -d'
+	cmd = cmd + ' -h ' + args.host
+	cmd = cmd + ' -p ' + args.port
+	cmd = cmd + ' -u ' + args.username
+	cmd = cmd + ' -P ' + args.password
+	cmd = cmd + ' --cafile ' + args.cafile
+	cmd = cmd + ' -t ' + args.telemetry
+	cmd = cmd + ' -m '
+	return cmd
+
+def getVISSConnectedClient():
+	# 1. Create a VISS client instance
+	client = testclient.VSSTestClient()
+	# 2. Connect to the running viss server
+	print("\n0-Secure or 1-Insecure connection: ")
+	con = int(input())
+	if con == 0:
+		client.do_connect("--secure")
+		# TODO: do something
+	elif con == 1:
+		client.do_connect("--insecure")
+	else:
+		raise Exception("Only 0 or 1!\n")
+	# 3. Authorize the connection
+	print("\nEnter the authorization token: ")
+	token = str(input()) # eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJrdWtzYS52YWwiLCJpc3MiOiJFY2xpcHNlIEtVS1NBIERldiIsImFkbWluIjp0cnVlLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MTYwNjIzOTAyMiwidzNjLXZzcyI6eyIqIjoicncifX0.bUcEW4o3HiBHZAdy71qCWcu9oBSZClntI1ZXq7HAM8i8nDtiUP4up-VXxt3S3n8AKJQOZVlHudP_ixGTb1HBKa3_CD0HFurP_Wf2Jnrgguhqi1sUItvGjgq4BPpuBsu9kV1Ds-JDmCPBBuHfRtCck353BmMyv6CHn2CCgVQH-DwW6k7wOqcFkxfxfkClO-nrUSQbad_MrxNHhrnflb3N8bc4r61BQ8gHiEyl7JJIuLhAb7bLgarjqcHABkw6T2TkwfWFsddMR2GL_PYBP4D3_r-2IHAhixiEiO758lxA2-o2D0jtte-KmTHjeEUpaWr-ryv1whZXnE243iV1lMajvjgWq5ZnsYTG4Ff7GsR_4SKyd9j6wInkog5Kkx5tFJr2P9kh7HupXQeUzbuoJ7lZAgpGyD8icxZg7c8VTpLzTs5zowjJwbxze5JAylWcXLXOA3vQKpn8E3MseD_31LoVZGEvD9p372IgVmJ0ui4qT8_ZHeGPc8bV2Iy0vDkdAhjf-4Lwf4rDGDksYpK_PO70KylGRmZ9TqiKqstUI6AWG50Jii8MPnnr8qyNO3FD8Rv7E8BnL8ioLoN5VI9eyxy1HpW2SfLKUuCaLB9iKd6fv4U_DhF1AS-Y-iu8-kOovxkTk801DhDxWJN0nyRwmhqn8exjikNB1jnW5mFWLTeagNA
+	client.do_authorize(token)
+	return client
 
 class BinInfoProvider:
 	"""A class that provides info to create a bin"""	
@@ -66,8 +106,8 @@ class BinInfoProvider:
 			subplot.axvline(100, linestyle='--', color='k')
 		self.fig.tight_layout()
 
-def checkPath(path):
-	val = tclient.do_getValue(path)['value']
+def checkPath(client, path):
+	val = client.do_getValue(path)['value']
 	if val == "---":
 		return 0.0
 	else:
@@ -219,77 +259,41 @@ def plotBinMap(tBin, binPro):
 		elif tBin["MapType"][2] == 2:
 			binPro.subList[5].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
 
-# def on_connect(client, userdata, flags, rc):
-	# if rc == 0:
-		# client.connected_flag = True	# set flag
-		# client.bad_connection_flag = False
-		# print("connected OK, Returned code=", rc)
-		# # client.subscribe(topic)
-	# else:
-		# client.connected_flag = False
-		# client.bad_connection_flag = True
-		# print("Bad connection, Returned code=", rc)
+print("kuksa.val cloud example feeder")
 
-# Create a testclient instance and connect to the running vss server
-tclient = testclient.VSSTestClient()
-tclient.do_connect("--insecure")
+# Get the pre-fix command for publishing data
+args = getConfig()
+prefix_cmd = makePrefixCommand(args)
 
-# Authorize as a super-admin
-super_admin_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJrdWtzYS52YWwiLCJpc3MiOiJFY2xpcHNlIEtVS1NBIERldiIsImFkbWluIjp0cnVlLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MTYwNjIzOTAyMiwidzNjLXZzcyI6eyIqIjoicncifX0.bUcEW4o3HiBHZAdy71qCWcu9oBSZClntI1ZXq7HAM8i8nDtiUP4up-VXxt3S3n8AKJQOZVlHudP_ixGTb1HBKa3_CD0HFurP_Wf2Jnrgguhqi1sUItvGjgq4BPpuBsu9kV1Ds-JDmCPBBuHfRtCck353BmMyv6CHn2CCgVQH-DwW6k7wOqcFkxfxfkClO-nrUSQbad_MrxNHhrnflb3N8bc4r61BQ8gHiEyl7JJIuLhAb7bLgarjqcHABkw6T2TkwfWFsddMR2GL_PYBP4D3_r-2IHAhixiEiO758lxA2-o2D0jtte-KmTHjeEUpaWr-ryv1whZXnE243iV1lMajvjgWq5ZnsYTG4Ff7GsR_4SKyd9j6wInkog5Kkx5tFJr2P9kh7HupXQeUzbuoJ7lZAgpGyD8icxZg7c8VTpLzTs5zowjJwbxze5JAylWcXLXOA3vQKpn8E3MseD_31LoVZGEvD9p372IgVmJ0ui4qT8_ZHeGPc8bV2Iy0vDkdAhjf-4Lwf4rDGDksYpK_PO70KylGRmZ9TqiKqstUI6AWG50Jii8MPnnr8qyNO3FD8Rv7E8BnL8ioLoN5VI9eyxy1HpW2SfLKUuCaLB9iKd6fv4U_DhF1AS-Y-iu8-kOovxkTk801DhDxWJN0nyRwmhqn8exjikNB1jnW5mFWLTeagNA"
-tclient.do_authorize(super_admin_token)
+# Get a VISS-server-connected client
+client = getVISSConnectedClient()
 
 # Create a BinInfoProvider instance
 binPro = BinInfoProvider()
 
-# # Configure a MQTT publisher instance
-# topic = "test/json_test"
-# client = mqtt.Client("test_publisher")
-# client.connected_flag = False
-# client.bad_connection_flag = False
-# client.on_connect = on_connect	# bind call back function
-# # Connecting to the MQTT broker (should be aligned with the publisher)
-# # mqtt_broker = "test.mosquitto.org" # (can be changed)
-# mqtt_broker = "mqtt.bosch-iot-hub.com" ### this line should be modified
-# client.username_pw_set(username="pc01@t20babfe7fb2840119f69e692f184127d", password="junhyungki@123")
-# print("Connecting to broker ", mqtt_broker)
-# #client.connect(mqtt_broker)
-# client.connect(mqtt_broker, port=8883) ### this line should be modified
-# while not client.connected_flag and client.bad_connection_flag:
-	# print("In wait loop")
-	# time.sleep(1)
-# print("In main loop")
-# client.loop_start()
-# time.sleep(1)
-
-# Setting a Bosch IoT Hub instance: https://youtu.be/j_znt1jeY-c
-# Sending device data via MQTT(Device to Cloud): https://docs.bosch-iot-suite.com/hub/getting-started/device-to-cloud/sendmqtt.html
-
-# Get the command for sending device data ready
-cmd = 'mosquitto_pub -d -h mqtt.bosch-iot-hub.com -p 8883 -u pc01@t20babfe7fb2840119f69e692f184127d -P junhyungki@123 --cafile iothub.crt -t telemetry -m ' # message to be continued...
-
 while True:
 	# 1. Store signals' values from the target path to the dictionary keys
 	## A. Calculate integrated NOx mass
-	binPro.sigCH0["Aftrtratment1ExhaustGasMassFlow"] = checkPath("Vehicle.ExhaustMassFlow")
-	binPro.sigCH1["Aftertreatment1IntakeNOx"] = checkPath("Vehicle.AfterTreatment.NOxLevel.NOxIntake1")
-	binPro.sigCH1["Aftertreatment1OutletNOx"] = checkPath("Vehicle.AfterTreatment.NOxLevel.NOxOutlet1")
+	binPro.sigCH0["Aftrtratment1ExhaustGasMassFlow"] = checkPath(client, "Vehicle.ExhaustMassFlow")
+	binPro.sigCH1["Aftertreatment1IntakeNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.NOxIntake1")
+	binPro.sigCH1["Aftertreatment1OutletNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.NOxOutlet1")
 	## B. Calculate engine work
-	binPro.sigCH0["EngReferenceTorque"] = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngReferenceTorque") # Missing
+	binPro.sigCH0["EngReferenceTorque"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngReferenceTorque") # Missing
 	## C. Map switch over
-	binPro.sigCH0["AmbientAirTemp"] = checkPath("Vehicle.AmbientAirTemperature")
-	binPro.sigCH0["BarometricPress"] = checkPath("Vehicle.OBD.BarometricPressure")
-	binPro.sigCH0["EngCoolantTemp"] = checkPath("Vehicle.OBD.CoolantTemperature")
+	binPro.sigCH0["AmbientAirTemp"] = checkPath(client, "Vehicle.AmbientAirTemperature")
+	binPro.sigCH0["BarometricPress"] = checkPath(client, "Vehicle.OBD.BarometricPressure")
+	binPro.sigCH0["EngCoolantTemp"] = checkPath(client, "Vehicle.OBD.CoolantTemperature")
 	## D. Bin selection
-	binPro.sigCH0["EngPercentLoadAtCurrentSpeed"] = checkPath("Vehicle.OBD.EngPercentLoadAtCurrentSpeed")
-	binPro.sigCH0["EngSpeedAtIdlePoint1"] = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtIdle") # Missing
-	binPro.sigCH0["EngSpeedAtPoint2"] = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtKickIn") # Missing
+	binPro.sigCH0["EngPercentLoadAtCurrentSpeed"] = checkPath(client, "Vehicle.OBD.EngPercentLoadAtCurrentSpeed")
+	binPro.sigCH0["EngSpeedAtIdlePoint1"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtIdle") # Missing
+	binPro.sigCH0["EngSpeedAtPoint2"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtKickIn") # Missing
 	## A & B & C
-	binPro.sigCH0["EngSpeed"] = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed")
+	binPro.sigCH0["EngSpeed"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed")
 	## B & D
-	binPro.sigCH0["ActualEngPercentTorque"] = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.ActualEngPercentTorque")
-	binPro.sigCH0["NominalFrictionPercentTorque"] = checkPath("Vehicle.Drivetrain.InternalCombustionEngine.Engine.NominalFrictionPercentTorque")
+	binPro.sigCH0["ActualEngPercentTorque"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.ActualEngPercentTorque")
+	binPro.sigCH0["NominalFrictionPercentTorque"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.NominalFrictionPercentTorque")
 	## C - case 2 & Sampling duration tracking per bin
-	binPro.sigCH0["TimeSinceEngineStart"] = checkPath("Vehicle.Drivetrain.FuelSystem.TimeSinceStart") # Missing
+	binPro.sigCH0["TimeSinceEngineStart"] = checkPath(client, "Vehicle.Drivetrain.FuelSystem.TimeSinceStart") # Missing
 	
 	# 2. Get map type info, decide the position and create a bin with dictionary (in the bin map)
 	# map type: (bad / intermediate / good) (oldgood) (cold / hot start)
@@ -330,7 +334,7 @@ while True:
 	# print("JSON: " + tBin_json)
 	# client.publish(topic, tBin_json)
 	# Sending device data via MQTT(Device to Cloud)
-	command = cmd + "'" + tBin_json + "'"
+	command = prefix_cmd + "'" + tBin_json + "'"
 	os.system(command)
 	
 	# 5. Plot the real-time map (In-vehicle) (subList)
