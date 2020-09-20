@@ -6,6 +6,7 @@ is also located.
 
 """
 
+import math
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
