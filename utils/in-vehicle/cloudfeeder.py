@@ -22,12 +22,12 @@ import preprocessor_bosch
 
 def getConfig():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--host", help="Host URL", type=str) # "mqtt.bosch-iot-hub.com"
-    parser.add_argument("--port", help="Protocol Port Number", type=str) # "mqtt.bosch-iot-hub.com"
-    parser.add_argument("--username", help="Credential Authorization Username (e.g., {username}@{tenant-id} ) / Configured in \"Bosch IoT Hub Management API\"", type=str) # "mqtt.bosch-iot-hub.com"
-    parser.add_argument("--password", help="Credential Authorization Password / Configured in \"Bosch IoT Hub Management API\"", type=str) # "junhyungki@123"
-    parser.add_argument("--cafile", help="Server Certificate File (e.g., MQTT TLS Encryption)", type=str) # "iothub.crt"
-    parser.add_argument("--telemetry", help="telemetry or event", type=str) # "telemetry"
+    parser.add_argument("--host", metavar='\b', help="Host URL", type=str) # "mqtt.bosch-iot-hub.com"
+    parser.add_argument("-p", "--port", metavar='\b', help="Protocol Port Number", type=str) # "8883"
+    parser.add_argument("-u", "--username", metavar='\b', help="Credential Authorization Username (e.g., {username}@{tenant-id} ) / Configured in \"Bosch IoT Hub Management API\"", type=str) # "pc01@t20babfe7fb2840119f69e692f184127d"
+    parser.add_argument("-P", "--password", metavar='\b', help="Credential Authorization Password / Configured in \"Bosch IoT Hub Management API\"", type=str) # "junhyungki@123"
+    parser.add_argument("-c", "--cafile", metavar='\b', help="Server Certificate File (e.g., MQTT TLS Encryption)", type=str) # "iothub.crt"
+    parser.add_argument("-t", "--telemetry", metavar='\b', help="telemetry or event", type=str) # "telemetry"
     args = parser.parse_args()
     return args
 
@@ -118,11 +118,7 @@ while True:
 	os.system(command)
 	
 	# 5. Plot the real-time map (In-vehicle) (subList)
-	preprocessor_bosch.plotBinMap(tBin, binPro)
-	plt.pause(1) # with this, you don't need time.sleep(1)
+	preprocessor_bosch.plotBinMap(tBin, binPro) # with this, you don't need time.sleep(1)
 	
 	# X. Time delay
 	#time.sleep(1) # You don't need this when plotting is active
-
-client.loop_stop()
-plt.show()

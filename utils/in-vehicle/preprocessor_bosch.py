@@ -229,3 +229,4 @@ def plotBinMap(tBin, binPro):
 			binPro.subList[4].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
 		elif tBin["MapType"][2] == 2:
 			binPro.subList[5].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
+	plt.pause(1)
