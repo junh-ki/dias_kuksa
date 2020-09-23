@@ -8,12 +8,6 @@
   type: sensor
   unit: "°C"
   description: Temperature of the ambient environment
-  
-- Vehicle.AmbientAirTemperatureVector:
-  datatype: float
-  type: sensor
-  unit: "°C"
-  description: Temperature of the ambient environment (Vector)
 
 #include AfterTreatment/AfterTreatment.vspec Vehicle
 

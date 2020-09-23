@@ -14,15 +14,3 @@
   type: sensor
   unit: ppm
   description: After Treatment Outlet NOx
-
-- NOxLevel.NOxIntake2:
-  datatype: float
-  type: sensor
-  unit: ppm
-  description: After Treatment Intake NOx (Vector)
-  
-- NOxLevel.NOxOutlet2:
-  datatype: float
-  type: sensor
-  unit: ppm
-  description: After Treatment Outlet NOx (Vector)

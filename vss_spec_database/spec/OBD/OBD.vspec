@@ -8,12 +8,6 @@
   type: sensor
   unit: kPa
   description: The pressure within the atmosphere of Earth
-  
-- OBD.BarometricPressureVector:
-  datatype: float
-  type: sensor
-  unit: kPa
-  description: The pressure within the atmosphere of Earth (Vector)
 
 - OBD.CoolantTemperature:
   datatype: float
@@ -26,45 +20,3 @@
   type: sensor
   unit: "%"
   description: Engine load percentage at the current speed
-  
-- OBD.FuelRate:
-  datatype: float
-  type: sensor
-  unit: "L/h"
-  description: Total fuel consumed per hour
-  
-- OBD.FuelRateVector:
-  datatype: float
-  type: sensor
-  unit: "L/h"
-  description: Total fuel consumed per hour (Vector)
-
-- OBD.IntakeTemp:
-  datatype: float
-  type: sensor
-  unit: "°C"
-  description: The temperature of the air entering the engine
-
-- OBD.IntakeTempVector:
-  datatype: float
-  type: sensor
-  unit: "°C"
-  description: The temperature of the air entering the engine (Vector)
-
-- OBD.TripEngRunningTime:
-  datatype: float
-  type: sensor
-  unit: hr
-  description: TripEngRunningTime??
-
-- OBD.TimeSinceDTCsCleared:
-  datatype: float
-  type: sensor
-  unit: mins
-  description: Time passed since Diagnostic Trouble Codes are cleared.
-  
-- OBD.DistanceSinceDTCsCleared:
-  datatype: float
-  type: sensor
-  unit: km
-  description: Distance from the point where DTCs are cleared.
