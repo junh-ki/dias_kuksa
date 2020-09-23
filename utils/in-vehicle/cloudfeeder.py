@@ -18,7 +18,7 @@ import testclient
 import json
 import os
 import argparse
-import preprocessor_bosch
+import preprocessor_bosch # preprocessing varies depending on how to process the data.
 
 def getConfig():
     parser = argparse.ArgumentParser()
