@@ -116,9 +116,10 @@ while True:
 	# Sending device data via MQTT(Device to Cloud)
 	command = prefix_cmd + "'" + tBin_json + "'"
 	os.system(command)
-	
+
 	# 5. Plot the real-time map (In-vehicle) (subList)
-	preprocessor_bosch.plotBinMap(tBin, binPro) # with this, you don't need time.sleep(1)
+	# preprocessor_bosch.plotBinMap(tBin, binPro) # with this, you don't need time.sleep(1)
 	
 	# X. Time delay
-	#time.sleep(1) # You don't need this when plotting is active
+	time.sleep(1) # You don't need this when plotting is active
+	print("\n\n\n")
