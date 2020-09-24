@@ -2,7 +2,7 @@
 This script is to separate a logfile according to the CAN channel
 and convert the results to the log-formatted files.
 
-Prior to using this script the following should be done first:
+Prior to using this script, the following command should be done first:
 
 	$ sudo apt install can-utils
 
