@@ -38,7 +38,7 @@ def makePrefixCommand(args):
 	cmd = cmd + ' -u ' + args.username
 	cmd = cmd + ' -P ' + args.password
 	cmd = cmd + ' --cafile ' + args.cafile
-	cmd = cmd + ' -t ' + args.telemetry
+	cmd = cmd + ' -t ' + args.type
 	cmd = cmd + ' -m '
 	return cmd
 
