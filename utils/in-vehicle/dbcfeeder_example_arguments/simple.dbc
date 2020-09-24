@@ -1,0 +1,81 @@
+VERSION ""
+
+BU_: TPMS E_APU PCCM NOX_2 NOX_1 ENGINE_CONTROL_MODULE TRANSMISSION INTARDER EBS INSTRUMENT_CLUSTER CAMERA RADAR BCM
+
+BO_ 2565869137 AT1IG1: 8 NOX_1
+ SG_ Aftertreatment1IntakeNOx : 0|16@1+ (0.05,-200) [-200|3012.75] "ppm"  ENGINE_CONTROL_MODULE
+
+BO_ 2565869394 AT1OG1: 8 NOX_2
+ SG_ Aftertreatment1OutletNOx : 0|16@1+ (0.05,-200) [-200|3012.75] "ppm"  ENGINE_CONTROL_MODULE
+
+BO_ 2566840318 EEC3: 8 Vector__XXX
+ SG_ Aftrtratment1ExhaustGasMassFlow : 40|16@1+ (0.2,0) [0|12851] "kg/h" Vector__XXX
+ SG_ NominalFrictionPercentTorque : 0|8@1+ (1,-125) [0|125] "%" Vector__XXX
+
+BO_ 2566840064 EEC3_ECM: 8 ENGINE_CONTROL_MODULE
+ SG_ Aftrtratment1ExhaustGasMassFlow : 40|16@1+ (0.2,0) [0|12851] "kg/h"  PCCM,TRANSMISSION,EBS,RADAR
+ SG_ NominalFrictionPercentTorque : 0|8@1+ (1,-125) [0|125] "%"  PCCM,TRANSMISSION,EBS,RADAR
+
+BO_ 2364540158 EEC1: 8 Vector__XXX
+ SG_ EngSpeed : 24|16@1+ (0.125,0) [0|8031.875] "rpm" Vector__XXX
+ SG_ ActualEngPercentTorque : 16|8@1+ (1,-125) [0|125] "%" Vector__XXX
+ 
+BO_ 2364539904 EEC1_ECM: 8 ENGINE_CONTROL_MODULE
+ SG_ EngSpeed : 24|16@1+ (0.125,0) [0|8031.875] "rpm"  CAMERA,E_APU,PCCM,TPMS,TRANSMISSION,INTARDER,EBS,RADAR,INSTRUMENT_CLUSTER,BCM
+ SG_ ActualEngPercentTorque : 16|8@1+ (1,-125) [0|125] "%"  CAMERA,E_APU,PCCM,TPMS,TRANSMISSION,INTARDER,EBS,RADAR,INSTRUMENT_CLUSTER,BCM
+ 
+BO_ 2566841342 EC1: 39 Vector__XXX
+ SG_ EngMxMomentaryOverrideTimeLimit : 184|8@1+ (0.1,0) [0|25] "s" Vector__XXX
+ SG_ EngMxMmntaryOverrideSpeedPoint7 : 168|16@1+ (0.125,0) [0|8031.875] "rpm" Vector__XXX
+ SG_ EngReferenceTorque : 152|16@1+ (1,0) [0|64255] "Nm" Vector__XXX
+ SG_ EngSpeedAtHighIdlePoint6 : 120|16@1+ (0.125,0) [0|8031.875] "rpm" Vector__XXX
+ SG_ EngGainOfEndspeedGovernor : 136|16@1+ (0.00078125,0) [0|50.2] "%/rpm" Vector__XXX
+ SG_ EngPercentTorqueAtPoint5 : 112|8@1+ (1,-125) [-125|125] "%" Vector__XXX
+ SG_ EngSpeedAtPoint5 : 96|16@1+ (0.125,0) [0|8031.875] "rpm" Vector__XXX
+ SG_ EngPercentTorqueAtPoint4 : 88|8@1+ (1,-125) [-125|125] "%" Vector__XXX
+ SG_ EngSpeedAtPoint4 : 72|16@1+ (0.125,0) [0|8031.875] "rpm" Vector__XXX
+ SG_ EngPercentTorqueAtPoint3 : 64|8@1+ (1,-125) [-125|125] "%" Vector__XXX
+ SG_ EngSpeedAtPoint3 : 48|16@1+ (0.125,0) [0|8031.875] "rpm" Vector__XXX
+ SG_ EngPercentTorqueAtPoint2 : 40|8@1+ (1,-125) [-125|125] "%" Vector__XXX
+ SG_ EngSpeedAtPoint2 : 24|16@1+ (0.125,0) [0|8031.875] "rpm" Vector__XXX
+ SG_ EngPercentTorqueAtIdlePoint1 : 16|8@1+ (1,-125) [-125|125] "%" Vector__XXX
+ SG_ EngSpeedAtIdlePoint1 : 0|16@1+ (0.125,0) [0|8031.875] "rpm" Vector__XXX
+
+BO_ 2566841088 EC1_ECM: 39 ENGINE_CONTROL_MODULE
+ SG_ EngMxMomentaryOverrideTimeLimit : 184|8@1+ (0.1,0) [0|25] "s"  PCCM,TRANSMISSION,EBS
+ SG_ EngMxMmntaryOverrideSpeedPoint7 : 168|16@1+ (0.125,0) [0|8031.875] "rpm"  PCCM,TRANSMISSION,EBS
+ SG_ EngReferenceTorque : 152|16@1+ (1,0) [0|64255] "Nm"  PCCM,TRANSMISSION,EBS
+ SG_ EngSpeedAtHighIdlePoint6 : 120|16@1+ (0.125,0) [0|8031.875] "rpm"  PCCM,TRANSMISSION,EBS
+ SG_ EngGainOfEndspeedGovernor : 136|16@1+ (0.00078125,0) [0|50.2] "%/rpm"  PCCM,TRANSMISSION,EBS
+ SG_ EngPercentTorqueAtPoint5 : 112|8@1+ (1,-125) [-125|125] "%"  PCCM,TRANSMISSION,EBS
+ SG_ EngSpeedAtPoint5 : 96|16@1+ (0.125,0) [0|8031.875] "rpm"  PCCM,TRANSMISSION,EBS
+ SG_ EngPercentTorqueAtPoint4 : 88|8@1+ (1,-125) [-125|125] "%"  PCCM,TRANSMISSION,EBS
+ SG_ EngSpeedAtPoint4 : 72|16@1+ (0.125,0) [0|8031.875] "rpm"  PCCM,TRANSMISSION,EBS
+ SG_ EngPercentTorqueAtPoint3 : 64|8@1+ (1,-125) [-125|125] "%"  PCCM,TRANSMISSION,EBS
+ SG_ EngSpeedAtPoint3 : 48|16@1+ (0.125,0) [0|8031.875] "rpm"  PCCM,TRANSMISSION,EBS
+ SG_ EngPercentTorqueAtPoint2 : 40|8@1+ (1,-125) [-125|125] "%"  PCCM,TRANSMISSION,EBS
+ SG_ EngSpeedAtPoint2 : 24|16@1+ (0.125,0) [0|8031.875] "rpm"  PCCM,TRANSMISSION,EBS
+ SG_ EngPercentTorqueAtIdlePoint1 : 16|8@1+ (1,-125) [-125|125] "%"  PCCM,TRANSMISSION,EBS
+ SG_ EngSpeedAtIdlePoint1 : 0|16@1+ (0.125,0) [0|8031.875] "rpm"  PCCM,TRANSMISSION,EBS
+
+BO_ 2364539902 EEC2: 8 Vector__XXX
+ SG_ EngPercentLoadAtCurrentSpeed : 16|8@1+ (1,0) [0|250] "%" Vector__XXX
+ 
+BO_ 2364539648 EEC2_ECM: 8 ENGINE_CONTROL_MODULE
+ SG_ EngPercentLoadAtCurrentSpeed : 16|8@1+ (1,0) [0|250] "%"  E_APU,PCCM,TRANSMISSION,INTARDER,EBS,RADAR,BCM
+ 
+BO_ 2566764798 DM26: 8 Vector__XXX
+ SG_ TimeSinceEngineStart : 0|16@1+ (1,0) [0|64255] "sec" Vector__XXX
+
+BO_ 2566843904 ET1_ECM: 8 ENGINE_CONTROL_MODULE
+ SG_ EngCoolantTemp : 0|8@1+ (1,-40) [-40|210] "deg C"  PCCM,TRANSMISSION,INSTRUMENT_CLUSTER,BCM
+
+BO_ 2566844158 ET1: 8 Vector__XXX
+ SG_ EngCoolantTemp : 0|8@1+ (1,-40) [-40|210] "deg C" Vector__XXX
+
+BO_ 2566845696 AMB_ECM: 8 ENGINE_CONTROL_MODULE
+ SG_ AmbientAirTemp : 24|16@1+ (0.03125,-273) [-273|1734.96875] "deg C"  E_APU,PCCM,TPMS,TRANSMISSION,EBS,BCM
+ SG_ BarometricPress : 0|8@1+ (0.5,0) [0|125] "kPa"  E_APU,PCCM,TPMS,TRANSMISSION,EBS,BCM
+
+BO_ 2566845950 AMB: 8 Vector__XXX
+ SG_ BarometricPress : 0|8@1+ (0.5,0) [0|125] "kPa" Vector__XXX
