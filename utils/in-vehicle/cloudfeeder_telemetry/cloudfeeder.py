@@ -26,8 +26,8 @@ def getConfig():
     parser.add_argument("-p", "--port", metavar='\b', help="Protocol Port Number", type=str) # "8883"
     parser.add_argument("-u", "--username", metavar='\b', help="Credential Authorization Username (e.g., {username}@{tenant-id} ) / Configured in \"Bosch IoT Hub Management API\"", type=str) # "pc01@t20babfe7fb2840119f69e692f184127d"
     parser.add_argument("-P", "--password", metavar='\b', help="Credential Authorization Password / Configured in \"Bosch IoT Hub Management API\"", type=str) # "junhyungki@123"
-    parser.add_argument("-c", "--cafile", metavar='\b', help="Server Certificate File (e.g., MQTT TLS Encryption)", type=str) # "iothub.crt"
-    parser.add_argument("-t", "--telemetry", metavar='\b', help="telemetry or event", type=str) # "telemetry"
+    parser.add_argument("-c", "--cafile", metavar='\b', help="Server Certificate File (e.g., iothub.crt)", type=str) # "iothub.crt"
+    parser.add_argument("-t", "--type", metavar='\b', help="Transmission Type (e.g., telemetry or event)", type=str) # "telemetry"
     args = parser.parse_args()
     return args
 
