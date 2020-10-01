@@ -8,6 +8,9 @@ BO_ 2565869137 AT1IG1: 8 NOX_1
 BO_ 2565869394 AT1OG1: 8 NOX_2
  SG_ Aftertreatment1OutletNOx : 0|16@1+ (0.05,-200) [-200|3012.75] "ppm"  ENGINE_CONTROL_MODULE
 
+BO_ 2499624702 A1SCREGT: 8 Vector__XXX
+ SG_ Aftrtrtmnt1SCRCtlystIntkGasTemp : 0|16@1+ (0.03125,-273) [-273|1734.96875] "deg C" Vector__XXX
+
 BO_ 2566840318 EEC3: 8 Vector__XXX
  SG_ Aftrtratment1ExhaustGasMassFlow : 40|16@1+ (0.2,0) [0|12851] "kg/h" Vector__XXX
  SG_ NominalFrictionPercentTorque : 0|8@1+ (1,-125) [0|125] "%" Vector__XXX
@@ -23,7 +26,7 @@ BO_ 2364540158 EEC1: 8 Vector__XXX
 BO_ 2364539904 EEC1_ECM: 8 ENGINE_CONTROL_MODULE
  SG_ EngSpeed : 24|16@1+ (0.125,0) [0|8031.875] "rpm"  CAMERA,E_APU,PCCM,TPMS,TRANSMISSION,INTARDER,EBS,RADAR,INSTRUMENT_CLUSTER,BCM
  SG_ ActualEngPercentTorque : 16|8@1+ (1,-125) [0|125] "%"  CAMERA,E_APU,PCCM,TPMS,TRANSMISSION,INTARDER,EBS,RADAR,INSTRUMENT_CLUSTER,BCM
- 
+
 BO_ 2566841342 EC1: 39 Vector__XXX
  SG_ EngMxMomentaryOverrideTimeLimit : 184|8@1+ (0.1,0) [0|25] "s" Vector__XXX
  SG_ EngMxMmntaryOverrideSpeedPoint7 : 168|16@1+ (0.125,0) [0|8031.875] "rpm" Vector__XXX

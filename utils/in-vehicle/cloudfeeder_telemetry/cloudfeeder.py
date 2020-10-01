@@ -83,7 +83,8 @@ binPro = preprocessor_bosch.BinInfoProvider()
 while True:
 	# 1. Store signals' values from the target path to the dictionary keys
 	## A. Calculate integrated NOx mass
-	binPro.sigCH0["Aftrtratment1ExhaustGasMassFlow"] = checkPath(client, "Vehicle.ExhaustMassFlow")
+	binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] = checkPath(client, "Vehicle.AfterTreatment.ExhaustMassFlow")
+	binPro.sigCH1["Aftrtrtmnt1SCRCtlystIntkGasTemp"] = checkPath(client, "Vehicle.AfterTreatment.SCRIntakeTemp")
 	binPro.sigCH1["Aftertreatment1IntakeNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.NOxIntake1")
 	binPro.sigCH1["Aftertreatment1OutletNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.NOxOutlet1")
 	## B. Calculate engine work
@@ -94,7 +95,7 @@ while True:
 	binPro.sigCH0["EngCoolantTemp"] = checkPath(client, "Vehicle.OBD.CoolantTemperature")
 	## D. Bin selection
 	binPro.sigCH0["EngPercentLoadAtCurrentSpeed"] = checkPath(client, "Vehicle.OBD.EngPercentLoadAtCurrentSpeed")
-	binPro.sigCH0["EngSpeedAtIdlePoint1"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtIdle") # Missing
+	binPro.sigCH0["EngSpeedAtIdlePoint1"] = 550.0 # Constant
 	binPro.sigCH0["EngSpeedAtPoint2"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtKickIn") # Missing
 	## A & B & C
 	binPro.sigCH0["EngSpeed"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed")

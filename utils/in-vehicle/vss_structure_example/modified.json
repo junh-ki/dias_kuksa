@@ -16,6 +16,20 @@
         "description": "Signals from the Aftertreatment system (UreaLevel, NOx)",
         "uuid": "e07dd60c53355ae78f292f08696b1175",
         "children": {
+          "ExhaustMassFlow": {
+            "datatype": "float",
+            "type": "sensor",
+            "unit": "kg/h",
+            "description": "Aftertreatment Exhaust Gas Mass Flow",
+            "uuid": "fe3ea913a581540cba2f316449d6da0f"
+          },
+          "SCRIntakeTemp": {
+            "datatype": "float",
+            "type": "sensor",
+            "unit": "\u00b0C",
+            "description": "Temperature of engine combustion byproducts entering the SCR catalyst in exhaust bank 1",
+            "uuid": "9224b9d7f85c57c8b582371a73741018"
+          },
           "NOxLevel": {
             "type": "branch",
             "description": "Intake or outlet NOx level data from After Treatment System.",
@@ -38,13 +52,6 @@
             }
           }
         }
-      },
-      "ExhaustMassFlow": {
-        "datatype": "float",
-        "type": "sensor",
-        "unit": "kg/h",
-        "description": "Aftertreatment Exhaust Gas Mass Flow",
-        "uuid": "bc92dfe37dc8595998bdbde990b289cc"
       },
       "OBD": {
         "type": "branch",
