@@ -129,10 +129,10 @@ def createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binP
 	tBin = {}
 	tBin["CumulativeSamplingTime"] = binPro.sigCH0["TimeSinceEngineStart"]
 	## Cumulative NOx (DownStream) in g
-	noxDS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1OutletNOx"] * binPro.sigCH0["Aftrtratment1ExhaustGasMassFlow"] / 3600
+	noxDS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1OutletNOx"] * binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] / 3600
 	binPro.cumulativeNOxDS_g += noxDS_gs
 	## Cumulative NOx (UpStream) in g
-	noxUS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1IntakeNOx"] * binPro.sigCH0["Aftrtratment1ExhaustGasMassFlow"] / 3600
+	noxUS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1IntakeNOx"] * binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] / 3600
 	binPro.cumulativeNOxUS_g += noxUS_gs
 	tBin["CumulativeNOxDSEmissionGram"] = binPro.cumulativeNOxDS_g
 	outputTorque = (binPro.sigCH0["ActualEngPercentTorque"] - binPro.sigCH0["NominalFrictionPercentTorque"]) * binPro.sigCH0["EngReferenceTorque"]
