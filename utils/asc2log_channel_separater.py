@@ -9,7 +9,7 @@ the following command should be run first before running the script:
 
 example.asc > ch0_example.log, ch1_example.log
 
-(e.g., 'python3 asc2log_channel_separater.py --asc example.asc -c vcan0')
+(e.g., 'python3 asc2log_channel_separater.py --asc example.asc --can vcan0')
 
 """
 
