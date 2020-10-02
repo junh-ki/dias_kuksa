@@ -1,5 +1,5 @@
-utils/maven.consumer.hono/target/
-utils/maven.consumer.hono/.settings/
-utils/maven.consumer.hono/.vertx/
-utils/maven.consumer.hono/.classpath
-utils/maven.consumer.hono/.project
+utils/cloud/maven.consumer.hono/target/
+utils/cloud/maven.consumer.hono/.settings/
+utils/cloud/maven.consumer.hono/.vertx/
+utils/cloud/maven.consumer.hono/.classpath
+utils/cloud/maven.consumer.hono/.project
