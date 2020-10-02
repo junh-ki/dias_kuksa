@@ -1,10 +1,15 @@
 """
-This script is to separate a logfile according to the CAN channel
-and convert the results to the log-formatted files.
+This script is to separate a .asc logfile by CAN channel 
+and convert the results to the .log files.
+
+Since the script uses the can-utils library,
+the following command should be run first before running the script:
+
+	$ sudo apt install can-utils
 
 example.asc > ch0_example.log, ch1_example.log
 
-(e.g., 'python3 asc2log_channel_separater.py example.asc vcan0')
+(e.g., 'python3 asc2log_channel_separater.py -a example.asc -c vcan0')
 
 """
 
@@ -12,14 +17,24 @@ import os
 import sys
 import ntpath
 
-# Target .asc file (or path) to be converted to .log
-path = sys.argv[1]
+def getConfig():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-a", "--asc", metavar='\b', help="Target .asc file", type=str)
+    parser.add_argument("-c", "--can", metavar='\b', help="Result CAN interface name", type=str)
+    args = parser.parse_args()
+    return args
+
+args = getConfig()
+
+# Target .asc file to be converted to .log
+asc = args.asc
 
 # The name of the CAN interface your hardware has (e.g., can0 or vcan0 or, ...)
-interface_name = sys.argv[2]
+interface = args.can
+
 
 # Create an intermediate log file by using asc2log from can-utils
-cmd = 'asc2log -I ' + path + ' -O logfile.log'
+cmd = 'asc2log -I ' + asc + ' -O logfile.log'
 os.system(cmd)
 
 # Preparation for separating the intermediate file according to the channel name: can0/can1
