@@ -18,7 +18,7 @@ import testclient
 import json
 import os
 import argparse
-import preprocessor_bosch
+import preprocessor_bosch # preprocessing varies depending on how to process the data.
 
 def getConfig():
     parser = argparse.ArgumentParser()
@@ -26,8 +26,8 @@ def getConfig():
     parser.add_argument("-p", "--port", metavar='\b', help="Protocol Port Number", type=str) # "8883"
     parser.add_argument("-u", "--username", metavar='\b', help="Credential Authorization Username (e.g., {username}@{tenant-id} ) / Configured in \"Bosch IoT Hub Management API\"", type=str) # "pc01@t20babfe7fb2840119f69e692f184127d"
     parser.add_argument("-P", "--password", metavar='\b', help="Credential Authorization Password / Configured in \"Bosch IoT Hub Management API\"", type=str) # "junhyungki@123"
-    parser.add_argument("-c", "--cafile", metavar='\b', help="Server Certificate File (e.g., MQTT TLS Encryption)", type=str) # "iothub.crt"
-    parser.add_argument("-t", "--telemetry", metavar='\b', help="telemetry or event", type=str) # "telemetry"
+    parser.add_argument("-c", "--cafile", metavar='\b', help="Server Certificate File (e.g., iothub.crt)", type=str) # "iothub.crt"
+    parser.add_argument("-t", "--type", metavar='\b', help="Transmission Type (e.g., telemetry or event)", type=str) # "telemetry"
     args = parser.parse_args()
     return args
 
@@ -38,7 +38,7 @@ def makePrefixCommand(args):
 	cmd = cmd + ' -u ' + args.username
 	cmd = cmd + ' -P ' + args.password
 	cmd = cmd + ' --cafile ' + args.cafile
-	cmd = cmd + ' -t ' + args.telemetry
+	cmd = cmd + ' -t ' + args.type
 	cmd = cmd + ' -m '
 	return cmd
 
@@ -83,7 +83,8 @@ binPro = preprocessor_bosch.BinInfoProvider()
 while True:
 	# 1. Store signals' values from the target path to the dictionary keys
 	## A. Calculate integrated NOx mass
-	binPro.sigCH0["Aftrtratment1ExhaustGasMassFlow"] = checkPath(client, "Vehicle.ExhaustMassFlow")
+	binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] = checkPath(client, "Vehicle.AfterTreatment.ExhaustMassFlow")
+	binPro.sigCH1["Aftrtrtmnt1SCRCtlystIntkGasTemp"] = checkPath(client, "Vehicle.AfterTreatment.SCRIntakeTemp")
 	binPro.sigCH1["Aftertreatment1IntakeNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.NOxIntake1")
 	binPro.sigCH1["Aftertreatment1OutletNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.NOxOutlet1")
 	## B. Calculate engine work
@@ -94,7 +95,7 @@ while True:
 	binPro.sigCH0["EngCoolantTemp"] = checkPath(client, "Vehicle.OBD.CoolantTemperature")
 	## D. Bin selection
 	binPro.sigCH0["EngPercentLoadAtCurrentSpeed"] = checkPath(client, "Vehicle.OBD.EngPercentLoadAtCurrentSpeed")
-	binPro.sigCH0["EngSpeedAtIdlePoint1"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtIdle") # Missing
+	binPro.sigCH0["EngSpeedAtIdlePoint1"] = 550.0 # Constant
 	binPro.sigCH0["EngSpeedAtPoint2"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtKickIn") # Missing
 	## A & B & C
 	binPro.sigCH0["EngSpeed"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed")
@@ -116,9 +117,10 @@ while True:
 	# Sending device data via MQTT(Device to Cloud)
 	command = prefix_cmd + "'" + tBin_json + "'"
 	os.system(command)
-	
+
 	# 5. Plot the real-time map (In-vehicle) (subList)
-	preprocessor_bosch.plotBinMap(tBin, binPro) # with this, you don't need time.sleep(1)
+	# preprocessor_bosch.plotBinMap(tBin, binPro) # with this, you don't need time.sleep(1)
 	
 	# X. Time delay
-	#time.sleep(1) # You don't need this when plotting is active
+	time.sleep(1) # You don't need this when plotting is active
+	print("\n\n\n")

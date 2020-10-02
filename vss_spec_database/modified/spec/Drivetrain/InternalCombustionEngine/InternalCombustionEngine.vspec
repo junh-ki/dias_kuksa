@@ -1,6 +1,0 @@
-
-- InternalCombustionEngine:
-  type: branch
-  description: Signals from the internal combustion engine
-  
-#include Engine/Engine.vspec InternalCombustionEngine

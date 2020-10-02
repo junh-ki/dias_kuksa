@@ -5,6 +5,16 @@ AmbientAirTemp:
   targets:
     - Vehicle.AmbientAirTemperature
 
+Aftrtrtmnt1SCRCtlystIntkGasTemp:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.AfterTreatment.SCRIntakeTemp
+
+Aftrtratment1ExhaustGasMassFlow:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.AfterTreatment.ExhaustMassFlow
+
 Aftertreatment1IntakeNOx:
   minupdatedelay: 100
   targets:
@@ -49,11 +59,6 @@ EngSpeedAtPoint2:
   minupdatedelay: 100
   targets:
     - Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtKickIn
-
-Aftrtratment1ExhaustGasMassFlow:
-  minupdatedelay: 100
-  targets:
-    - Vehicle.ExhaustMassFlow
 
 BarometricPress:
   minupdatedelay: 100
