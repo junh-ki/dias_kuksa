@@ -59,8 +59,7 @@ def preprocessing(binPro):
 	# * barometric (kpa): mbar = 10 x kPa
 	## A. New Concept
 	### 1 bad / 2 intermediate / 3 good
-	tSCR = 10
-	catEvalNum = catalystEval(binPro.sigCH0["TimeSinceEngineStart"], binPro.sigCH0["AmbientAirTemp"], binPro.sigCH0["BarometricPress"] * 10, False, tSCR)
+	catEvalNum = catalystEval(binPro.sigCH0["TimeSinceEngineStart"], binPro.sigCH0["AmbientAirTemp"], binPro.sigCH0["BarometricPress"] * 10, False, binPro.sigCH1["Aftrtrtmnt1SCRCtlystIntkGasTemp"])
 	## B. Old Concept
 	### False OldEvalInactive / True OldEvalActive
 	isOldEvalActive = oldGoodEval(binPro.sigCH0["TimeSinceEngineStart"], binPro.sigCH0["AmbientAirTemp"], binPro.sigCH0["BarometricPress"] * 10, False)
@@ -130,10 +129,10 @@ def createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binP
 	tBin = {}
 	tBin["CumulativeSamplingTime"] = binPro.sigCH0["TimeSinceEngineStart"]
 	## Cumulative NOx (DownStream) in g
-	noxDS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1OutletNOx"] * binPro.sigCH0["Aftrtratment1ExhaustGasMassFlow"] / 3600
+	noxDS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1OutletNOx"] * binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] / 3600
 	binPro.cumulativeNOxDS_g += noxDS_gs
 	## Cumulative NOx (UpStream) in g
-	noxUS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1IntakeNOx"] * binPro.sigCH0["Aftrtratment1ExhaustGasMassFlow"] / 3600
+	noxUS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1IntakeNOx"] * binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] / 3600
 	binPro.cumulativeNOxUS_g += noxUS_gs
 	tBin["CumulativeNOxDSEmissionGram"] = binPro.cumulativeNOxDS_g
 	outputTorque = (binPro.sigCH0["ActualEngPercentTorque"] - binPro.sigCH0["NominalFrictionPercentTorque"]) * binPro.sigCH0["EngReferenceTorque"]
@@ -160,35 +159,34 @@ def createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binP
 
 def selectBinPos(xAxisVal, yAxisVal):
 	# Check X-axis first and then Y-axis
-	if 0 <= xAxisVal < 25:
-		if 0 <= yAxisVal < 33:
+	if xAxisVal < 25:
+		if yAxisVal < 33:
 			return 1
 		elif 33 <= yAxisVal <= 66:
 			return 5
-		elif 66 < yAxisVal <= 100:
+		elif 66 < yAxisVal:
 			return 9
 	elif 25 <= xAxisVal < 50:
-		if 0 <= yAxisVal < 33:
+		if yAxisVal < 33:
 			return 2
 		elif 33 <= yAxisVal <= 66:
 			return 6
-		elif 66 < yAxisVal <= 100:
+		elif 66 < yAxisVal:
 			return 10
 	elif 50 <= xAxisVal < 75:
-		if 0 <= yAxisVal < 33:
+		if yAxisVal < 33:
 			return 3
 		elif 33 <= yAxisVal <= 66:
 			return 7
-		elif 66 < yAxisVal <= 100:
+		elif 66 < yAxisVal:
 			return 11
-	elif 75 <= xAxisVal <= 100:
-		if 0 <= yAxisVal < 33:
+	elif 75 <= xAxisVal:
+		if yAxisVal < 33:
 			return 4
 		elif 33 <= yAxisVal <= 66:
 			return 8
-		elif 66 < yAxisVal <= 100:
+		elif 66 < yAxisVal:
 			return 12
-	# print("Axis Value Error.")
 	return 0
 
 def printSignalValues(binPro):

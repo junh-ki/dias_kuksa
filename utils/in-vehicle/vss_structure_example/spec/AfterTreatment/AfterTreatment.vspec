@@ -3,10 +3,16 @@
   type: branch
   description: Signals from the Aftertreatment system (UreaLevel, NOx)
   
-- ExhaustMassFlow:
+- AfterTreatment.ExhaustMassFlow:
   datatype: float
   type: sensor
   unit: "kg/h"
   description: Aftertreatment Exhaust Gas Mass Flow
+
+- AfterTreatment.SCRIntakeTemp:
+  datatype: float
+  type: sensor
+  unit: "°C"
+  description: Temperature of engine combustion byproducts entering the SCR catalyst in exhaust bank 1
 
 #include AfterTreatment/NOxLevel.vspec AfterTreatment
