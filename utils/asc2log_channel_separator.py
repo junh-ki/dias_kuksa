@@ -1,15 +1,15 @@
 """
-This script is to separate a .asc logfile by CAN channel (up to three channels)
-and convert the results to the .log files.
+This script is to convert a .asc file to a .log file
+and separate the result by CAN channel (up to three channels)
 
 Since the script uses the can-utils library,
-the following command should be run first before running the script:
+the following command should be run first prior to running this script:
 
-	$ sudo apt install can-utils
+    $ sudo apt install can-utils
 
-example.asc > ch0_example.log, ch1_example.log
+example.asc > can0_example.log, can1_example.log, can2_example.log
 
-(e.g., 'python3 asc2log_channel_separater.py --asc example.asc --can vcan0')
+(e.g., 'python3 asc2log_channel_separator.py --asc example.asc --can vcan0')
 
 """
 
