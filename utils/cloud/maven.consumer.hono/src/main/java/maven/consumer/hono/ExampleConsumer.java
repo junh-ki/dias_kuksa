@@ -113,10 +113,12 @@ public class ExampleConsumer {
         final int bpos = (int) map.get("BinPosition");
         final List mtyp = (ArrayList) map.get("MapType");
         final double cwork = (double) map.get("CumulativeWork");
-        curlWriteInfluxDBMetrics("statsdemo", "sampling_time", "test_host0", samt);
-        curlWriteInfluxDBMetrics("statsdemo", "cumulative_nox", "test_host0", nox);
-        curlWriteInfluxDBMetrics("statsdemo", "bin_position", "test_host0", bpos);
-        curlWriteInfluxDBMetrics("statsdemo", "cumulative_work", "test_host0", cwork);
+        final String database = "testdb0";
+        curlCreateDB(database);
+        curlWriteInfluxDBMetrics(database, "sampling_time", "test_host0", samt);
+        curlWriteInfluxDBMetrics(database, "cumulative_nox", "test_host0", nox);
+        curlWriteInfluxDBMetrics(database, "bin_position", "test_host0", bpos);
+        curlWriteInfluxDBMetrics(database, "cumulative_work", "test_host0", cwork);
     }
     
 	/**
@@ -150,7 +152,29 @@ public class ExampleConsumer {
 		}
         return map;
     }
-    
+
+    /**
+     * To create a database
+     * @param db	name of the database you want to create
+     *
+     */
+    private void curlCreateDB(String db) {
+    	final String url = "http://localhost:8086/query";
+    	ProcessBuilder pb = new ProcessBuilder(
+    		"curl",
+    		"-i",
+    		"-XPOST",
+    		url,
+    		"--data-urlencode",
+    		"q=CREATE DATABASE " + db);
+    	try {
+			pb.start();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+
     /**
      * To run a curl call to write metrics data to the target InfluxDB database.
      * @param db			target database name
@@ -168,7 +192,7 @@ public class ExampleConsumer {
                     "-XPOST",
                     url,
                     "--data-binary",
-                    metrics + ",host=" + host + " value="+val);
+                    metrics + ",host=" + host + " value=" + val);
     	} else {
     		pb = new ProcessBuilder(
             		"curl",
@@ -176,12 +200,12 @@ public class ExampleConsumer {
                     "-XPOST",
                     url,
                     "--data-binary",
-                    metrics + " value="+val);
+                    metrics + " value=" + val);
     	}
     	try {
 			pb.start();
 			// pb.redirectErrorStream(true);
-			LOG.info("----- Data successfully stored in InfluxDB. -----\n");
+			LOG.info("----- New " + metrics + " successfully stored in " + db + "/InfluxDB. -----\n");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
