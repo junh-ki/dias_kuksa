@@ -1,0 +1,13 @@
+version: '3.5'
+
+services:
+  grafana:
+    image: grafana/grafana:6.0.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,natel-plotly-panel
+    user: "0"
+    volumes:
+      - ./grafana:/var/lib/grafana:rw
