@@ -31,6 +31,6 @@ networks:
 
 volumes:
   influxdb-volume:
-    external: true # false if you run for the first time, true if you want to reuse the existing volume for persistence
+    external: true # true if you want to reuse the existing volume for persistence
   grafana-volume:
     external: true
