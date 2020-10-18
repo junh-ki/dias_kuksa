@@ -1,13 +1,36 @@
-version: '3.5'
+version: "3.7"
 
 services:
+  influxdb:
+    image: influxdb:1.8.3
+    container_name: influxdb_container
+    restart: always
+    ports:
+      - "8086:8086"
+    networks:
+      - monitor_network
+    volumes:
+      - influxdb-volume:/var/lib/influxdb
+
   grafana:
     image: grafana/grafana:6.0.0
     container_name: grafana
+    restart: always
     ports:
       - "3000:3000"
+    networks:
+      - monitor_network
     environment:
       - GF_INSTALL_PLUGINS=grafana-clock-panel,natel-plotly-panel
-    user: "0"
     volumes:
-      - ./grafana:/var/lib/grafana:rw
+      - grafana-volume:/var/lib/grafana
+
+networks:
+  monitor_network:
+    external: true
+
+volumes:
+  influxdb-volume:
+    external: true # false if you run for the first time, true if you want to reuse the existing volume for persistence
+  grafana-volume:
+    external: true
