@@ -13,3 +13,7 @@ $ docker volume create grafana-volume
 # 3. When setting datasource for InfluxDB, Set HTTP/URL like following
 
 $ http://influxdb:8086
+
+# 4. Run Docker-compose (with the detached mode)
+
+$ docker-compose up -d

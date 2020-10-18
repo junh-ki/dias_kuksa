@@ -21,9 +21,11 @@ services:
     networks:
       - monitor_network
     environment:
-      - GF_INSTALL_PLUGINS=grafana-clock-panel,natel-plotly-panel
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,natel-plotly-panel # to add plugins
     volumes:
       - grafana-volume:/var/lib/grafana
+
+# networks and volumes need to be configured first before running docker-compose
 
 networks:
   monitor_network:
