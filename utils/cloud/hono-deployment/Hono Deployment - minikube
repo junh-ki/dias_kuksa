@@ -1,0 +1,98 @@
+<Hono Deployment - Minikube>
+
+Docker Installation
+###################
+
+https://phoenixnap.com/kb/how-to-install-docker-on-ubuntu-18-04
+
+$ sudo groupadd docker
+$ sudo usermod -aG docker $USER
+- Re-Login or Restart the Server
+
+Minikube Installation
+#####################
+
+https://minikube.sigs.k8s.io/docs/start/
+
+
+kubectl Installation
+####################
+
+1. Download the latest release with the command:
+
+$ curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+
+2. Make the kubectl binary executable:
+
+$ chmod +x ./kubectl
+
+3. Move the binary in to your PATH.
+
+$ sudo mv ./kubectl /usr/local/bin/kubectl
+
+4. Test to ensure the version you installed is up-to-date:
+
+$ kubectl version --client
+
+
+VirtualBox Installation
+#######################
+https://phoenixnap.com/kb/install-virtualbox-on-ubuntu
+
+$ sudo apt-get update
+$ sudo apt-get install virtualbox
+$ sudo apt-get install virtualbox—ext–pack
+
+conntrack Installation
+######################
+
+<https://github.com/manusa/actions-setup-minikube/issues/7>
+
+Helm 3 Installation
+###################
+
+1. Install Helm 3 on your client machine:
+
+$ curl -L https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+2. Confirm installation of Helm 3:
+
+$ helm version
+
+Helm Chart Repository
+#####################
+
+1. Add Hono's Helm chart repository:
+
+$ helm repo add eclipse-iot https://eclipse.org/packages/charts
+
+2. Tell helm to download the index for its contents:
+
+$ helm repo update
+
+3. See the content:
+
+$ helm search repo
+
+
+Start Minikube with the docker driver
+#####################################
+
+1. Boost your user's permissions
+
+$ sudo chown -R $USER $HOME/.minikube; chmod -R u+wrx $HOME/.minikube
+
+2. Start minikube
+
+$ minikube start
+
+Deploying to Minikube
+#####################
+
+1. Minikube comes with an embedded Docker daemon which can be used to build the container images instead of using a local Docker daemon, thus eliminating the need to push the images to a registry altogether. In order to use Minikube’s Docker daemon, the following command needs to be run:
+
+$ eval $(minikube docker-env)
+
+> This will set the Docker environment variables to point to Minikube’s Docker daemon which can then be used for building the container images and storing them locally in the Minikube VM.
+
+
