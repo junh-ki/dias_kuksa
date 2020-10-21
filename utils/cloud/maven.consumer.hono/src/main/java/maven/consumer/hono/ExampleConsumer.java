@@ -211,9 +211,8 @@ public class ExampleConsumer {
     	}
     	try {
 			pb.start();
-			// pb.redirectErrorStream(true);
 			LOG.info("*** New " + metrics + " successfully stored in " + db + "/InfluxDB. ***");
-			LOG.info("----- Exported to URL: " + url + " -----\n");
+			LOG.info("----- Exported to URL \"" + url + "\" -----\n");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
