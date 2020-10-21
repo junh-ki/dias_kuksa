@@ -30,5 +30,12 @@ COPY --from=build /usr/src/maven.consumer.hono/target/maven.consumer.hono-0.0.1-
 # Set the entry point
 ENTRYPOINT ["java", "-jar", "maven.consumer.hono-0.0.1-SNAPSHOT.jar"]
 
-### docker build -t hono-influxdb-connector .
-### docker run -p 8080:8080 -t hono-influxdb-connector --hono.client.tlsEnabled=true --hono.client.username=messaging@t20babfe7fb2840119f69e692f184127d --hono.client.password=s9VrzSsOQMzlSKFDgHrj --tenant.id=t20babfe7fb2840119f69e692f184127d
+# ----- Docker Command Examples -----
+
+# docker build -t hono-influxdb-connector .
+# docker run -p 8080:8080 -t hono-influxdb-connector --hono.client.tlsEnabled=true --hono.client.username=messaging@t20babfe7fb2840119f69e692f184127d --hono.client.password=s9VrzSsOQMzlSKFDgHrj --tenant.id=t20babfe7fb2840119f69e692f184127d
+# docker login --username={$USERNAME} --password={$PASSWORD}
+# docker tag hono-influxdb-connector mrki102/hono-influxdb-connector
+# docker push mrki102/hono-influxdb-connector
+# docker image rm image_id --force
+# docker pull mrki102/hono-influxdb-connector
