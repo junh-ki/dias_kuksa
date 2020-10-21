@@ -1,4 +1,4 @@
-# Production stage
+# ----- 1. Jar Building Stage -----
 FROM maven:3.6-jdk-11 AS build
 
 # Copy the contents of the src directory
@@ -18,14 +18,16 @@ RUN apt-get update \
 # Run maven
 RUN mvn -f /usr/src/maven.consumer.hono/pom.xml package -DskipTests
 
-
-
+# ----- 2. Image Building Stage -----
 FROM openjdk:11
 
+# Set the work directory
 WORKDIR /jardir
 
+# Copy the built jar file from the previous stage to the current directory 
 COPY --from=build /usr/src/maven.consumer.hono/target/maven.consumer.hono-0.0.1-SNAPSHOT.jar /jardir
 
+# Set the entry point
 ENTRYPOINT ["java", "-jar", "maven.consumer.hono-0.0.1-SNAPSHOT.jar"]
 
 ### docker build -t hono-influxdb-connector .
