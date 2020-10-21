@@ -23,6 +23,7 @@ $ docker network create monitor_network
 # 2. create a volume for InfluxDB and Grafana
 
 $ docker volume create influxdb-volume
+$ docker volume create connector-volume
 $ docker volume create grafana-volume
 
 # 3. Run Docker-compose (with the detached mode)

@@ -12,6 +12,19 @@ services:
     volumes:
       - influxdb-volume:/var/lib/influxdb
 
+  connector:
+    image: mrki102/hono-influxdb-connector
+    container_name: hono-influxdb-connector_container
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - monitor_network
+    environment:
+      - --hono.client.tlsEnabled=true --hono.client.username=messaging@t20babfe7fb2840119f69e692f184127d --hono.client.password=s9VrzSsOQMzlSKFDgHrj --tenant.id=t20babfe7fb2840119f69e692f184127d
+    volumes:
+      - connector-volume:/var/lib/connector
+
   grafana:
     image: grafana/grafana:6.0.0
     container_name: grafana_container
@@ -34,5 +47,9 @@ networks:
 volumes:
   influxdb-volume:
     external: true # true if you want to reuse the existing volume for persistence
+  
+  connector-volume:
+    external: true
+  
   grafana-volume:
     external: true
