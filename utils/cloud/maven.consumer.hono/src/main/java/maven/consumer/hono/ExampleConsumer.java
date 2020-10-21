@@ -166,7 +166,7 @@ public class ExampleConsumer {
      *
      */
     private void curlCreateDB(String db) {
-    	final String url = "http://localhost:8086/query";
+    	final String url = "http://" + exportIp + "/query";
     	ProcessBuilder pb = new ProcessBuilder(
     		"curl",
     		"-i",
@@ -190,7 +190,7 @@ public class ExampleConsumer {
      * @param val			target metrics value
      */
     private void curlWriteInfluxDBMetrics(String db, String metrics, String host, double val) {
-    	String url = "http://" + exportIp + "/write?db=" + db;
+    	final String url = "http://" + exportIp + "/write?db=" + db;
     	ProcessBuilder pb;
     	if (host != null) {
     		pb = new ProcessBuilder(
