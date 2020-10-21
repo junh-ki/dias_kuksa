@@ -109,8 +109,6 @@ public class ExampleConsumer {
 	private void handleMessage(final Message msg) {
         // final String deviceId = MessageHelper.getDeviceId(msg);
         String content = ((Data) msg.getBody()).getValue().toString();
-        
-        LOG.info(">>>>>>>>exportIp: " + exportIp)
 
         /* Post-processing Part (Send the data to InfluxDB) */
         Map<String, Object> map = mapJSONDictionary(content);
@@ -214,7 +212,8 @@ public class ExampleConsumer {
     	try {
 			pb.start();
 			// pb.redirectErrorStream(true);
-			LOG.info("----- New " + metrics + " successfully stored in " + db + "/InfluxDB. -----\n");
+			LOG.info("*** New " + metrics + " successfully stored in " + db + "/InfluxDB. ***");
+			LOG.info("----- Exported to URL: " + url + " -----\n");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
