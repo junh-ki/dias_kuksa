@@ -34,6 +34,9 @@ public class ExampleConsumer {
     @Value(value = "${tenant.id}")
     protected String tenantId;
 
+    @Value(value = "${export.ip}")
+    protected String exportIp;
+
     @Autowired
     private Vertx vertx;
 
@@ -48,6 +51,10 @@ public class ExampleConsumer {
 
     void setTenantId(String tenantId) {
         this.tenantId = tenantId;
+    }
+
+    void setExportIp(String exportIp) {
+        this.exportIp = exportIp;
     }
 
     @PostConstruct
@@ -103,6 +110,8 @@ public class ExampleConsumer {
         // final String deviceId = MessageHelper.getDeviceId(msg);
         String content = ((Data) msg.getBody()).getValue().toString();
         
+        LOG.info(">>>>>>>>exportIp: " + exportIp)
+
         /* Post-processing Part (Send the data to InfluxDB) */
         Map<String, Object> map = mapJSONDictionary(content);
         
@@ -183,7 +192,7 @@ public class ExampleConsumer {
      * @param val			target metrics value
      */
     private void curlWriteInfluxDBMetrics(String db, String metrics, String host, double val) {
-    	String url = "http://localhost:8086/write?db=" + db;
+    	String url = "http://" + exportIp + "/write?db=" + db;
     	ProcessBuilder pb;
     	if (host != null) {
     		pb = new ProcessBuilder(

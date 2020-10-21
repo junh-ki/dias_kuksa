@@ -13,7 +13,8 @@ COPY Dockerfile /usr/src/maven.consumer.hono
 # Install dependencies
 RUN apt-get update \
  && apt-get install mosquitto -y \
- && apt-get install mosquitto-clients -y
+ && apt-get install mosquitto-clients -y \
+ && apt-get install curl
 
 # Run maven
 RUN mvn -f /usr/src/maven.consumer.hono/pom.xml package -DskipTests

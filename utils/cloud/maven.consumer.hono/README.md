@@ -11,6 +11,7 @@ An existing IoT Hub (Hono) service instance and a valid tenant ID are needed to 
 
 following software must be installed:
 
+* curl ($ sudo apt-get install curl)
 * Java (OpenJDK 11.0.8 is used here)
 * Maven (Apache Maven 3.6.0 is used here)
 * [mosquitto_sub](https://mosquitto.org/) for subscribing to receive commands
@@ -38,12 +39,11 @@ To start the example consumer application (Linux & Mac)
 e.g) Navigate to the folder where this `README.md` file is located,
 and run:
 ~~~
-java -jar target/maven.consumer.hono-0.0.1-SNAPSHOT.jar --hono.client.tlsEnabled=true --hono.client.username=messaging@t20babfe7fb2840119f69e692f184127d --hono.client.password=s9VrzSsOQMzlSKFDgHrj --tenant.id=t20babfe7fb2840119f69e692f184127d
+java -jar target/maven.consumer.hono-0.0.1-SNAPSHOT.jar --hono.client.tlsEnabled=true --hono.client.username=messaging@t20babfe7fb2840119f69e692f184127d --hono.client.password=s9VrzSsOQMzlSKFDgHrj --tenant.id=t20babfe7fb2840119f69e692f184127d --export.ip=localhost:8086
 ~~~
 The above command shall be changed depending on the target service instance's credential info and it should follow the following format:
 ~~~
-java -jar {Target jar file directory} --hono.client.tlsEnabled=true --hono.client.username={messaging-username} --hono.client.password={messaging-password} --tenant.id={tenant-id} --device.id={device-id}
+java -jar {Target jar file directory} --hono.client.tlsEnabled=true --hono.client.username={messaging-username} --hono.client.password={messaging-password} --tenant.id={tenant-id} --device.id={device-id} --export.ip={ip-address}
 ~~~
-
 
 The consumer application is ready as soon as 'Consumer ready' is printed on the console. The startup can take up to 10 seconds.
