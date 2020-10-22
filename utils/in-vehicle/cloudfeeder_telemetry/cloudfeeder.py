@@ -95,8 +95,8 @@ while True:
 	binPro.sigCH0["EngCoolantTemp"] = checkPath(client, "Vehicle.OBD.CoolantTemperature")
 	## D. Bin selection
 	binPro.sigCH0["EngPercentLoadAtCurrentSpeed"] = checkPath(client, "Vehicle.OBD.EngPercentLoadAtCurrentSpeed")
-	binPro.sigCH0["EngSpeedAtIdlePoint1"] = 550.0 # Constant
-	binPro.sigCH0["EngSpeedAtPoint2"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtKickIn") # Missing
+	binPro.sigCH0["EngSpeedAtIdlePoint1"] = 550.0 # Idle Speed
+	binPro.sigCH0["EngSpeedAtPoint2"] = 2200.0 # High Speed Kick-in Point
 	## A & B & C
 	binPro.sigCH0["EngSpeed"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed")
 	## B & D
