@@ -145,8 +145,8 @@ def createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binP
 	outputTorque = (binPro.sigCH0["ActualEngPercentTorque"] - binPro.sigCH0["NominalFrictionPercentTorque"]) * binPro.sigCH0["EngReferenceTorque"]
 	# should the unit for binPro.sigCH0["EngSpeed"] be converted to 1/s ? ASK!!
 	# RPM = Revolutions Per Minute
-	# convert to cycles per second? - sigDictCH0["EngSpeed"]/60
-	power_Js = outputTorque * binPro.sigCH0["EngSpeed"] * 2 * math.pi
+	# Conversion from RPM to Revolutions Per Second: EngSpeed / 60 
+	power_Js = outputTorque * binPro.sigCH0["EngSpeed"] / 60 * 2 * math.pi
 	binPro.cumulativePower_J += power_Js
 	tBin["CumulativeWork"] = binPro.cumulativePower_J
 	## catEvalNum(T_SCR): 1 - Bad, 2 - Intermediate, 3 - Good
