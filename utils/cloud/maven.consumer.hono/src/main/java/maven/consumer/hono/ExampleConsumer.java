@@ -106,7 +106,7 @@ public class ExampleConsumer {
         connectWithRetry();
     }
 
-	private void handleMessage(final Message msg) {
+    private void handleMessage(final Message msg) {
         // final String deviceId = MessageHelper.getDeviceId(msg);
         String content = ((Data) msg.getBody()).getValue().toString();
 
@@ -120,103 +120,128 @@ public class ExampleConsumer {
         final int bpos = (int) map.get("BinPosition");
         final List mtyp = (ArrayList) map.get("MapType");
         final double cwork = (double) map.get("CumulativeWork");
+        
+        double x_coordinate = (double) bco.get(0);
+        double y_coordinate = (double) bco.get(1);
+        int tscr_typ = (int) mtyp.get(0);
+        boolean old_good = (boolean) mtyp.get(1);
+        int pems_typ = (int) mtyp.get(2);
+        
         final String database = "kuksa-tut-db";
         curlCreateDB(database);
-        curlWriteInfluxDBMetrics(database, "sampling_time", "test_host0", samt);
-        curlWriteInfluxDBMetrics(database, "cumulative_nox", "test_host0", nox);
-        curlWriteInfluxDBMetrics(database, "bin_position", "test_host0", bpos);
-        curlWriteInfluxDBMetrics(database, "cumulative_work", "test_host0", cwork);
+        if (tscr_typ == 1) {
+            curlWriteInfluxDBMetrics(database, "x_coordinate", "tscr_bad", x_coordinate);
+            curlWriteInfluxDBMetrics(database, "y_coordinate", "tscr_bad", y_coordinate);
+        } else if (tscr_typ == 2) {
+            curlWriteInfluxDBMetrics(database, "x_coordinate", "tscr_intermediate", x_coordinate);
+            curlWriteInfluxDBMetrics(database, "y_coordinate", "tscr_intermediate", y_coordinate);     
+        } else if (tscr_typ == 3) {
+            curlWriteInfluxDBMetrics(database, "x_coordinate", "tscr_good", x_coordinate);
+            curlWriteInfluxDBMetrics(database, "y_coordinate", "tscr_good", y_coordinate);
+        }
+        if (old_good) {
+            curlWriteInfluxDBMetrics(database, "x_coordinate", "old_good", x_coordinate);
+            curlWriteInfluxDBMetrics(database, "y_coordinate", "old_good", y_coordinate);
+        }
+        if (pems_typ == 1) {
+            curlWriteInfluxDBMetrics(database, "x_coordinate", "pems_cold", x_coordinate);
+            curlWriteInfluxDBMetrics(database, "y_coordinate", "pems_cold", y_coordinate);
+        } else if (pems_typ == 2) {
+            curlWriteInfluxDBMetrics(database, "x_coordinate", "pems_hot", x_coordinate);
+            curlWriteInfluxDBMetrics(database, "y_coordinate", "pems_hot", y_coordinate);
+        }
+        LOG.info("Values: " + x_coordinate + ", " + y_coordinate + ", " + tscr_typ + ", " + old_good + ", " + pems_typ);
     }
     
-	/**
-	 * To get a map from JSON dictionary string
-	 * @param dict		Target JSON dictionary string
-	 * @return			mapped data set
-	 */
-	@SuppressWarnings("unchecked")
+    /**
+     * To get a map from JSON dictionary string
+     * @param dict      Target JSON dictionary string
+     * @return          mapped data set
+     */
+    @SuppressWarnings("unchecked")
     private Map<String, Object> mapJSONDictionary(String dict) {
-    	Map<String, Object> map = null;
+        Map<String, Object> map = null;
         try {
-        	map = new ObjectMapper().readValue(dict, HashMap.class);
-			LOG.info("-------- Message successfully received. ---------");
-			// map the bin (JSON dictionary)
-			for (Map.Entry<String,Object> entry : map.entrySet()) {
-				String key = entry.getKey();
-				// this part is case-specific
-				if (key == "Extension") {
-					if (entry.getValue().getClass().equals(String.class)) {
+            map = new ObjectMapper().readValue(dict, HashMap.class);
+            LOG.info("-------- Message successfully received. ---------");
+            // map the bin (JSON dictionary)
+            for (Map.Entry<String,Object> entry : map.entrySet()) {
+                String key = entry.getKey();
+                // this part is case-specific
+                if (key == "Extension") {
+                    if (entry.getValue().getClass().equals(String.class)) {
                         // TODO: make a map again for the nested dictionary (Extended Bin's Attributes).
                         LOG.info("\nExtension-----" + key + ": " + entry.getValue() + "-----\n");
-					}
-				}
-				LOG.info(key + ": " + entry.getValue());
-	        }
-		} catch (JsonMappingException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (JsonProcessingException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+                    }
+                }
+                LOG.info(key + ": " + entry.getValue());
+            }
+        } catch (JsonMappingException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        } catch (JsonProcessingException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
         return map;
     }
 
     /**
      * To create a database
-     * @param db	name of the database you want to create
+     * @param db    name of the database you want to create
      *
      */
     private void curlCreateDB(String db) {
-    	final String url = "http://" + exportIp + "/query";
-    	ProcessBuilder pb = new ProcessBuilder(
-    		"curl",
-    		"-i",
-    		"-XPOST",
-    		url,
-    		"--data-urlencode",
-    		"q=CREATE DATABASE " + db);
-    	try {
-			pb.start();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        final String url = "http://" + exportIp + "/query";
+        ProcessBuilder pb = new ProcessBuilder(
+            "curl",
+            "-i",
+            "-XPOST",
+            url,
+            "--data-urlencode",
+            "q=CREATE DATABASE " + db);
+        try {
+            pb.start();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     /**
      * To run a curl call to write metrics data to the target InfluxDB database.
-     * @param db			target database name
-     * @param metrics		target metrics name
-     * @param host			source can channel (can0 or can1) // null works
-     * @param val			target metrics value
+     * @param db            target database name
+     * @param metrics       target metrics name
+     * @param host          source can channel (can0 or can1) // null works
+     * @param val           target metrics value
      */
     private void curlWriteInfluxDBMetrics(String db, String metrics, String host, double val) {
-    	final String url = "http://" + exportIp + "/write?db=" + db;
-    	ProcessBuilder pb;
-    	if (host != null) {
-    		pb = new ProcessBuilder(
-            		"curl",
+        final String url = "http://" + exportIp + "/write?db=" + db;
+        ProcessBuilder pb;
+        if (host != null) {
+            pb = new ProcessBuilder(
+                    "curl",
                     "-i",
                     "-XPOST",
                     url,
                     "--data-binary",
                     metrics + ",host=" + host + " value=" + val);
-    	} else {
-    		pb = new ProcessBuilder(
-            		"curl",
+        } else {
+            pb = new ProcessBuilder(
+                    "curl",
                     "-i",
                     "-XPOST",
                     url,
                     "--data-binary",
                     metrics + " value=" + val);
-    	}
-    	try {
-			pb.start();
-			LOG.info("*** New " + metrics + " successfully stored in " + db + "/InfluxDB. ***");
-			LOG.info("----- Exported to URL, \"" + url + "\" -----\n");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        }
+        try {
+            pb.start();
+            LOG.info("*** New " + metrics + " successfully stored in " + db + "/InfluxDB. ***");
+            LOG.info("----- Exported to URL, \"" + url + "\" -----\n");
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }
