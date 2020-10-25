@@ -146,7 +146,7 @@ public class ExampleConsumer {
 				if (key == "Extension") {
 					if (entry.getValue().getClass().equals(String.class)) {
                         // TODO: make a map again for the nested dictionary (Extended Bin's Attributes).
-                        LOG.info("\nExtension-----" + key + ": " + entry.getValue() + "-----\n")
+                        LOG.info("\nExtension-----" + key + ": " + entry.getValue() + "-----\n");
 					}
 				}
 				LOG.info(key + ": " + entry.getValue());
