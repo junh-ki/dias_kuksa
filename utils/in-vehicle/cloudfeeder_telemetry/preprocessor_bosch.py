@@ -114,22 +114,22 @@ def pemsEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tCoolant):
 def getXAxisVal(speed, hsGovKickInSpeed, idleSpeed):
 	numerator = (speed - idleSpeed) * 100
 	denominator = hsGovKickInSpeed - idleSpeed
-	if denominator == 0:
-		return 0
+	if denominator == 0.0:
+		return 0.0
 	xAxisVal = numerator/denominator
 	if xAxisVal > 100:
 		xAxisVal = 100
-	elif xAxisVal < 0:
+	elif xAxisVal < 0.0:
 		# print("The current speed can not be smaller than the engine speed at idle.")
 		# print("The engine speed at high speed governor kick in point can not be equal or smaller than the engine speed at idle.")
-		xAxisVal = 0
+		xAxisVal = 0.0
 	return xAxisVal
 	
 def getYAxisVal(actualEngPercentTorque):
 	if actualEngPercentTorque > 100:
 		actualEngPercentTorque = 100
-	elif actualEngPercentTorque < 0:
-		actualEngPercentTorque = 0
+	elif actualEngPercentTorque < 0.0:
+		actualEngPercentTorque = 0.0
 	return actualEngPercentTorque
 
 def createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binPro):
