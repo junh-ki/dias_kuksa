@@ -120,7 +120,7 @@ public class ExampleConsumer {
         final int bpos = (int) map.get("BinPosition");
         final List mtyp = (ArrayList) map.get("MapType");
         final double cwork = (double) map.get("CumulativeWork");
-        final String database = "testdb0";
+        final String database = "kuksa-tut-db";
         curlCreateDB(database);
         curlWriteInfluxDBMetrics(database, "sampling_time", "test_host0", samt);
         curlWriteInfluxDBMetrics(database, "cumulative_nox", "test_host0", nox);
@@ -145,7 +145,8 @@ public class ExampleConsumer {
 				// this part is case-specific
 				if (key == "Extension") {
 					if (entry.getValue().getClass().equals(String.class)) {
-						// TODO: make a map again for the nested dictionary (Extended Bin's Attributes).
+                        // TODO: make a map again for the nested dictionary (Extended Bin's Attributes).
+                        LOG.info("\nExtension-----" + key + ": " + entry.getValue() + "-----\n")
 					}
 				}
 				LOG.info(key + ": " + entry.getValue());
