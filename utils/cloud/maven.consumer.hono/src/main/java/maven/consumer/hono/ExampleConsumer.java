@@ -150,7 +150,7 @@ public class ExampleConsumer {
             curlWriteInfluxDBMetrics(database, "x_coordinate", "pems_hot", x_coordinate);
             curlWriteInfluxDBMetrics(database, "y_coordinate", "pems_hot", y_coordinate);
         }
-        LOG.info("Values: " + x_coordinate + ", " + y_coordinate + ", " + tscr_typ + ", " + old_good + ", " + pems_typ);
+        LOG.info("Coordinates: (" + x_coordinate + ", " + y_coordinate + "), T_SCR: " + tscr_typ + ", Old_Good: " + old_good + ", PEMS_Typ: " + pems_typ);
     }
     
     /**
