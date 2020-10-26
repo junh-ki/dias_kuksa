@@ -127,7 +127,7 @@ public class ExampleConsumer {
         boolean old_good = (boolean) mtyp.get(1);
         int pems_typ = (int) mtyp.get(2);
         
-        final String database = "kuksa-tut-db";
+        final String database = "dias_kuksa_tut";
         curlCreateDB(database);
         if (tscr_typ == 1) {
             curlWriteInfluxDBMetrics(database, "x_coordinate", "tscr_bad", x_coordinate);
