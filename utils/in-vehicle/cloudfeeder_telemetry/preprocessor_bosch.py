@@ -68,7 +68,7 @@ def preprocessing(binPro):
 	pemsEvalNum = pemsEval(binPro.sigCH0["TimeSinceEngineStart"], binPro.sigCH0["AmbientAirTemp"], binPro.sigCH0["BarometricPress"] * 10, False, binPro.sigCH0["EngCoolantTemp"])
 	# <assumption>
 	# X-Axis: is not Engine Speed. but a percentage of: (EngSpeed-EngSpeedAtIdlePoint1)/(EngSpeedAtPoint2-EngSpeedAtIdlePoint1)
-	# Y-Axis: it could either be ActualEngPercentTorque or EngineOutputTorque
+	# Y-Axis: ActualEngPercentTorque
 	# To create the bin map, you need EngSpeed and Engine Output Torque?
 	# EngineOutputTorque = (ActualEngineTorque - NominalFrictionPercentTorque) * EngineReferenceTorque
 	xAxisVal = getXAxisVal(binPro.sigCH0["EngSpeed"], binPro.sigCH0["EngSpeedAtPoint2"], binPro.sigCH0["EngSpeedAtIdlePoint1"])
@@ -153,7 +153,7 @@ def createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binP
 	## isOldEvalActive(Old_Good): True - Active, False - Inactive
 	## pemsEvalNum(PEMS): 0 - Inactive, 1 - Cold, 2 - Hot
 	tBin["MapType"] = (catEvalNum, isOldEvalActive, pemsEvalNum)
-	if tBin["MapType"][0] == 2:
+	if tBin["MapType"][0] == 3:
 		tBin["Extension"] = {}
 		tBin["Extension"]["CumulativeNOxDSEmissionPPM"] = tBin["CumulativeNOxDSEmissionGram"] / 1000
 		tBin["Extension"]["CumulativeNOxUSEmissionGram"] = binPro.cumulativeNOxUS_g
