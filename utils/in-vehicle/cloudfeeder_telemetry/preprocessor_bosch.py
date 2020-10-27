@@ -235,3 +235,29 @@ def plotBinMap(tBin, binPro):
 		elif tBin["MapType"][2] == 2:
 			binPro.subList[5].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
 	plt.pause(1)
+
+## Bin when T_SCR = Good
+#{
+#	"CumulativeSamplingTime": ---,
+#	"CumulativeNOxDSEmissionGram": ---,
+#	"CumulativeWork": ---,
+#	"MapType": (--, --, --),
+#	"Extension": {
+#		"CumulativeNOxDSEmissionPPM": ---,
+#		"CumulativeNOxUSEmissionGram": ---,
+#		"CumulativeNOxUSEmissionPPM": ---,
+#	},
+#	"Coordinates": (--, --),
+#	"BinPosition": ---,
+#}
+
+## Bin when T_SCR != Good
+#{
+#	"CumulativeSamplingTime": ---,
+#	"CumulativeNOxDSEmissionGram": ---,
+#	"CumulativeWork": ---,
+#	"MapType": (--, --, --),
+#	"Extension": 0,
+#	"Coordinates": (--, --),
+#	"BinPosition": ---,
+#}
