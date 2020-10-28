@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   influxdb:
-    image: influxdb:1.8.3
+    image: mrki102/influxdb
     container_name: influxdb_container
     restart: always
     ports:
