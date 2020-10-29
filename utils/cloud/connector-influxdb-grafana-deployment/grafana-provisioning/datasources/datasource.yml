@@ -1,0 +1,13 @@
+# grafana/provisioning/datasources/datasource.yml
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    database: dias_kuksa_tut
+    user: admin
+    password: admin
+    url: http://influxdb:8086
+    isDefault: true
+    editable: true

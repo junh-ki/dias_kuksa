@@ -3,14 +3,18 @@ version: "3.7"
 services:
   influxdb:
     image: mrki102/influxdb
-    container_name: influxdb_container
+    container_name: influxdb
     restart: always
     ports:
       - "8086:8086"
     networks:
       - monitor_network
     volumes:
-      - influxdb-volume:/var/lib/influxdb
+      - influxdb-storage:/var/lib/influxdb
+    environment:
+      - INFLUXDB_DB=dias_kuksa_tut
+      - INFLUXDB_ADMIN_USER=${INFLUXDB_USERNAME}
+      - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_PASSWORD}
 
   connector:
     image: mrki102/hono-influxdb-connector
@@ -21,34 +25,35 @@ services:
       - "8080:8080"
     networks:
       - monitor_network
+    depends_on:
+      - influxdb
     volumes:
-      - connector-volume:/var/lib/connector
+      - connector-storage:/var/lib/connector
 
   grafana:
     image: grafana/grafana:6.0.0
-    container_name: grafana_container
+    container_name: grafana
     restart: always
     ports:
       - "3000:3000"
     networks:
       - monitor_network
+    depends_on:
+      - influxdb
     environment:
       - GF_INSTALL_PLUGINS=grafana-clock-panel,natel-plotly-panel # to add plugins
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USERNAME}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
     volumes:
-      - grafana-volume:/var/lib/grafana
+      - grafana-storage:/var/lib/grafana
+      - ./grafana-provisioning/:/etc/grafana/provisioning/
 
 # networks and volumes need to be configured first before running docker-compose
 
 networks:
   monitor_network:
-    external: true
 
 volumes:
-  influxdb-volume:
-    external: true # true if you want to reuse the existing volume for persistence
-  
-  connector-volume:
-    external: true
-  
-  grafana-volume:
-    external: true
+  influxdb-storage:
+  connector-storage:
+  grafana-storage:

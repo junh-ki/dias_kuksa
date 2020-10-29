@@ -16,20 +16,6 @@ $ sudo chmod +x /usr/local/bin/docker-compose
 $ sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 $ docker-compose --version
 
-# 1. create a bridge network
-
-$ docker network create monitor_network
-
-# 2. create a volume for InfluxDB and Grafana
-
-$ docker volume create influxdb-volume
-$ docker volume create connector-volume
-$ docker volume create grafana-volume
-
-# 3. Run Docker-compose (with the detached mode)
+# Run Docker-compose (with the detached mode)
 
 $ docker-compose up -d
-
-# 4. When setting datasource for Grafana, Set HTTP/URL like following
-
-$ http://influxdb:8086
