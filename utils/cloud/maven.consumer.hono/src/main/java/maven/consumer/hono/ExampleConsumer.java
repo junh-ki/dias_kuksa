@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
+import java.lang.Double;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -114,18 +115,18 @@ public class ExampleConsumer {
         Map<String, Object> map = mapJSONDictionary(content);
         
         /* Storing data in the InfluxDB server */
-        final double samt = (double) map.get("CumulativeSamplingTime");
-        final double nox = (double) map.get("CumulativeNOxDSEmissionGram");
+        final double samt = Double.parseDouble(map.get("CumulativeSamplingTime").toString());
+        final double nox = Double.parseDouble(map.get("CumulativeNOxDSEmissionGram").toString());
         final List bco = (ArrayList) map.get("Coordinates");
         final int bpos = (int) map.get("BinPosition");
         final List mtyp = (ArrayList) map.get("MapType");
-        final double cwork = (double) map.get("CumulativeWork");
-        
-        double x_coordinate = (double) bco.get(0);
-        double y_coordinate = (double) bco.get(1);
-        int tscr_typ = (int) mtyp.get(0);
-        boolean old_good = (boolean) mtyp.get(1);
-        int pems_typ = (int) mtyp.get(2);
+        final double cwork = Double.parseDouble(map.get("CumulativeWork").toString());
+
+        final double x_coordinate = Double.parseDouble(bco.get(0).toString());
+        final double y_coordinate = Double.parseDouble(bco.get(1).toString());
+        final int tscr_typ = (int) mtyp.get(0);
+        final boolean old_good = (boolean) mtyp.get(1);
+        final int pems_typ = (int) mtyp.get(2);
         
         final String database = "dias_kuksa_tut";
         curlCreateDB(database);
@@ -134,7 +135,7 @@ public class ExampleConsumer {
             curlWriteInfluxDBMetrics(database, "y_coordinate", "tscr_bad", y_coordinate);
         } else if (tscr_typ == 2) {
             curlWriteInfluxDBMetrics(database, "x_coordinate", "tscr_intermediate", x_coordinate);
-            curlWriteInfluxDBMetrics(database, "y_coordinate", "tscr_intermediate", y_coordinate);     
+            curlWriteInfluxDBMetrics(database, "y_coordinate", "tscr_intermediate", y_coordinate);
         } else if (tscr_typ == 3) {
             curlWriteInfluxDBMetrics(database, "x_coordinate", "tscr_good", x_coordinate);
             curlWriteInfluxDBMetrics(database, "y_coordinate", "tscr_good", y_coordinate);
