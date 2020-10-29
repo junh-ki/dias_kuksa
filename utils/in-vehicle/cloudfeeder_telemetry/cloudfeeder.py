@@ -88,7 +88,7 @@ while True:
 	binPro.sigCH1["Aftertreatment1IntakeNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.NOxIntake1")
 	binPro.sigCH1["Aftertreatment1OutletNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.NOxOutlet1")
 	## B. Calculate engine work
-	binPro.sigCH0["EngReferenceTorque"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngReferenceTorque") # Missing
+	binPro.sigCH0["EngReferenceTorque"] = 2500.0
 	## C. Map switch over
 	binPro.sigCH0["AmbientAirTemp"] = checkPath(client, "Vehicle.AmbientAirTemperature")
 	binPro.sigCH0["BarometricPress"] = checkPath(client, "Vehicle.OBD.BarometricPressure")

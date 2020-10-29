@@ -5,12 +5,10 @@
 FROM influxdb:1.8.3
 
 # --- 2. Add volume ---
-# relevant folders (data, meta, wal) from the local directory of `/var/lib/influxdb/`
+# relevant folder (influxdb) from the local directory of `/var/lib/`
 # should already be placed in the directory where this Dockerfile is located.
 
-ADD data /var/lib/influxdb/data/
-ADD meta /var/lib/influxdb/meta/
-ADD wal /var/lib/influxdb/wal/
+ADD influxdb /var/lib/influxdb/
 
 # ----- Docker Command Examples -----
 

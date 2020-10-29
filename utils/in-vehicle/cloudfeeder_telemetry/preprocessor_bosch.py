@@ -16,7 +16,9 @@ class BinInfoProvider:
 		self.sigCH0 = {}
 		self.sigCH1 = {}
 		self.cumulativeNOxDS_g = 0
+		self.cumulativeNOxDS_ppm = 0
 		self.cumulativeNOxUS_g = 0
+		self.cumulativeNOxUS_ppm = 0
 		self.cumulativePower_J = 0
 		# 0: cbad, 1: cint, 2: cgoodm, 3: oldgood, 4: pemscold, 5: pemshot
 		self.subList = []
@@ -134,14 +136,19 @@ def getYAxisVal(actualEngPercentTorque):
 
 def createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binPro):
 	tBin = {}
+	###### TODO: instead of collecting sampling time, counting the number of bins should be put.
 	tBin["CumulativeSamplingTime"] = binPro.sigCH0["TimeSinceEngineStart"]
 	## Cumulative NOx (DownStream) in g
 	noxDS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1OutletNOx"] * binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] / 3600
 	binPro.cumulativeNOxDS_g += noxDS_gs
+	tBin["CumulativeNOxDSEmissionGram"] = binPro.cumulativeNOxDS_g
+	## Cumulative NOx (DownStream) in ppm
+	binPro.cumulativeNOxDS_ppm += binPro.sigCH1["Aftertreatment1OutletNOx"]
 	## Cumulative NOx (UpStream) in g
 	noxUS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1IntakeNOx"] * binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] / 3600
 	binPro.cumulativeNOxUS_g += noxUS_gs
-	tBin["CumulativeNOxDSEmissionGram"] = binPro.cumulativeNOxDS_g
+	## Cumulative NOx (UpStream) in ppm
+	binPro.cumulativeNOxUS_ppm += binPro.sigCH1["Aftertreatment1IntakeNOx"]
 	outputTorque = (binPro.sigCH0["ActualEngPercentTorque"] - binPro.sigCH0["NominalFrictionPercentTorque"]) * binPro.sigCH0["EngReferenceTorque"]
 	# should the unit for binPro.sigCH0["EngSpeed"] be converted to 1/s ? ASK!!
 	# RPM = Revolutions Per Minute
@@ -155,9 +162,9 @@ def createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binP
 	tBin["MapType"] = (catEvalNum, isOldEvalActive, pemsEvalNum)
 	if tBin["MapType"][0] == 3:
 		tBin["Extension"] = {}
-		tBin["Extension"]["CumulativeNOxDSEmissionPPM"] = tBin["CumulativeNOxDSEmissionGram"] / 1000
+		tBin["Extension"]["CumulativeNOxDSEmissionPPM"] = binPro.cumulativeNOxDS_ppm
 		tBin["Extension"]["CumulativeNOxUSEmissionGram"] = binPro.cumulativeNOxUS_g
-		tBin["Extension"]["CumulativeNOxUSEmissionPPM"] = tBin["Extension"]["CumulativeNOxUSEmissionGram"] / 1000
+		tBin["Extension"]["CumulativeNOxUSEmissionPPM"] = binPro.cumulativeNOxUS_ppm
 	else:
 		tBin["Extension"] = 0
 	tBin["Coordinates"] = (xAxisVal, yAxisVal)
