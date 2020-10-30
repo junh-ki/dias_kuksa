@@ -177,29 +177,6 @@ def printBinInfo(tBin):
 		print("BIN(Not Collected): " + str(tBin))
 	print("###########################################################")
 
-def plotBinMap(tBin, binPro):
-	# Plot the real-time map (subList)
-	## T_SCR: [0] - Bad, [1] - Intermediate, [2] - Good
-	## Old_Good: [3]
-	## PEMS: [4] - Cold, [5] - Hot
-	if tBin["BinPosition"] != 0:
-		## New Concept (T_SCR)
-		if tBin["MapType"][0] == 1:
-			binPro.subList[0].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
-		elif tBin["MapType"][0] == 2:
-			binPro.subList[1].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
-		elif tBin["MapType"][0] == 3:
-			binPro.subList[2].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
-		## Old Concept (Good)
-		if tBin["MapType"][1]:
-			binPro.subList[3].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
-		## PEMS Style Concept
-		if tBin["MapType"][2] == 1:
-			binPro.subList[4].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
-		elif tBin["MapType"][2] == 2:
-			binPro.subList[5].scatter(tBin["Coordinates"][0], tBin["Coordinates"][1], s=10)
-	plt.pause(1)
-
 ## Bin when T_SCR = Good
 #{
 #	"CumulativeSamplingTime": ---,
