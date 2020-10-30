@@ -6,9 +6,11 @@ is also located.
 
 """
 
-import math
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
+class T_SCR_Mode:
+	Nonee, Bad, Intermediate, Good = range(4)
+
+class PEMS_Mode:
+	Nonee, Cold_Start, Hot_Start = range(3)
 
 class BinInfoProvider:
 	"""A class that provides info to create a bin"""	
@@ -20,39 +22,6 @@ class BinInfoProvider:
 		self.cumulativeNOxUS_g = 0
 		self.cumulativeNOxUS_ppm = 0
 		self.cumulativePower_J = 0
-		# 0: cbad, 1: cint, 2: cgoodm, 3: oldgood, 4: pemscold, 5: pemshot
-		self.subList = []
-		
-		self.fig = plt.figure(constrained_layout=True)
-		self.fig.suptitle('NOx Maps')	
-		self.spec = gridspec.GridSpec(ncols=3, nrows=2, figure=self.fig)
-		for i in range(0, 2):
-			for j in range(0, 3):
-				subplot = self.fig.add_subplot(self.spec[i, j])
-				self.subList.append(subplot)
-		self.subList[0].set_title('T_SCR (Bad)')
-		self.subList[1].set_title('T_SCR (Intermediate)')
-		self.subList[2].set_title('T_SCR (Good)')
-		self.subList[3].set_title('Old Concept (Good)')
-		self.subList[4].set_title('PEMS (Cold)')
-		self.subList[5].set_title('PEMS (Hot)')
-		for subplot in self.subList:
-			subplot.set_xlabel('Engine Speed')
-			subplot.set_ylabel('Engine Load')
-			subplot.set_xlim([0,100])
-			subplot.set_ylim([0,100])
-			subplot.set_xticks([25, 50, 75, 100])
-			subplot.set_yticks([33, 66, 100])
-			subplot.axhline(0, linestyle='--', color='k')
-			subplot.axhline(33, linestyle='--', color='k')
-			subplot.axhline(66, linestyle='--', color='k')
-			subplot.axhline(100, linestyle='--', color='k')
-			subplot.axvline(0, linestyle='--', color='k')
-			subplot.axvline(25, linestyle='--', color='k')
-			subplot.axvline(50, linestyle='--', color='k')
-			subplot.axvline(75, linestyle='--', color='k')
-			subplot.axvline(100, linestyle='--', color='k')
-		self.fig.tight_layout()
 
 def preprocessing(binPro):
 	# Get map type info, decide the position and create a bin with dictionary (in the bin map)
@@ -75,27 +44,17 @@ def preprocessing(binPro):
 	# EngineOutputTorque = (ActualEngineTorque - NominalFrictionPercentTorque) * EngineReferenceTorque
 	xAxisVal = getXAxisVal(binPro.sigCH0["EngSpeed"], binPro.sigCH0["EngSpeedAtPoint2"], binPro.sigCH0["EngSpeedAtIdlePoint1"])
 	yAxisVal = getYAxisVal(binPro.sigCH0["ActualEngPercentTorque"])
-	# ### For Manual Mapping Test ###
-	catEvalNum = 3
-	isOldEvalActive = True
-	pemsEvalNum = 2
-	xAxisVal = 82
-	yAxisVal = 56
-	# ###############################
 	tBin = createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binPro)
 	return tBin
 
 def catalystEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tSCR):
 	if timeAfterEngStart < 180 or tAmbient < -7 or pAmbient < 750 or isFaultActive == True or tSCR < 180:
-		# print("Catalyst Mapping - Bad (Active)")
-		return 1
+		return T_SCR_Mode.Bad
 	elif timeAfterEngStart >= 180 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
 		if 180 <= tSCR < 220:
-			# print("Catalyst Evalution - Intermediate (Active)")
-			return 2
+			return T_SCR_Mode.Intermediate
 		elif tSCR >= 220:
-			# print("Catalyst Evalution - Good (Active)")
-			return 3
+			return T_SCR_Mode.Good
 
 def oldGoodEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive):
 	if timeAfterEngStart >= 1800 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
@@ -106,12 +65,10 @@ def oldGoodEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive):
 def pemsEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tCoolant):	
 	if timeAfterEngStart >= 60 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
 		if 30 <= tCoolant < 70:
-			# print("PEMS Evalution - Cold Start (Active)")
-			return 1
+			return PEMS_Mode.Cold_Start
 		elif tCoolant >= 70:
-			# print("PEMS Evalution - Hot Start (Active)")
-			return 2
-	return 0
+			return PEMS_Mode.Hot_Start
+	return PEMS_Mode.Nonee
 
 def getXAxisVal(speed, hsGovKickInSpeed, idleSpeed):
 	numerator = (speed - idleSpeed) * 100
