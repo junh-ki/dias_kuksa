@@ -6,6 +6,8 @@ is also located.
 
 """
 
+import math
+
 class T_SCR_Mode:
 	Nonee, Bad, Intermediate, Good = range(4)
 
