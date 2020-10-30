@@ -76,11 +76,11 @@ def preprocessing(binPro):
 	xAxisVal = getXAxisVal(binPro.sigCH0["EngSpeed"], binPro.sigCH0["EngSpeedAtPoint2"], binPro.sigCH0["EngSpeedAtIdlePoint1"])
 	yAxisVal = getYAxisVal(binPro.sigCH0["ActualEngPercentTorque"])
 	# ### For Manual Mapping Test ###
-	# catEvalNum = 2
-	# isOldEvalActive = True
-	# pemsEvalNum = 2
-	# xAxisVal = 33
-	# yAxisVal = 45
+	catEvalNum = 3
+	isOldEvalActive = True
+	pemsEvalNum = 2
+	xAxisVal = 82
+	yAxisVal = 56
 	# ###############################
 	tBin = createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binPro)
 	return tBin

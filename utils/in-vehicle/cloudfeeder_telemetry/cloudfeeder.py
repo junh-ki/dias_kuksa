@@ -19,6 +19,7 @@ import json
 import os
 import argparse
 import preprocessor_bosch # preprocessing varies depending on how to process the data.
+import preprocessor_example
 
 def getConfig():
     parser = argparse.ArgumentParser()
@@ -105,20 +106,22 @@ while True:
 	## C - case 2 & Sampling duration tracking per bin
 	binPro.sigCH0["TimeSinceEngineStart"] = checkPath(client, "Vehicle.Drivetrain.FuelSystem.TimeSinceStart") # Missing
 	
-	# 2. Preprocess
-	tBin = preprocessor_bosch.preprocessing(binPro)
+	# 2. Preprocess and show the result
+	# tBin = preprocessor_bosch.preprocessing(binPro)
+	# preprocessor_bosch.printSignalValues(binPro)
+	# preprocessor_bosch.printBinInfo(tBin)
+
+	tBin = preprocessor_example.preprocessing(binPro)
+	preprocessor_example.printSignalValues(binPro)
+	preprocessor_example.printBinInfo(tBin)
 	
-	# 3. Show the result
-	preprocessor_bosch.printSignalValues(binPro)
-	preprocessor_bosch.printBinInfo(tBin)
-	
-	# 4. MQTT: Send the result bin to the cloud. (in a JSON format)
+	# 3. MQTT: Send the result bin to the cloud. (in a JSON format)
 	tBin_json = json.dumps(tBin)
 	# Sending device data via MQTT(Device to Cloud)
 	command = prefix_cmd + "'" + tBin_json + "'"
 	os.system(command)
 
-	# 5. Plot the real-time map (In-vehicle) (subList)
+	# 4. Plot the real-time map (In-vehicle) (subList)
 	# preprocessor_bosch.plotBinMap(tBin, binPro) # with this, you don't need time.sleep(1)
 	
 	# X. Time delay

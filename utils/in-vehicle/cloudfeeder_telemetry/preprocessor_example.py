@@ -39,7 +39,7 @@ def createBin(tscr_mode, is_old_active, pems_mode, xAxisVal, yAxisVal, binPro):
 def preprocessing(binPro):
 	
 	# Implement your own function with the read signals
-	tscr_mode = catalystEval(binPro.sigCH0["TimeSinceEngineStart"], binPro.sigCH0["AmbientAirTemp"], binPro.sigCH0["BarometricPress"] * 10, False, binPro.sigCH0["Aftrtrtmnt1SCRCtlystIntkGasTemp"])
+	tscr_mode = catalystEval(binPro.sigCH0["TimeSinceEngineStart"], binPro.sigCH0["AmbientAirTemp"], binPro.sigCH0["BarometricPress"] * 10, False, binPro.sigCH1["Aftrtrtmnt1SCRCtlystIntkGasTemp"])
 	
 	# Implement your own function with the read signals
 	is_old_active = oldGoodEval(binPro.sigCH0["TimeSinceEngineStart"], binPro.sigCH0["AmbientAirTemp"], binPro.sigCH0["BarometricPress"] * 10, False)
@@ -110,4 +110,12 @@ def printSignalValues(binPro):
 	print("######################## Channel-1 ########################")	
 	for signal, value in binPro.sigCH1.items():
 		print(signal, ": ", str(value))
+	print("###########################################################")
+
+def printBinInfo(tBin):
+	print("###########################################################")
+	if tBin["BinPosition"] != 0:
+		print("BIN(Collected): " + str(tBin))
+	else:
+		print("BIN(Not Collected): " + str(tBin))
 	print("###########################################################")
