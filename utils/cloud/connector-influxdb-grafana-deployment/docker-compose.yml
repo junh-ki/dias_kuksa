@@ -48,8 +48,6 @@ services:
       - grafana-storage:/var/lib/grafana
       - ./grafana-provisioning/:/etc/grafana/provisioning/
 
-# networks and volumes need to be configured first before running docker-compose
-
 networks:
   monitor_network:
 
