@@ -18,7 +18,7 @@ services:
 
   connector:
     image: mrki102/hono-influxdb-connector
-    container_name: hono-influxdb-connector_container
+    container_name: hono-influxdb-connector
     command: --hono.client.tlsEnabled=true --hono.client.username=messaging@t20babfe7fb2840119f69e692f184127d --hono.client.password=s9VrzSsOQMzlSKFDgHrj --tenant.id=t20babfe7fb2840119f69e692f184127d --export.ip=influxdb:8086
     restart: always
     ports:
