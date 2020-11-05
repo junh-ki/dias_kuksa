@@ -27,8 +27,6 @@ services:
       - monitor_network
     depends_on:
       - influxdb
-    volumes:
-      - connector-storage:/var/lib/connector
 
   grafana:
     image: grafana/grafana:6.0.0
@@ -53,5 +51,4 @@ networks:
 
 volumes:
   influxdb-storage:
-  connector-storage:
   grafana-storage:
