@@ -18,6 +18,7 @@
   "links": [],
   "panels": [
     {
+      "datasource": "InfluxDB",
       "gridPos": {
         "h": 7,
         "w": 6,
