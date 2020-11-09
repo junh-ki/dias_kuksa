@@ -18,7 +18,7 @@ import testclient
 import json
 import os
 import argparse
-import preprocessor_bosch # preprocessing varies depending on how to process the data.
+# import preprocessor_bosch # preprocessing varies depending on how to process the data.
 import preprocessor_example
 
 def getConfig():
@@ -79,7 +79,7 @@ prefix_cmd = makePrefixCommand(args)
 client = getVISSConnectedClient()
 
 # Create a BinInfoProvider instance
-binPro = preprocessor_bosch.BinInfoProvider()
+binPro = preprocessor_example.BinInfoProvider()
 
 while True:
 	# 1. Store signals' values from the target path to the dictionary keys
