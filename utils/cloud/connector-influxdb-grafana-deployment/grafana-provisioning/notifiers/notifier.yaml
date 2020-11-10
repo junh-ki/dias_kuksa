@@ -1,0 +1,11 @@
+# grafana/provisioning/notifiers/notifier.yml
+apiVersion: 1
+
+notifiers:
+  - name: default-email
+    type: email
+    org_id: 1
+    uid: notifier1
+    is_default: true
+    settings:
+      addresses: fixed-term.Junhyung.Ki@de.bosch.com; kijoonh91@gmail.com

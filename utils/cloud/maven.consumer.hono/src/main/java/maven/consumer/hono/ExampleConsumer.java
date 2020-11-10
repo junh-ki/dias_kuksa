@@ -112,15 +112,15 @@ public class ExampleConsumer {
         String content = ((Data) msg.getBody()).getValue().toString();
 
         /* Post-processing Part (Send the data to InfluxDB) */
-        Map<String, Object> map = mapJSONDictionary(content);
+        final Map<String, Object> map = mapJSONDictionary(content);
         
         /* Storing data in the InfluxDB server */
-        final double samt = Double.parseDouble(map.get("CumulativeSamplingTime").toString());
         final double nox = Double.parseDouble(map.get("CumulativeNOxDSEmissionGram").toString());
         final List bco = (ArrayList) map.get("Coordinates");
         final int bpos = (int) map.get("BinPosition");
         final List mtyp = (ArrayList) map.get("MapType");
         final double cwork = Double.parseDouble(map.get("CumulativeWork").toString());
+        final int samt = (int) map.get("SamplingTime");
 
         final double x_coordinate = Double.parseDouble(bco.get(0).toString());
         final double y_coordinate = Double.parseDouble(bco.get(1).toString());
@@ -151,7 +151,13 @@ public class ExampleConsumer {
             curlWriteInfluxDBMetrics(database, "x_coordinate", "pems_hot", x_coordinate);
             curlWriteInfluxDBMetrics(database, "y_coordinate", "pems_hot", y_coordinate);
         }
-        LOG.info("Coordinates: (" + x_coordinate + ", " + y_coordinate + "), T_SCR: " + tscr_typ + ", Old_Good: " + old_good + ", PEMS_Typ: " + pems_typ);
+        curlWriteInfluxDBMetrics(database, "cumulative_time", "counter", samt);
+        LOG.info("Coordinates: (" + x_coordinate + ", " + y_coordinate + "), T_SCR: " + tscr_typ + ", Old_Good: " + old_good + ", PEMS_Typ: " + pems_typ + ", Counter: " + samt);        
+
+        int evalPoint = 100; // Evaluation Point: 10h = 600m = 36000s
+        if (samt >= evalPoint) {
+        	// Notify the user with email via Grafana
+        }
     }
     
     /**
@@ -238,8 +244,8 @@ public class ExampleConsumer {
         }
         try {
             pb.start();
-            LOG.info("*** New " + metrics + " successfully stored in " + db + "/InfluxDB. ***");
-            LOG.info("----- Exported to URL, \"" + url + "\" -----\n");
+            //LOG.info("*** New " + metrics + " successfully stored in " + db + "/InfluxDB. ***");
+            //LOG.info("----- Exported to URL, \"" + url + "\" -----\n");
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

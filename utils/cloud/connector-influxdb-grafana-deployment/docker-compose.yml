@@ -44,6 +44,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
     volumes:
       - grafana-storage:/var/lib/grafana
+      - ./grafana.ini:/etc/grafana/grafana.ini
       - ./grafana-provisioning/:/etc/grafana/provisioning/
 
 networks:
