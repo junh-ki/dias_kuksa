@@ -52,3 +52,7 @@ networks:
 volumes:
   influxdb-storage:
   grafana-storage:
+
+# docker-compose up -d
+# docker-compose down
+# docker-compose down --volumes
