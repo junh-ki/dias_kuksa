@@ -24,6 +24,7 @@ class BinInfoProvider:
 		self.cumulativeNOxUS_g = 0
 		self.cumulativeNOxUS_ppm = 0
 		self.cumulativePower_J = 0
+		self.counter = 0
 
 def preprocessing(binPro):
 	# Get map type info, decide the position and create a bin with dictionary (in the bin map)
@@ -128,6 +129,8 @@ def createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binP
 		tBin["Extension"] = 0
 	tBin["Coordinates"] = (xAxisVal, yAxisVal)
 	tBin["BinPosition"] = selectBinPos(xAxisVal, yAxisVal)
+	binPro.counter = binPro.counter + 1
+	tBin["SamplingTime"] = binPro.counter
 	return tBin
 
 def selectBinPos(xAxisVal, yAxisVal):

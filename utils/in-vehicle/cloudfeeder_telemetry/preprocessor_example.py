@@ -17,6 +17,7 @@ class BinInfoProvider:
 	def __init__(self):
 		self.sigCH0 = {}
 		self.sigCH1 = {}
+		self.counter = 0
 
 def createBin(tscr_mode, is_old_active, pems_mode, xAxisVal, yAxisVal, binPro):
 	tBin = {}
@@ -34,6 +35,9 @@ def createBin(tscr_mode, is_old_active, pems_mode, xAxisVal, yAxisVal, binPro):
 	##### LET'S MANIPULATE THESE #####
 	tBin["MapType"] = (tscr_mode, is_old_active, pems_mode)
 	tBin["Coordinates"] = (xAxisVal, yAxisVal)
+
+	binPro.counter = binPro.counter + 1
+	tBin["SamplingTime"] = binPro.counter
 	return tBin
 
 def preprocessing(binPro):
