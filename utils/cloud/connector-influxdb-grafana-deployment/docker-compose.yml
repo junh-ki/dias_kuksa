@@ -19,7 +19,7 @@ services:
   connector:
     image: mrki102/hono-influxdb-connector
     container_name: hono-influxdb-connector
-    command: --hono.client.tlsEnabled=true --hono.client.username=messaging@t20babfe7fb2840119f69e692f184127d --hono.client.password=s9VrzSsOQMzlSKFDgHrj --tenant.id=t20babfe7fb2840119f69e692f184127d --export.ip=influxdb:8086
+    command: --hono.client.tlsEnabled=true --hono.client.username=messaging@${HONO_TENANTID} --hono.client.password=${HONO_MESSAGINGPW} --tenant.id=${HONO_TENANTID} --export.ip=influxdb:8086
     restart: always
     ports:
       - "8080:8080"
@@ -44,8 +44,8 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
     volumes:
       - grafana-storage:/var/lib/grafana
-      - ./grafana.ini:/etc/grafana/grafana.ini
-      - ./grafana-provisioning/:/etc/grafana/provisioning/
+      - ./grafana_config/grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana_config/grafana-provisioning/:/etc/grafana/provisioning/
 
 networks:
   monitor_network:
