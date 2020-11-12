@@ -26,36 +26,41 @@ class BinInfoProvider:
 		self.cumulativePower_J = 0
 		self.counter = 0
 
-def preprocessing(binPro):
-	## Cumulative NOx (DownStream) in g
-	noxDS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1OutletNOx"] * binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] / 3600
-	binPro.cumulativeNOxDS_g += noxDS_gs
-	
-	## Cumulative NOx (DownStream) in ppm
-	binPro.cumulativeNOxDS_ppm += binPro.sigCH1["Aftertreatment1OutletNOx"]
-	
-	## Cumulative NOx (UpStream) in g
-	noxUS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1IntakeNOx"] * binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] / 3600
-	binPro.cumulativeNOxUS_g += noxUS_gs
-	## Cumulative NOx (UpStream) in ppm
-	binPro.cumulativeNOxUS_ppm += binPro.sigCH1["Aftertreatment1IntakeNOx"]
+		# a dashboard(List) with 6 maps initialized
+		self.dashboard = []
+		for x in range(0, 6):
+			# a map(List) with 12 bins initialized
+			tmap = []
+			for y in range(0, 12):
+				# a bin(Dictionary) is initialized
+				tbin = {}
+				# Only for T-SCR: Good
+				if x == 2:
+					# six attributes (NOxDSg, NOxDSppm, NOxUSg, NOxUSppm, Work, SamplingTime) initialized
+					tbin['cumulativeNOxDS_g'] = 0
+					tbin['cumulativeNOxDS_ppm'] = 0
+					tbin['cumulativeNOxUS_g'] = 0
+					tbin['cumulativeNOxUS_ppm'] = 0
+					tbin['cumulativePower_J'] = 0
+					tbin['samplingTime'] = 0					
+				else:
+					# a bin(Dictionary) with three attributes (NOxDSg, Work, SamplingTime) initialized
+					tbin['cumulativeNOxDS_g'] = 0
+					tbin['cumulativePower_J'] = 0
+					tbin['samplingTime'] = 0
+				tmap.append(tbin)
+			dashboard.append(tmap)
 
+def preprocessing(binPro):
 	# Current Engine Output Torque
 	curOutToq = (binPro.sigCH0["ActualEngPercentTorque"] - binPro.sigCH0["NominalFrictionPercentTorque"]) * binPro.sigCH0["EngReferenceTorque"] / 100 # multiply by 100 to be in percentage
-
-	# RPM = Revolutions Per Minute
-	# Conversion from RPM to Revolutions Per Second: EngSpeed / 60 
-	power_Js = curOutToq * binPro.sigCH0["EngSpeed"] / 60 * 2 * math.pi
-	binPro.cumulativePower_J += power_Js
-
-	# Cumulative Sampling Time
-	binPro.counter = binPro.counter + 1
 
 	# <assumption>
 	# X-Axis: is not Engine Speed. but a percentage of: (EngSpeed-EngSpeedAtIdlePoint1) / (EngSpeedAtPoint2-EngSpeedAtIdlePoint1)
 	xAxisVal = getXAxisVal(binPro.sigCH0["EngSpeed"], binPro.sigCH0["EngSpeedAtPoint2"], binPro.sigCH0["EngSpeedAtIdlePoint1"])
 	# Y-Axis: loadBasedOnOutToq = curOutToq / maxOutToqAvailAtCurSpeed
 	yAxisVal = getYAxisVal(curOutToq, binPro.sigCH0["ActualEngPercentTorque"], binPro.sigCH0["EngReferenceTorque"], binPro.sigCH0["EngPercentLoadAtCurrentSpeed"])
+	binPos = selectBinPos(xAxisVal, yAxisVal)
 
 	# Get map type info, decide the position and create a telemetry dictionary
 	# * Fault active part is omitted
@@ -69,6 +74,46 @@ def preprocessing(binPro):
 	## C. PEMS Concept
 	### 0 PEMS-inactive / 1 PEMS-cold / 2 PEMS-hot
 	pemsEvalNum = pemsEval(binPro.sigCH0["TimeSinceEngineStart"], binPro.sigCH0["AmbientAirTemp"], binPro.sigCH0["BarometricPress"] * 10, False, binPro.sigCH0["EngCoolantTemp"])
+
+	if catEvalNum == 1:
+		# binPro.dashboard[0] do something with binPos (collect three)
+		print("bad")
+	elif catEvalNum == 2:
+		# binPro.dashboard[1] do something with binPos (collect three)
+		print("intermediate")
+	elif catEvalNum == 3:
+		# binPro.dashboard[2] do something with binPos (collect six)
+		print("good")
+	if isOldEvalActive:
+		# binPro.dashboard[3] do something with binPos (collect three)
+		print("active")
+	if pemsEvalNum == 1:
+		# binPro.dashboard[4] do something with binPos (collect three)
+		print("cold")
+	elif pemsEvalNum ==2:
+		# binPro.dashboard[5] do something with binPos (collect three)
+		print("hot")
+
+	## Cumulative NOx (DownStream) in g
+	noxDS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1OutletNOx"] * binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] / 3600
+	binPro.cumulativeNOxDS_g += noxDS_gs
+	
+	## Cumulative NOx (DownStream) in ppm
+	binPro.cumulativeNOxDS_ppm += binPro.sigCH1["Aftertreatment1OutletNOx"]
+	
+	## Cumulative NOx (UpStream) in g
+	noxUS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1IntakeNOx"] * binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] / 3600
+	binPro.cumulativeNOxUS_g += noxUS_gs
+	## Cumulative NOx (UpStream) in ppm
+	binPro.cumulativeNOxUS_ppm += binPro.sigCH1["Aftertreatment1IntakeNOx"]
+
+	# RPM = Revolutions Per Minute
+	# Conversion from RPM to Revolutions Per Second: EngSpeed / 60 
+	power_Js = curOutToq * binPro.sigCH0["EngSpeed"] / 60 * 2 * math.pi
+	binPro.cumulativePower_J += power_Js
+
+	# Cumulative Sampling Time
+	binPro.counter = binPro.counter + 1
 	
 	tBin = createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binPro)
 	return tBin
