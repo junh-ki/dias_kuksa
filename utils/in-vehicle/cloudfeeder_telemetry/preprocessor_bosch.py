@@ -27,8 +27,39 @@ class BinInfoProvider:
 		self.counter = 0
 
 def preprocessing(binPro):
-	# Get map type info, decide the position and create a bin with dictionary (in the bin map)
-	# map type: (bad / intermediate / good) (oldgood) (cold / hot start)
+	## Cumulative NOx (DownStream) in g
+	noxDS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1OutletNOx"] * binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] / 3600
+	binPro.cumulativeNOxDS_g += noxDS_gs
+	
+	## Cumulative NOx (DownStream) in ppm
+	binPro.cumulativeNOxDS_ppm += binPro.sigCH1["Aftertreatment1OutletNOx"]
+	
+	## Cumulative NOx (UpStream) in g
+	noxUS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1IntakeNOx"] * binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] / 3600
+	binPro.cumulativeNOxUS_g += noxUS_gs
+	## Cumulative NOx (UpStream) in ppm
+	binPro.cumulativeNOxUS_ppm += binPro.sigCH1["Aftertreatment1IntakeNOx"]
+
+	# Current Engine Output Torque
+	curOutToq = (binPro.sigCH0["ActualEngPercentTorque"] - binPro.sigCH0["NominalFrictionPercentTorque"]) * binPro.sigCH0["EngReferenceTorque"]
+	# Maximum Engine Output Torque Available At Current Speed
+	maxOutToqAvailAtCurSpeed = binPro.sigCH0["ActualEngPercentTorque"] * binPro.sigCH0["EngReferenceTorque"] / binPro.sigCH0["EngPercentLoadAtCurrentSpeed"]
+
+	# RPM = Revolutions Per Minute
+	# Conversion from RPM to Revolutions Per Second: EngSpeed / 60 
+	power_Js = curOutToq * binPro.sigCH0["EngSpeed"] / 60 * 2 * math.pi
+	binPro.cumulativePower_J += power_Js
+
+	# Cumulative Sampling Time
+	binPro.counter = binPro.counter + 1
+
+	# <assumption>
+	# X-Axis: is not Engine Speed. but a percentage of: (EngSpeed-EngSpeedAtIdlePoint1) / (EngSpeedAtPoint2-EngSpeedAtIdlePoint1)
+	xAxisVal = getXAxisVal(binPro.sigCH0["EngSpeed"], binPro.sigCH0["EngSpeedAtPoint2"], binPro.sigCH0["EngSpeedAtIdlePoint1"])
+	# Y-Axis: loadBasedOnOutToq = curOutToq / maxOutToqAvailAtCurSpeed
+	yAxisVal = getYAxisVal(curOutToq, maxOutToqAvailAtCurSpeed)
+
+	# Get map type info, decide the position and create a telemetry dictionary
 	# * Fault active part is omitted
 	# * barometric (kpa): mbar = 10 x kPa
 	## A. New Concept
@@ -40,13 +71,7 @@ def preprocessing(binPro):
 	## C. PEMS Concept
 	### 0 PEMS-inactive / 1 PEMS-cold / 2 PEMS-hot
 	pemsEvalNum = pemsEval(binPro.sigCH0["TimeSinceEngineStart"], binPro.sigCH0["AmbientAirTemp"], binPro.sigCH0["BarometricPress"] * 10, False, binPro.sigCH0["EngCoolantTemp"])
-	# <assumption>
-	# X-Axis: is not Engine Speed. but a percentage of: (EngSpeed-EngSpeedAtIdlePoint1)/(EngSpeedAtPoint2-EngSpeedAtIdlePoint1)
-	# Y-Axis: ActualEngPercentTorque
-	# To create the bin map, you need EngSpeed and Engine Output Torque?
-	# EngineOutputTorque = (ActualEngineTorque - NominalFrictionPercentTorque) * EngineReferenceTorque
-	xAxisVal = getXAxisVal(binPro.sigCH0["EngSpeed"], binPro.sigCH0["EngSpeedAtPoint2"], binPro.sigCH0["EngSpeedAtIdlePoint1"])
-	yAxisVal = getYAxisVal(binPro.sigCH0["ActualEngPercentTorque"])
+	
 	tBin = createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binPro)
 	return tBin
 
@@ -87,39 +112,23 @@ def getXAxisVal(speed, hsGovKickInSpeed, idleSpeed):
 		xAxisVal = 0.0
 	return xAxisVal
 	
-def getYAxisVal(actualEngPercentTorque):
-	if actualEngPercentTorque > 100:
-		actualEngPercentTorque = 100.0
-	elif actualEngPercentTorque < 0:
-		actualEngPercentTorque = 0.0
-	return actualEngPercentTorque
+def getYAxisVal(curOutToq, maxOutToqAvailAtCurSpeed):
+	# Engine Load based on Output Torque
+	loadBasedOnOutToq = curOutToq / maxOutToqAvailAtCurSpeed
+	return loadBasedOnOutToq
 
 def createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binPro):
 	tBin = {}
 	###### TODO: instead of collecting sampling time, counting the number of bins should be put.
 	tBin["CumulativeSamplingTime"] = binPro.sigCH0["TimeSinceEngineStart"]
-	## Cumulative NOx (DownStream) in g
-	noxDS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1OutletNOx"] * binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] / 3600
-	binPro.cumulativeNOxDS_g += noxDS_gs
 	tBin["CumulativeNOxDSEmissionGram"] = binPro.cumulativeNOxDS_g
-	## Cumulative NOx (DownStream) in ppm
-	binPro.cumulativeNOxDS_ppm += binPro.sigCH1["Aftertreatment1OutletNOx"]
-	## Cumulative NOx (UpStream) in g
-	noxUS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1IntakeNOx"] * binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] / 3600
-	binPro.cumulativeNOxUS_g += noxUS_gs
-	## Cumulative NOx (UpStream) in ppm
-	binPro.cumulativeNOxUS_ppm += binPro.sigCH1["Aftertreatment1IntakeNOx"]
-	outputTorque = (binPro.sigCH0["ActualEngPercentTorque"] - binPro.sigCH0["NominalFrictionPercentTorque"]) * binPro.sigCH0["EngReferenceTorque"]
-	# should the unit for binPro.sigCH0["EngSpeed"] be converted to 1/s ? ASK!!
-	# RPM = Revolutions Per Minute
-	# Conversion from RPM to Revolutions Per Second: EngSpeed / 60 
-	power_Js = outputTorque * binPro.sigCH0["EngSpeed"] / 60 * 2 * math.pi
-	binPro.cumulativePower_J += power_Js
 	tBin["CumulativeWork"] = binPro.cumulativePower_J
+	
 	## catEvalNum(T_SCR): 1 - Bad, 2 - Intermediate, 3 - Good
 	## isOldEvalActive(Old_Good): True - Active, False - Inactive
 	## pemsEvalNum(PEMS): 0 - Inactive, 1 - Cold, 2 - Hot
 	tBin["MapType"] = (catEvalNum, isOldEvalActive, pemsEvalNum)
+	
 	if tBin["MapType"][0] == 3:
 		tBin["Extension"] = {}
 		tBin["Extension"]["CumulativeNOxDSEmissionPPM"] = binPro.cumulativeNOxDS_ppm
@@ -129,7 +138,6 @@ def createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binP
 		tBin["Extension"] = 0
 	tBin["Coordinates"] = (xAxisVal, yAxisVal)
 	tBin["BinPosition"] = selectBinPos(xAxisVal, yAxisVal)
-	binPro.counter = binPro.counter + 1
 	tBin["SamplingTime"] = binPro.counter
 	return tBin
 
