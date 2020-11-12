@@ -42,8 +42,6 @@ def preprocessing(binPro):
 
 	# Current Engine Output Torque
 	curOutToq = (binPro.sigCH0["ActualEngPercentTorque"] - binPro.sigCH0["NominalFrictionPercentTorque"]) * binPro.sigCH0["EngReferenceTorque"]
-	# Maximum Engine Output Torque Available At Current Speed
-	maxOutToqAvailAtCurSpeed = binPro.sigCH0["ActualEngPercentTorque"] * binPro.sigCH0["EngReferenceTorque"] / binPro.sigCH0["EngPercentLoadAtCurrentSpeed"]
 
 	# RPM = Revolutions Per Minute
 	# Conversion from RPM to Revolutions Per Second: EngSpeed / 60 
@@ -57,7 +55,7 @@ def preprocessing(binPro):
 	# X-Axis: is not Engine Speed. but a percentage of: (EngSpeed-EngSpeedAtIdlePoint1) / (EngSpeedAtPoint2-EngSpeedAtIdlePoint1)
 	xAxisVal = getXAxisVal(binPro.sigCH0["EngSpeed"], binPro.sigCH0["EngSpeedAtPoint2"], binPro.sigCH0["EngSpeedAtIdlePoint1"])
 	# Y-Axis: loadBasedOnOutToq = curOutToq / maxOutToqAvailAtCurSpeed
-	yAxisVal = getYAxisVal(curOutToq, maxOutToqAvailAtCurSpeed)
+	yAxisVal = getYAxisVal(curOutToq, binPro.sigCH0["ActualEngPercentTorque"], binPro.sigCH0["EngReferenceTorque"], binPro.sigCH0["EngPercentLoadAtCurrentSpeed"])
 
 	# Get map type info, decide the position and create a telemetry dictionary
 	# * Fault active part is omitted
@@ -74,6 +72,34 @@ def preprocessing(binPro):
 	
 	tBin = createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binPro)
 	return tBin
+
+def getXAxisVal(speed, hsGovKickInSpeed, idleSpeed):
+	numerator = speed - idleSpeed
+	denominator = hsGovKickInSpeed - idleSpeed
+	if denominator == 0.0:
+		return 0.0
+	curEngSpeed = numerator / denominator * 100 # multiply by 100 to be in percentage
+	if curEngSpeed > 100:
+		curEngSpeed = 100.0
+	elif curEngSpeed < 0:
+		# print("The current speed can not be smaller than the engine speed at idle.")
+		# print("The engine speed at high speed governor kick in point can not be equal or smaller than the engine speed at idle.")
+		curEngSpeed = 0.0
+	return curEngSpeed
+	
+def getYAxisVal(curOutToq, actualEngPercentTorque, engReferenceTorque, engPercentLoadAtCurrentSpeed):
+	# Maximum Engine Output Torque Available At Current Speed
+	if engPercentLoadAtCurrentSpeed != 0:
+		maxOutToqAvailAtCurSpeed = actualEngPercentTorque * engReferenceTorque / engPercentLoadAtCurrentSpeed
+	else:
+		return 0
+	# Engine Load based on Output Torque
+	loadBasedOnOutToq = curOutToq / maxOutToqAvailAtCurSpeed * 100 # multiply by 100 to be in percentage
+	if loadBasedOnOutToq > 100:
+		loadBasedOnOutToq = 100.0
+	elif loadBasedOnOutToq < 0:
+		loadBasedOnOutToq = 0.0
+	return loadBasedOnOutToq
 
 def catalystEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tSCR):
 	if timeAfterEngStart < 180 or tAmbient < -7 or pAmbient < 750 or isFaultActive == True or tSCR < 180:
@@ -97,29 +123,6 @@ def pemsEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tCoolant):
 		elif tCoolant >= 70:
 			return PEMS_Mode.Hot_Start
 	return PEMS_Mode.Nonee
-
-def getXAxisVal(speed, hsGovKickInSpeed, idleSpeed):
-	numerator = speed - idleSpeed
-	denominator = hsGovKickInSpeed - idleSpeed
-	if denominator == 0.0:
-		return 0.0
-	curEngSpeed = numerator / denominator * 100 # multiply by 100 to be in percentage
-	if curEngSpeed > 100:
-		curEngSpeed = 100.0
-	elif curEngSpeed < 0:
-		# print("The current speed can not be smaller than the engine speed at idle.")
-		# print("The engine speed at high speed governor kick in point can not be equal or smaller than the engine speed at idle.")
-		curEngSpeed = 0.0
-	return curEngSpeed
-	
-def getYAxisVal(curOutToq, maxOutToqAvailAtCurSpeed):
-	# Engine Load based on Output Torque
-	loadBasedOnOutToq = curOutToq / maxOutToqAvailAtCurSpeed * 100 # multiply by 100 to be in percentage
-	if loadBasedOnOutToq > 100:
-		loadBasedOnOutToq = 100.0
-	elif loadBasedOnOutToq < 0:
-		loadBasedOnOutToq = 0.0
-	return loadBasedOnOutToq
 
 def createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binPro):
 	tBin = {}
