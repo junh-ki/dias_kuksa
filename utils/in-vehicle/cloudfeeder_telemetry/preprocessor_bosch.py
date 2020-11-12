@@ -41,7 +41,7 @@ def preprocessing(binPro):
 	binPro.cumulativeNOxUS_ppm += binPro.sigCH1["Aftertreatment1IntakeNOx"]
 
 	# Current Engine Output Torque
-	curOutToq = (binPro.sigCH0["ActualEngPercentTorque"] - binPro.sigCH0["NominalFrictionPercentTorque"]) * binPro.sigCH0["EngReferenceTorque"]
+	curOutToq = (binPro.sigCH0["ActualEngPercentTorque"] - binPro.sigCH0["NominalFrictionPercentTorque"]) * binPro.sigCH0["EngReferenceTorque"] / 100 # multiply by 100 to be in percentage
 
 	# RPM = Revolutions Per Minute
 	# Conversion from RPM to Revolutions Per Second: EngSpeed / 60 
@@ -92,6 +92,8 @@ def getYAxisVal(curOutToq, actualEngPercentTorque, engReferenceTorque, engPercen
 	if engPercentLoadAtCurrentSpeed != 0:
 		maxOutToqAvailAtCurSpeed = actualEngPercentTorque * engReferenceTorque / engPercentLoadAtCurrentSpeed
 	else:
+		return 0
+	if maxOutToqAvailAtCurSpeed == 0:
 		return 0
 	# Engine Load based on Output Torque
 	loadBasedOnOutToq = curOutToq / maxOutToqAvailAtCurSpeed * 100 # multiply by 100 to be in percentage
