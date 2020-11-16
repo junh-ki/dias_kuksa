@@ -18,7 +18,7 @@ import testclient
 import json
 import os
 import argparse
-# import preprocessor_bosch # preprocessing varies depending on how to process the data.
+import preprocessor_bosch # preprocessing varies depending on how to process the data.
 import preprocessor_example
 
 def getConfig():
@@ -79,44 +79,47 @@ prefix_cmd = makePrefixCommand(args)
 client = getVISSConnectedClient()
 
 # Create a BinInfoProvider instance
-binPro = preprocessor_example.BinInfoProvider()
+binPro = preprocessor_bosch.BinInfoProvider()
+# binPro = preprocessor_example.BinInfoProvider()
 
 while True:
 	# 1. Store signals' values from the target path to the dictionary keys
 	## A. Calculate integrated NOx mass
-	binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] = checkPath(client, "Vehicle.AfterTreatment.ExhaustMassFlow")
-	binPro.sigCH1["Aftrtrtmnt1SCRCtlystIntkGasTemp"] = checkPath(client, "Vehicle.AfterTreatment.SCRIntakeTemp")
-	binPro.sigCH1["Aftertreatment1IntakeNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.NOxIntake1")
-	binPro.sigCH1["Aftertreatment1OutletNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.NOxOutlet1")
+	binPro.signals["Aftrtratment1ExhaustGasMassFlow"] = checkPath(client, "Vehicle.AfterTreatment.ExhaustMassFlow")
+	binPro.signals["Aftrtrtmnt1SCRCtlystIntkGasTemp"] = checkPath(client, "Vehicle.AfterTreatment.SCRIntakeTemp")
+	binPro.signals["Aftertreatment1IntakeNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.NOxIntake1")
+	binPro.signals["Aftertreatment1OutletNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.NOxOutlet1")
 	## B. Calculate engine work
-	binPro.sigCH0["EngReferenceTorque"] = 2500.0
+	binPro.signals["EngReferenceTorque"] = 2500.0
 	## C. Map switch over
-	binPro.sigCH0["AmbientAirTemp"] = checkPath(client, "Vehicle.AmbientAirTemperature")
-	binPro.sigCH0["BarometricPress"] = checkPath(client, "Vehicle.OBD.BarometricPressure")
-	binPro.sigCH0["EngCoolantTemp"] = checkPath(client, "Vehicle.OBD.CoolantTemperature")
+	binPro.signals["AmbientAirTemp"] = checkPath(client, "Vehicle.AmbientAirTemperature")
+	binPro.signals["BarometricPress"] = checkPath(client, "Vehicle.OBD.BarometricPressure")
+	binPro.signals["EngCoolantTemp"] = checkPath(client, "Vehicle.OBD.CoolantTemperature")
 	## D. Bin selection
-	binPro.sigCH0["EngPercentLoadAtCurrentSpeed"] = checkPath(client, "Vehicle.OBD.EngPercentLoadAtCurrentSpeed")
-	binPro.sigCH0["EngSpeedAtIdlePoint1"] = 550.0 # Idle Speed
-	binPro.sigCH0["EngSpeedAtPoint2"] = 2200.0 # High Speed Kick-in Point
+	binPro.signals["EngPercentLoadAtCurrentSpeed"] = checkPath(client, "Vehicle.OBD.EngPercentLoadAtCurrentSpeed")
+	binPro.signals["EngSpeedAtIdlePoint1"] = 550.0 # Idle Speed
+	binPro.signals["EngSpeedAtPoint2"] = 2200.0 # High Speed Kick-in Point
 	## A & B & C
-	binPro.sigCH0["EngSpeed"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed")
+	binPro.signals["EngSpeed"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed")
 	## B & D
-	binPro.sigCH0["ActualEngPercentTorque"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.ActualEngPercentTorque")
-	binPro.sigCH0["NominalFrictionPercentTorque"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.NominalFrictionPercentTorque")
+	binPro.signals["ActualEngPercentTorque"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.ActualEngPercentTorque")
+	binPro.signals["NominalFrictionPercentTorque"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.NominalFrictionPercentTorque")
 	## C - case 2 & Sampling duration tracking per bin
-	binPro.sigCH0["TimeSinceEngineStart"] = checkPath(client, "Vehicle.Drivetrain.FuelSystem.TimeSinceStart") # Missing
+	binPro.signals["TimeSinceEngineStart"] = checkPath(client, "Vehicle.Drivetrain.FuelSystem.TimeSinceStart") # Missing
 	
 	# 2. Preprocess and show the result
-	# tBin = preprocessor_bosch.preprocessing(binPro)
-	# preprocessor_bosch.printSignalValues(binPro)
-	# preprocessor_bosch.printBinInfo(tBin)
+	preprocessor_bosch.preprocessing(binPro)
+	preprocessor_bosch.printSignalValues(binPro)
+	preprocessor_bosch.printTelemetry(binPro.dashboard)
 
-	tBin = preprocessor_example.preprocessing(binPro)
-	preprocessor_example.printSignalValues(binPro)
-	preprocessor_example.printBinInfo(tBin)
-	
+	# tBin = preprocessor_example.preprocessing(binPro)
+	# preprocessor_example.printSignalValues(binPro)
+	# preprocessor_example.printBinInfo(tBin)
+	print("")
+
 	# 3. MQTT: Send the result bin to the cloud. (in a JSON format)
-	tBin_json = json.dumps(tBin)
+	tBin_json = json.dumps(binPro.dashboard)
+	# tBin_json = json.dumps(tBin)
 	# Sending device data via MQTT(Device to Cloud)
 	command = prefix_cmd + "'" + tBin_json + "'"
 	os.system(command)

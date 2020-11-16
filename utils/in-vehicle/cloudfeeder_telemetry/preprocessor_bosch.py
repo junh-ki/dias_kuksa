@@ -17,106 +17,91 @@ class PEMS_Mode:
 class BinInfoProvider:
 	"""A class that provides info to create a bin"""	
 	def __init__(self):
-		self.sigCH0 = {}
-		self.sigCH1 = {}
-		self.cumulativeNOxDS_g = 0
-		self.cumulativeNOxDS_ppm = 0
-		self.cumulativeNOxUS_g = 0
-		self.cumulativeNOxUS_ppm = 0
-		self.cumulativePower_J = 0
+		self.signals = {}
 		self.counter = 0
 
-		# a dashboard(List) with 6 maps initialized
-		self.dashboard = []
-		for x in range(0, 6):
-			# a map(List) with 12 bins initialized
-			tmap = []
-			for y in range(0, 12):
-				# a bin(Dictionary) is initialized
-				tbin = {}
-				# Only for T-SCR: Good
-				if x == 2:
-					# six attributes (NOxDSg, NOxDSppm, NOxUSg, NOxUSppm, Work, SamplingTime) initialized
-					tbin['cumulativeNOxDS_g'] = 0
-					tbin['cumulativeNOxDS_ppm'] = 0
-					tbin['cumulativeNOxUS_g'] = 0
-					tbin['cumulativeNOxUS_ppm'] = 0
-					tbin['cumulativePower_J'] = 0
-					tbin['samplingTime'] = 0					
-				else:
-					# a bin(Dictionary) with three attributes (NOxDSg, Work, SamplingTime) initialized
-					tbin['cumulativeNOxDS_g'] = 0
-					tbin['cumulativePower_J'] = 0
-					tbin['samplingTime'] = 0
-				tmap.append(tbin)
-			dashboard.append(tmap)
+		# a dashboard(Dictionary) with 6 maps initialized
+		self.dashboard = {
+							"tscr_bad": {},
+							"tscr_intermediate": {},
+							"tscr_good": {},
+							"old_good": {},
+							"pems_cold": {},
+							"pems_hot": {},
+						}
+
+		for key in self.dashboard:
+			if key == "tscr_good":
+				for x in range(1, 13):
+					self.dashboard[key][str(x)] = {}
+					self.dashboard[key][str(x)] = {
+						"cumulativeNOxDS_g": 0,
+						"cumulativeNOxDS_ppm": 0,
+						"cumulativeNOxUS_g": 0,
+						"cumulativeNOxDS_ppm": 0,
+						"cumulativePower_J": 0,
+						"samplingTime": 0,
+					}
+			else:
+				for x in range(1, 13):
+					self.dashboard[key][str(x)] = {}
+					self.dashboard[key][str(x)] = {
+						"cumulativeNOxDS_g": 0,
+						"cumulativePower_J": 0,
+						"samplingTime": 0,
+					}
 
 def preprocessing(binPro):
 	# Current Engine Output Torque
-	curOutToq = (binPro.sigCH0["ActualEngPercentTorque"] - binPro.sigCH0["NominalFrictionPercentTorque"]) * binPro.sigCH0["EngReferenceTorque"] / 100 # multiply by 100 to be in percentage
+	curOutToq = (binPro.signals["ActualEngPercentTorque"] - binPro.signals["NominalFrictionPercentTorque"]) * binPro.signals["EngReferenceTorque"] / 100 # divided by 100 because ActualEngPercentTorque - NominalFrictionPercentTorque is in percentage
+	## Cumulative NOx (DownStream) in g
+	noxDS_gs = 0.001588 * binPro.signals["Aftertreatment1OutletNOx"] * binPro.signals["Aftrtratment1ExhaustGasMassFlow"] / 3600
+	## Cumulative NOx (UpStream) in g
+	noxUS_gs = 0.001588 * binPro.signals["Aftertreatment1IntakeNOx"] * binPro.signals["Aftrtratment1ExhaustGasMassFlow"] / 3600
+	# RPM = Revolutions Per Minute
+	# Conversion from RPM to Revolutions Per Second: EngSpeed / 60 
+	power_Js = curOutToq * binPro.signals["EngSpeed"] / 60 * 2 * math.pi
 
 	# <assumption>
 	# X-Axis: is not Engine Speed. but a percentage of: (EngSpeed-EngSpeedAtIdlePoint1) / (EngSpeedAtPoint2-EngSpeedAtIdlePoint1)
-	xAxisVal = getXAxisVal(binPro.sigCH0["EngSpeed"], binPro.sigCH0["EngSpeedAtPoint2"], binPro.sigCH0["EngSpeedAtIdlePoint1"])
+	xAxisVal = getXAxisVal(binPro.signals["EngSpeed"], binPro.signals["EngSpeedAtPoint2"], binPro.signals["EngSpeedAtIdlePoint1"])
 	# Y-Axis: loadBasedOnOutToq = curOutToq / maxOutToqAvailAtCurSpeed
-	yAxisVal = getYAxisVal(curOutToq, binPro.sigCH0["ActualEngPercentTorque"], binPro.sigCH0["EngReferenceTorque"], binPro.sigCH0["EngPercentLoadAtCurrentSpeed"])
+	yAxisVal = getYAxisVal(curOutToq, binPro.signals["ActualEngPercentTorque"], binPro.signals["EngReferenceTorque"], binPro.signals["EngPercentLoadAtCurrentSpeed"])
 	binPos = selectBinPos(xAxisVal, yAxisVal)
 
 	# Get map type info, decide the position and create a telemetry dictionary
 	# * Fault active part is omitted
 	# * barometric (kpa): mbar = 10 x kPa
+	
 	## A. New Concept
 	### 1 bad / 2 intermediate / 3 good
-	catEvalNum = catalystEval(binPro.sigCH0["TimeSinceEngineStart"], binPro.sigCH0["AmbientAirTemp"], binPro.sigCH0["BarometricPress"] * 10, False, binPro.sigCH1["Aftrtrtmnt1SCRCtlystIntkGasTemp"])
+	catEvalNum = catalystEval(binPro.signals["TimeSinceEngineStart"], binPro.signals["AmbientAirTemp"], binPro.signals["BarometricPress"] * 10, False, binPro.signals["Aftrtrtmnt1SCRCtlystIntkGasTemp"])
+	if catEvalNum == 1:
+		# T-SCR (Bad)
+		storeMetrics(noxDS_gs, power_Js, "tscr_bad", str(binPos), binPro)
+	elif catEvalNum == 2:
+		# T-SCR (Intermediate)
+		storeMetrics(noxDS_gs, power_Js, "tscr_intermediate", str(binPos), binPro)
+	elif catEvalNum == 3:
+		# T-SCR (Good) - special function.
+		storeTscrGoodMetrics(noxDS_gs, noxUS_gs, power_Js, "tscr_good", str(binPos), binPro)
+	
 	## B. Old Concept
 	### False OldEvalInactive / True OldEvalActive
-	isOldEvalActive = oldGoodEval(binPro.sigCH0["TimeSinceEngineStart"], binPro.sigCH0["AmbientAirTemp"], binPro.sigCH0["BarometricPress"] * 10, False)
+	isOldEvalActive = oldGoodEval(binPro.signals["TimeSinceEngineStart"], binPro.signals["AmbientAirTemp"], binPro.signals["BarometricPress"] * 10, False)
+	if isOldEvalActive:
+		# Old Evaluation (Active)
+		storeMetrics(noxDS_gs, power_Js, "old_good", str(binPos), binPro)
+	
 	## C. PEMS Concept
 	### 0 PEMS-inactive / 1 PEMS-cold / 2 PEMS-hot
-	pemsEvalNum = pemsEval(binPro.sigCH0["TimeSinceEngineStart"], binPro.sigCH0["AmbientAirTemp"], binPro.sigCH0["BarometricPress"] * 10, False, binPro.sigCH0["EngCoolantTemp"])
-
-	if catEvalNum == 1:
-		# binPro.dashboard[0] do something with binPos (collect three)
-		print("bad")
-	elif catEvalNum == 2:
-		# binPro.dashboard[1] do something with binPos (collect three)
-		print("intermediate")
-	elif catEvalNum == 3:
-		# binPro.dashboard[2] do something with binPos (collect six)
-		print("good")
-	if isOldEvalActive:
-		# binPro.dashboard[3] do something with binPos (collect three)
-		print("active")
+	pemsEvalNum = pemsEval(binPro.signals["TimeSinceEngineStart"], binPro.signals["AmbientAirTemp"], binPro.signals["BarometricPress"] * 10, False, binPro.signals["EngCoolantTemp"])
 	if pemsEvalNum == 1:
-		# binPro.dashboard[4] do something with binPos (collect three)
-		print("cold")
-	elif pemsEvalNum ==2:
-		# binPro.dashboard[5] do something with binPos (collect three)
-		print("hot")
-
-	## Cumulative NOx (DownStream) in g
-	noxDS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1OutletNOx"] * binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] / 3600
-	binPro.cumulativeNOxDS_g += noxDS_gs
-	
-	## Cumulative NOx (DownStream) in ppm
-	binPro.cumulativeNOxDS_ppm += binPro.sigCH1["Aftertreatment1OutletNOx"]
-	
-	## Cumulative NOx (UpStream) in g
-	noxUS_gs = 0.001588 * binPro.sigCH1["Aftertreatment1IntakeNOx"] * binPro.sigCH1["Aftrtratment1ExhaustGasMassFlow"] / 3600
-	binPro.cumulativeNOxUS_g += noxUS_gs
-	## Cumulative NOx (UpStream) in ppm
-	binPro.cumulativeNOxUS_ppm += binPro.sigCH1["Aftertreatment1IntakeNOx"]
-
-	# RPM = Revolutions Per Minute
-	# Conversion from RPM to Revolutions Per Second: EngSpeed / 60 
-	power_Js = curOutToq * binPro.sigCH0["EngSpeed"] / 60 * 2 * math.pi
-	binPro.cumulativePower_J += power_Js
-
-	# Cumulative Sampling Time
-	binPro.counter = binPro.counter + 1
-	
-	tBin = createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binPro)
-	return tBin
+		# PEMS (Cold)
+		storeMetrics(noxDS_gs, power_Js, "pems_cold", str(binPos), binPro)
+	elif pemsEvalNum == 2:
+		# PEMS (Hot)
+		storeMetrics(noxDS_gs, power_Js, "pems_hot", str(binPos), binPro)
 
 def getXAxisVal(speed, hsGovKickInSpeed, idleSpeed):
 	numerator = speed - idleSpeed
@@ -147,53 +132,6 @@ def getYAxisVal(curOutToq, actualEngPercentTorque, engReferenceTorque, engPercen
 	elif loadBasedOnOutToq < 0:
 		loadBasedOnOutToq = 0.0
 	return loadBasedOnOutToq
-
-def catalystEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tSCR):
-	if timeAfterEngStart < 180 or tAmbient < -7 or pAmbient < 750 or isFaultActive == True or tSCR < 180:
-		return T_SCR_Mode.Bad
-	elif timeAfterEngStart >= 180 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
-		if 180 <= tSCR < 220:
-			return T_SCR_Mode.Intermediate
-		elif tSCR >= 220:
-			return T_SCR_Mode.Good
-
-def oldGoodEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive):
-	if timeAfterEngStart >= 1800 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
-		# print("Old Evalution - Good (Active)")
-		return True
-	return False
-
-def pemsEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tCoolant):	
-	if timeAfterEngStart >= 60 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
-		if 30 <= tCoolant < 70:
-			return PEMS_Mode.Cold_Start
-		elif tCoolant >= 70:
-			return PEMS_Mode.Hot_Start
-	return PEMS_Mode.Nonee
-
-def createBin(catEvalNum, isOldEvalActive, pemsEvalNum, xAxisVal, yAxisVal, binPro):
-	tBin = {}
-	###### TODO: instead of collecting sampling time, counting the number of bins should be put.
-	tBin["CumulativeSamplingTime"] = binPro.sigCH0["TimeSinceEngineStart"]
-	tBin["CumulativeNOxDSEmissionGram"] = binPro.cumulativeNOxDS_g
-	tBin["CumulativeWork"] = binPro.cumulativePower_J
-	
-	## catEvalNum(T_SCR): 1 - Bad, 2 - Intermediate, 3 - Good
-	## isOldEvalActive(Old_Good): True - Active, False - Inactive
-	## pemsEvalNum(PEMS): 0 - Inactive, 1 - Cold, 2 - Hot
-	tBin["MapType"] = (catEvalNum, isOldEvalActive, pemsEvalNum)
-	
-	if tBin["MapType"][0] == 3:
-		tBin["Extension"] = {}
-		tBin["Extension"]["CumulativeNOxDSEmissionPPM"] = binPro.cumulativeNOxDS_ppm
-		tBin["Extension"]["CumulativeNOxUSEmissionGram"] = binPro.cumulativeNOxUS_g
-		tBin["Extension"]["CumulativeNOxUSEmissionPPM"] = binPro.cumulativeNOxUS_ppm
-	else:
-		tBin["Extension"] = 0
-	tBin["Coordinates"] = (xAxisVal, yAxisVal)
-	tBin["BinPosition"] = selectBinPos(xAxisVal, yAxisVal)
-	tBin["SamplingTime"] = binPro.counter
-	return tBin
 
 def selectBinPos(xAxisVal, yAxisVal):
 	# Check X-axis first and then Y-axis
@@ -227,45 +165,56 @@ def selectBinPos(xAxisVal, yAxisVal):
 			return 12
 	return 0
 
+def catalystEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tSCR):
+	if timeAfterEngStart < 180 or tAmbient < -7 or pAmbient < 750 or isFaultActive == True or tSCR < 180:
+		return T_SCR_Mode.Bad
+	elif timeAfterEngStart >= 180 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
+		if 180 <= tSCR < 220:
+			return T_SCR_Mode.Intermediate
+		elif tSCR >= 220:
+			return T_SCR_Mode.Good
+
+def oldGoodEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive):
+	if timeAfterEngStart >= 1800 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
+		# print("Old Evalution - Good (Active)")
+		return True
+	return False
+
+def pemsEval(timeAfterEngStart, tAmbient, pAmbient, isFaultActive, tCoolant):	
+	if timeAfterEngStart >= 60 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
+		if 30 <= tCoolant < 70:
+			return PEMS_Mode.Cold_Start
+		elif tCoolant >= 70:
+			return PEMS_Mode.Hot_Start
+	return PEMS_Mode.Nonee
+
+def storeMetrics(noxDS_gs, power_Js, mapKeyword, binPos, binPro):
+	# Cumulative NOx Downstream in g
+	binPro.dashboard[mapKeyword][binPos]['cumulativeNOxDS_g'] += noxDS_gs
+	# Cumulative Work in J
+	binPro.dashboard[mapKeyword][binPos]['cumulativePower_J'] += power_Js
+	# Cumulative Sampling Time
+	binPro.dashboard[mapKeyword][binPos]['samplingTime'] += 1
+
+def storeTscrGoodMetrics(noxDS_gs, noxUS_gs, power_Js, mapKeyword, binPos, binPro):
+	# Cumulative NOx (DownStream) in g
+	binPro.dashboard[mapKeyword][binPos]['cumulativeNOxDS_g'] += noxDS_gs
+	# Cumulative NOx (DownStream) in ppm
+	binPro.dashboard[mapKeyword][binPos]['cumulativeNOxDS_ppm'] += binPro.signals["Aftertreatment1OutletNOx"]
+	# Cumulative NOx (UpStream) in g
+	binPro.dashboard[mapKeyword][binPos]['cumulativeNOxUS_g'] += noxUS_gs
+	# Cumulative NOx (UpStream) in ppm
+	binPro.dashboard[mapKeyword][binPos]['cumulativeNOxUS_ppm'] += binPro.signals["Aftertreatment1IntakeNOx"]
+	# Cumulative Work in J
+	binPro.dashboard[mapKeyword][binPos]['cumulativePower_J'] += power_Js
+	# Cumulative Sampling Time
+	binPro.dashboard[mapKeyword][binPos]['samplingTime'] += 1
+
 def printSignalValues(binPro):
-	print("######################## Channel-0 ########################")
-	for signal, value in binPro.sigCH0.items():
+	print("######################## Signals ########################")
+	for signal, value in binPro.signals.items():
 		print(signal, ": ", str(value))
-	print("######################## Channel-1 ########################")	
-	for signal, value in binPro.sigCH1.items():
-		print(signal, ": ", str(value))
-	print("###########################################################")
 
-def printBinInfo(tBin):
-	print("###########################################################")
-	if tBin["BinPosition"] != 0:
-		print("BIN(Collected): " + str(tBin))
-	else:
-		print("BIN(Not Collected): " + str(tBin))
-	print("###########################################################")
-
-## Bin when T_SCR = Good
-#{
-#	"CumulativeSamplingTime": ---,
-#	"CumulativeNOxDSEmissionGram": ---,
-#	"CumulativeWork": ---,
-#	"MapType": (--, --, --),
-#	"Extension": {
-#		"CumulativeNOxDSEmissionPPM": ---,
-#		"CumulativeNOxUSEmissionGram": ---,
-#		"CumulativeNOxUSEmissionPPM": ---,
-#	},
-#	"Coordinates": (--, --),
-#	"BinPosition": ---,
-#}
-
-## Bin when T_SCR != Good
-#{
-#	"CumulativeSamplingTime": ---,
-#	"CumulativeNOxDSEmissionGram": ---,
-#	"CumulativeWork": ---,
-#	"MapType": (--, --, --),
-#	"Extension": 0,
-#	"Coordinates": (--, --),
-#	"BinPosition": ---,
-#}
+def printTelemetry(telemetry):
+	print("####################### Telemetry #######################")
+	print("Telemetry: " + str(telemetry))

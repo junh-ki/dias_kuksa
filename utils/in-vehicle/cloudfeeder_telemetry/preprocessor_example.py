@@ -15,8 +15,7 @@ class PEMS_Mode:
 class BinInfoProvider:
 	"""A class that provides info to create a bin"""	
 	def __init__(self):
-		self.sigCH0 = {}
-		self.sigCH1 = {}
+		self.signals = {}
 		self.counter = 0
 
 def createBin(tscr_mode, is_old_active, pems_mode, xAxisVal, yAxisVal, binPro):
@@ -43,19 +42,19 @@ def createBin(tscr_mode, is_old_active, pems_mode, xAxisVal, yAxisVal, binPro):
 def preprocessing(binPro):
 	
 	# Implement your own function with the read signals
-	tscr_mode = catalystEval(binPro.sigCH0["TimeSinceEngineStart"], binPro.sigCH0["AmbientAirTemp"], binPro.sigCH0["BarometricPress"] * 10, False, binPro.sigCH1["Aftrtrtmnt1SCRCtlystIntkGasTemp"])
+	tscr_mode = catalystEval(binPro.signals["TimeSinceEngineStart"], binPro.signals["AmbientAirTemp"], binPro.signals["BarometricPress"] * 10, False, binPro.signals["Aftrtrtmnt1SCRCtlystIntkGasTemp"])
 	
 	# Implement your own function with the read signals
-	is_old_active = oldGoodEval(binPro.sigCH0["TimeSinceEngineStart"], binPro.sigCH0["AmbientAirTemp"], binPro.sigCH0["BarometricPress"] * 10, False)
+	is_old_active = oldGoodEval(binPro.signals["TimeSinceEngineStart"], binPro.signals["AmbientAirTemp"], binPro.signals["BarometricPress"] * 10, False)
 	
 	# Implement your own function with the read signals
-	pems_mode = pemsEval(binPro.sigCH0["TimeSinceEngineStart"], binPro.sigCH0["AmbientAirTemp"], binPro.sigCH0["BarometricPress"] * 10, False, binPro.sigCH0["EngCoolantTemp"])
+	pems_mode = pemsEval(binPro.signals["TimeSinceEngineStart"], binPro.signals["AmbientAirTemp"], binPro.signals["BarometricPress"] * 10, False, binPro.signals["EngCoolantTemp"])
 	
 	# Implement your own function with the read signals
-	xAxisVal = getXAxisVal(binPro.sigCH0["EngSpeed"], binPro.sigCH0["EngSpeedAtPoint2"], binPro.sigCH0["EngSpeedAtIdlePoint1"])
+	xAxisVal = getXAxisVal(binPro.signals["EngSpeed"], binPro.signals["EngSpeedAtPoint2"], binPro.signals["EngSpeedAtIdlePoint1"])
 	
 	# Implement your own function with the read signals
-	yAxisVal = getYAxisVal(binPro.sigCH0["ActualEngPercentTorque"])
+	yAxisVal = getYAxisVal(binPro.signals["ActualEngPercentTorque"])
 	
 
 
@@ -108,16 +107,12 @@ def getYAxisVal(actualEngPercentTorque):
 	return 0
 
 def printSignalValues(binPro):
-	print("######################## Channel-0 ########################")
-	for signal, value in binPro.sigCH0.items():
+	print("######################## Signals ########################")
+	for signal, value in binPro.signals.items():
 		print(signal, ": ", str(value))
-	print("######################## Channel-1 ########################")	
-	for signal, value in binPro.sigCH1.items():
-		print(signal, ": ", str(value))
-	print("###########################################################")
 
 def printBinInfo(tBin):
-	print("###########################################################")
+	print("####################### Bin Info ##########################")
 	if tBin["BinPosition"] != 0:
 		print("BIN(Collected): " + str(tBin))
 	else:
