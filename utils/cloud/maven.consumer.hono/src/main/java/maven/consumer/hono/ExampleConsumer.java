@@ -115,49 +115,14 @@ public class ExampleConsumer {
         final Map<String, Object> map = mapJSONDictionary(content);
         
         /* Storing data in the InfluxDB server */
-        final double nox = Double.parseDouble(map.get("CumulativeNOxDSEmissionGram").toString());
-        final List bco = (ArrayList) map.get("Coordinates");
-        final int bpos = (int) map.get("BinPosition");
-        final List mtyp = (ArrayList) map.get("MapType");
-        final double cwork = Double.parseDouble(map.get("CumulativeWork").toString());
-        final int samt = (int) map.get("SamplingTime");
-
-        final double x_coordinate = Double.parseDouble(bco.get(0).toString());
-        final double y_coordinate = Double.parseDouble(bco.get(1).toString());
-        final int tscr_typ = (int) mtyp.get(0);
-        final boolean old_good = (boolean) mtyp.get(1);
-        final int pems_typ = (int) mtyp.get(2);
+        Object tscr_bad = map.get("tscr_bad");
+        Object tscr_intermediate = map.get("tscr_intermediate");
+        Object tscr_good = map.get("tscr_good");
+        Object old_good = map.get("old_good");
+        Object pems_cold = map.get("pems_cold");
+        Object pems_hot = map.get("pems_hot");
         
-        final String database = "dias_kuksa_tut";
-        curlCreateDB(database);
-        if (tscr_typ == 1) {
-            curlWriteInfluxDBMetrics(database, "x_coordinate", "tscr_bad", x_coordinate);
-            curlWriteInfluxDBMetrics(database, "y_coordinate", "tscr_bad", y_coordinate);
-        } else if (tscr_typ == 2) {
-            curlWriteInfluxDBMetrics(database, "x_coordinate", "tscr_intermediate", x_coordinate);
-            curlWriteInfluxDBMetrics(database, "y_coordinate", "tscr_intermediate", y_coordinate);
-        } else if (tscr_typ == 3) {
-            curlWriteInfluxDBMetrics(database, "x_coordinate", "tscr_good", x_coordinate);
-            curlWriteInfluxDBMetrics(database, "y_coordinate", "tscr_good", y_coordinate);
-        }
-        if (old_good) {
-            curlWriteInfluxDBMetrics(database, "x_coordinate", "old_good", x_coordinate);
-            curlWriteInfluxDBMetrics(database, "y_coordinate", "old_good", y_coordinate);
-        }
-        if (pems_typ == 1) {
-            curlWriteInfluxDBMetrics(database, "x_coordinate", "pems_cold", x_coordinate);
-            curlWriteInfluxDBMetrics(database, "y_coordinate", "pems_cold", y_coordinate);
-        } else if (pems_typ == 2) {
-            curlWriteInfluxDBMetrics(database, "x_coordinate", "pems_hot", x_coordinate);
-            curlWriteInfluxDBMetrics(database, "y_coordinate", "pems_hot", y_coordinate);
-        }
-        curlWriteInfluxDBMetrics(database, "cumulative_time", "counter", samt);
-        LOG.info("Coordinates: (" + x_coordinate + ", " + y_coordinate + "), T_SCR: " + tscr_typ + ", Old_Good: " + old_good + ", PEMS_Typ: " + pems_typ + ", Counter: " + samt);        
-
-        int evalPoint = 100; // Evaluation Point: 10h = 600m = 36000s
-        if (samt >= evalPoint) {
-        	// Notify the user with email via Grafana
-        }
+        LOG.info(tscr_bad.toString());
     }
     
     /**
