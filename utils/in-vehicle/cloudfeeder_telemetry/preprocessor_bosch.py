@@ -72,10 +72,16 @@ def preprocessing(binPro):
 	# Get map type info, decide the position and create a telemetry dictionary
 	# * Fault active part is omitted
 	# * barometric (kpa): mbar = 10 x kPa
-	
 	## A. New Concept
 	### 1 bad / 2 intermediate / 3 good
 	catEvalNum = catalystEval(binPro.signals["TimeSinceEngineStart"], binPro.signals["AmbientAirTemp"], binPro.signals["BarometricPress"] * 10, False, binPro.signals["Aftrtrtmnt1SCRCtlystIntkGasTemp"])
+	## B. Old Concept
+	### False OldEvalInactive / True OldEvalActive
+	isOldEvalActive = oldGoodEval(binPro.signals["TimeSinceEngineStart"], binPro.signals["AmbientAirTemp"], binPro.signals["BarometricPress"] * 10, False)
+	## C. PEMS Concept
+	### 0 PEMS-inactive / 1 PEMS-cold / 2 PEMS-hot
+	pemsEvalNum = pemsEval(binPro.signals["TimeSinceEngineStart"], binPro.signals["AmbientAirTemp"], binPro.signals["BarometricPress"] * 10, False, binPro.signals["EngCoolantTemp"])
+
 	if catEvalNum == 1:
 		# T-SCR (Bad)
 		storeMetrics(noxDS_gs, power_Js, "tscr_bad", str(binPos), binPro)
@@ -86,22 +92,22 @@ def preprocessing(binPro):
 		# T-SCR (Good) - special function.
 		storeTscrGoodMetrics(noxDS_gs, noxUS_gs, power_Js, "tscr_good", str(binPos), binPro)
 	
-	## B. Old Concept
-	### False OldEvalInactive / True OldEvalActive
-	isOldEvalActive = oldGoodEval(binPro.signals["TimeSinceEngineStart"], binPro.signals["AmbientAirTemp"], binPro.signals["BarometricPress"] * 10, False)
 	if isOldEvalActive:
 		# Old Evaluation (Active)
 		storeMetrics(noxDS_gs, power_Js, "old_good", str(binPos), binPro)
 	
-	## C. PEMS Concept
-	### 0 PEMS-inactive / 1 PEMS-cold / 2 PEMS-hot
-	pemsEvalNum = pemsEval(binPro.signals["TimeSinceEngineStart"], binPro.signals["AmbientAirTemp"], binPro.signals["BarometricPress"] * 10, False, binPro.signals["EngCoolantTemp"])
 	if pemsEvalNum == 1:
 		# PEMS (Cold)
 		storeMetrics(noxDS_gs, power_Js, "pems_cold", str(binPos), binPro)
 	elif pemsEvalNum == 2:
 		# PEMS (Hot)
 		storeMetrics(noxDS_gs, power_Js, "pems_hot", str(binPos), binPro)
+
+	binPro.counter += 1
+
+	# Create & Return a telemetry message
+	tel_dict = createTelemetry(catEvalNum, isOldEvalActive, pemsEvalNum, binPos, binPro);
+	return tel_dict
 
 def getXAxisVal(speed, hsGovKickInSpeed, idleSpeed):
 	numerator = speed - idleSpeed
@@ -209,6 +215,32 @@ def storeTscrGoodMetrics(noxDS_gs, noxUS_gs, power_Js, mapKeyword, binPos, binPr
 	binPro.dashboard[mapKeyword][binPos]['cumulativePower_J'] += power_Js
 	# Cumulative Sampling Time
 	binPro.dashboard[mapKeyword][binPos]['samplingTime'] += 1
+
+def createTelemetry(catEvalNum, isOldEvalActive, pemsEvalNum, binPos, binPro):
+	tel_dict = {}
+	tel_dict["total_sampling"] = binPro.counter
+	if catEvalNum == 1:
+		tel_dict["tscr_bad"] = {}
+		tel_dict["tscr_bad"][str(binPos)] = binPro.dashboard["tscr_bad"][str(binPos)]
+	elif catEvalNum == 2:
+		tel_dict["tscr_intermediate"] = {}
+		tel_dict["tscr_intermediate"][str(binPos)] = binPro.dashboard["tscr_intermediate"][str(binPos)]
+	elif catEvalNum == 3:
+		tel_dict["tscr_good"] = {}
+		tel_dict["tscr_good"][str(binPos)] = binPro.dashboard["tscr_good"][str(binPos)]
+
+	if isOldEvalActive:
+		tel_dict["old_good"] = {}
+		tel_dict["old_good"][str(binPos)] = binPro.dashboard["old_good"][str(binPos)]
+
+	if pemsEvalNum == 1:
+		tel_dict["pems_cold"] = {}
+		tel_dict["pems_cold"][str(binPos)] = binPro.dashboard["pems_cold"][str(binPos)]
+	elif pemsEvalNum == 2:
+		tel_dict["pems_hot"] = {}
+		tel_dict["pems_hot"][str(binPos)] = binPro.dashboard["pems_hot"][str(binPos)]
+
+	return tel_dict
 
 def printSignalValues(binPro):
 	print("######################## Signals ########################")

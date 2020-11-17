@@ -108,20 +108,19 @@ while True:
 	binPro.signals["TimeSinceEngineStart"] = checkPath(client, "Vehicle.Drivetrain.FuelSystem.TimeSinceStart") # Missing
 	
 	# 2. Preprocess and show the result
-	preprocessor_bosch.preprocessing(binPro)
+	tel_dict = preprocessor_bosch.preprocessing(binPro)
 	preprocessor_bosch.printSignalValues(binPro)
-	preprocessor_bosch.printTelemetry(binPro.dashboard)
-
+	preprocessor_bosch.printTelemetry(tel_dict)
 	# tBin = preprocessor_example.preprocessing(binPro)
 	# preprocessor_example.printSignalValues(binPro)
 	# preprocessor_example.printBinInfo(tBin)
 	print("")
 
 	# 3. MQTT: Send the result bin to the cloud. (in a JSON format)
-	tBin_json = json.dumps(binPro.dashboard)
-	# tBin_json = json.dumps(tBin)
+	tel_json = json.dumps(tel_dict)
+	# tel_json = json.dumps(tBin)
 	# Sending device data via MQTT(Device to Cloud)
-	command = prefix_cmd + "'" + tBin_json + "'"
+	command = prefix_cmd + "'" + tel_json + "'"
 	os.system(command)
 
 	# X. Time delay
