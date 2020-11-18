@@ -3,8 +3,16 @@
  */
 package maven.consumer.hono;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import javax.annotation.PostConstruct;
 import org.apache.qpid.proton.amqp.messaging.Data;
 import org.apache.qpid.proton.message.Message;
 import org.eclipse.hono.client.ApplicationClientFactory;
@@ -16,14 +24,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import javax.annotation.PostConstruct;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class ExampleConsumer {
@@ -105,90 +105,127 @@ public class ExampleConsumer {
         connectWithRetry();
     }
 
+    /**
+     * To handle the received message from Eclipse Hono or Bosch-IoT-Hub
+     * @param msg			the received message
+     */
     private void handleMessage(final Message msg) {
         // final String deviceId = MessageHelper.getDeviceId(msg);
-        String telemetry = ((Data) msg.getBody()).getValue().toString();
-        
+        final String telemetry = ((Data) msg.getBody()).getValue().toString();
         /* Post-processing Part (Send the data to InfluxDB) */
-        final Map<String, Map<String, Object>> test = mapTelemetry(telemetry);
-        LOG.info(test.toString());
-        
+        final Map<String, Map<String, Object>> telemetry_map = mapTelemetry(telemetry);
+        /* Total Sampling Time */
+        String total_sampling = null;
+        if (telemetry_map.containsKey("total_sampling")) {
+        	total_sampling = telemetry_map.get("total_sampling").get("samplingTime").toString();
+    	}
+        /* TSCR Metrics */
+        HashMap<String, String> tscr = new HashMap<String, String>();
+        String tscr_mode = null;
+        if (telemetry_map.containsKey("tscr_bad")) {
+        	tscr_mode = "tscr_bad";
+        } else if (telemetry_map.containsKey("tscr_intermediate")) {
+        	tscr_mode = "tscr_intermediate";
+        } else if (telemetry_map.containsKey("tscr_good")) {
+        	tscr_mode = "tscr_good";
+        }
+        if (tscr_mode != null) {
+        	final Map<String, Object> tscr_temp = telemetry_map.get(tscr_mode);
+        	for (Map.Entry<String, Object> entry : tscr_temp.entrySet()) {
+        		tscr.put(entry.getKey(), entry.getValue().toString());
+        	}
+        }
+        /* OLD-GOOD Metrics */
+        HashMap<String, String> old = new HashMap<String, String>();
+        String old_mode = null;
+        if (telemetry_map.containsKey("old_good")) {
+        	old_mode = "old_good";
+        	final Map<String, Object> old_temp = telemetry_map.get(old_mode);
+        	for (Map.Entry<String, Object> entry : old_temp.entrySet()) {
+        		old.put(entry.getKey(), entry.getValue().toString());
+        	}
+        }
+        /* PEMS */
+        HashMap<String, String> pems = new HashMap<String, String>();
+        String pems_mode = null;
+        if (telemetry_map.containsKey("pems_cold")) {
+        	pems_mode = "pems_cold";
+        } else if (telemetry_map.containsKey("pems_hot")) {
+        	pems_mode = "pems_hot";
+        }
+        if (pems_mode != null) {
+        	final Map<String, Object> pems_temp = telemetry_map.get(pems_mode);
+        	for (Map.Entry<String, Object> entry : pems_temp.entrySet()) {
+        		pems.put(entry.getKey(), entry.getValue().toString());
+        	}
+        }
         final String database = "dias_kuksa_tut";
         curlCreateDB(database);
-        //LOG.info(tscr_bad.toString());
+        curlWriteDBMetric(database, "sampling_time", "total_sampling", total_sampling);
+        transmitDBMetrics(database, tscr_mode, tscr);
+        transmitDBMetrics(database, old_mode, old);
+        transmitDBMetrics(database, pems_mode, pems);
+        LOG.info("TSCR: \n" + tscr.toString() + "\n");
+        LOG.info("Old: \n" + old.toString() + "\n");
+        LOG.info("PEMS: \n" + pems.toString() + "\n");
+        // how about setting x-coordinate, y-coordinate according to the number of binPos?
+        // how about making 12 * 6 = 72 panels?
     }
     
+    /**
+     * To map the telemetry string
+     * @param telemetry		target telemetry string
+     * @return				the result map variable
+     */
     private Map<String, Map<String, Object>> mapTelemetry(String telemetry) {
     	final Map<String, Map<String, Object>> telemetry_map = new HashMap<String, Map<String, Object>>();
     	final Map<String, Object> map = mapJSONDictionary(telemetry);
-    	
+    	/* Total Sampling Time */
+    	final Map<String, Object> sampling_map = new HashMap<String, Object>(); 
+    	if (map.containsKey("total_sampling")) {
+    		sampling_map.put("samplingTime", map.get("total_sampling"));
+    		telemetry_map.put("total_sampling", sampling_map);
+    	}
     	/* TSCR */
     	String tscr_mode = null;
-    	Map<String, Object> tscr_bin_map = null;
-        if (map.containsKey("tscr_bad")) {
+    	if (map.containsKey("tscr_bad")) {
         	tscr_mode = "tscr_bad";
         } else if (map.containsKey("tscr_intermediate")) {
         	tscr_mode = "tscr_intermediate";
         } else if (map.containsKey("tscr_good")) {
         	tscr_mode = "tscr_good";
         }
-        String tscr_val = map.get(tscr_mode).toString();
-        String tscr_json = jsonizeString(tscr_val);
-        //{"1":{"cumulativeNOxDS_g":0.0, "cumulativePower_J":0.0, "samplingTime":3962}}
-        final Map<String, Object> tscr_map = mapJSONDictionary(tscr_json);
-        final Entry<String, Object> tscr_entry = tscr_map.entrySet().iterator().next();
-        final String tscr_bin_num = tscr_entry.getKey();
-        String tscr_bin_val = tscr_entry.getValue().toString();
-        String tscr_bin_json = jsonizeString(tscr_bin_val);
-        tscr_bin_map = mapJSONDictionary(tscr_bin_json);
-        tscr_bin_map.put("binPos", Integer.parseInt(tscr_bin_num));
-        telemetry_map.put(tscr_mode, tscr_bin_map);
-        
-        /* OLD-GOOD */
-        String old_mode = null;
-        Map<String, Object> old_bin_map = null;
-        if (map.containsKey("old_good")) {
-        	old_mode = "old_good";
-        	String old_val = map.get(old_mode).toString();
-        	String old_json = jsonizeString(old_val);
-        	final Map<String, Object> old_map = mapJSONDictionary(old_json);
-            final Entry<String, Object> old_entry = old_map.entrySet().iterator().next();
-            final String old_bin_num = old_entry.getKey();
-            String old_bin_val = old_entry.getValue().toString();
-            String old_bin_json = jsonizeString(old_bin_val);
-            old_bin_map = mapJSONDictionary(old_bin_json);
-            old_bin_map.put("binPos", Integer.parseInt(old_bin_num));
-            telemetry_map.put(old_mode, old_bin_map);
+        if (tscr_mode != null) {
+        	final Object tscr_val = map.get(tscr_mode);
+        	final Map<String, Object> tscr_bin_map = mapAccordingToTheMode(tscr_mode, tscr_val);
+        	telemetry_map.put(tscr_mode, tscr_bin_map);
         }
-        
+        /* OLD-GOOD */
+        if (map.containsKey("old_good")) {
+        	final String old_mode = "old_good";
+        	final Object old_val = map.get(old_mode);
+        	final Map<String, Object> old_bin_map = mapAccordingToTheMode(old_mode, old_val);
+        	telemetry_map.put(old_mode, old_bin_map);
+        }
         /* PEMS */
         String pems_mode = null;
-        Map<String, Object> pems_bin_map = null;
         if (map.containsKey("pems_cold")) {
         	pems_mode = "pems_cold";
         } else if (map.containsKey("pems_hot")) {
         	pems_mode = "pems_hot";
         }
         if (pems_mode != null) {
-        	String pems_val = map.get(pems_mode).toString();
-        	String pems_json = jsonizeString(pems_val);
-            final Map<String, Object> pems_map = mapJSONDictionary(pems_json);
-            final Entry<String, Object> pems_entry = pems_map.entrySet().iterator().next();
-            final String pems_bin_num = pems_entry.getKey();
-            String pems_bin_val = pems_entry.getValue().toString();
-            String pems_bin_json = jsonizeString(pems_bin_val);
-            pems_bin_map = mapJSONDictionary(pems_bin_json);
-            pems_bin_map.put("binPos", Integer.parseInt(pems_bin_num));
-            telemetry_map.put(old_mode, pems_bin_map);
+        	final Object pems_val = map.get(pems_mode);
+        	final Map<String, Object> pems_bin_map = mapAccordingToTheMode(pems_mode, pems_val);
+        	telemetry_map.put(pems_mode, pems_bin_map);
         }
-        
         return telemetry_map;
     }
     
     /**
      * To get a map from JSON dictionary string
      * @param dict      Target JSON dictionary string
-     * @return          mapped data set
+     * @return          the mapped data set
      */
     @SuppressWarnings("unchecked")
     private Map<String, Object> mapJSONDictionary(String dict) {
@@ -204,11 +241,33 @@ public class ExampleConsumer {
         }
         return map;
     }
+    
+    /**
+     * To create a map according to the corresponding mode and value
+     * @param mode		NOx Map mode 
+     * 					(T-SCR: Bad / Intermediate/ Good)
+     * 					(Old: Good)
+     * 					(PEMS: Cold / Hot)
+     * @param val		Corresponding String Value
+     * @return			the result map
+     */
+    private Map<String, Object> mapAccordingToTheMode(String mode, Object val) {
+    	Map<String, Object> map = null;
+    	final String tscr_json = jsonizeString(val.toString());
+        final Map<String, Object> tscr_map = mapJSONDictionary(tscr_json);
+        final Entry<String, Object> tscr_entry = tscr_map.entrySet().iterator().next();
+        final String tscr_bin_num = tscr_entry.getKey();
+        final String tscr_bin_val = tscr_entry.getValue().toString();
+        final String tscr_bin_json = jsonizeString(tscr_bin_val);
+        map = mapJSONDictionary(tscr_bin_json);
+        map.put("binPos", Integer.parseInt(tscr_bin_num));
+        return map;
+    }
 
     /**
      * To JSON-ized a JSON-like string (result of mapJSONDictionary)
      * @param str		Target string that needs to be JSON-ized
-     * @return			JSON-ized string
+     * @return			the JSON-ized string
      */
     private String jsonizeString(String str) {
     	str = str.replaceAll("=", "\":");
@@ -237,16 +296,33 @@ public class ExampleConsumer {
             e.printStackTrace();
         }
     }
+    
+    /**
+     * To transmit the target database all the metrics in the map
+     * @param database		target database name
+     * @param mode			NOx Map mode 
+     * 						(T-SCR: Bad / Intermediate/ Good)
+     * 						(Old: Good)
+     * 						(PEMS: Cold / Hot)
+     * @param map			target map variable
+     */
+    private void transmitDBMetrics(String database, String mode, HashMap<String, String> map) {
+    	for (Map.Entry<String, String> entry : map.entrySet()) {
+        	final String metric = entry.getKey();
+        	final String val = entry.getValue();
+        	curlWriteDBMetric(database, metric, mode, val);
+    	}
+    }
 
     /**
      * To run a curl call to write metrics data to the target InfluxDB database.
      * @param db            target database name
-     * @param metrics       target metrics name
+     * @param metric		target metric's name
      * @param host          source can channel (can0 or can1) // null works
-     * @param val           target metrics value
+     * @param val           target metric's value
      */
-    private void curlWriteInfluxDBMetrics(String db, String metrics, String host, double val) {
-        final String url = "http://" + exportIp + "/write?db=" + db;
+    private void curlWriteDBMetric(String database, String metric, String host, String val) {
+        final String url = "http://" + exportIp + "/write?db=" + database;
         ProcessBuilder pb;
         if (host != null) {
             pb = new ProcessBuilder(
@@ -255,7 +331,7 @@ public class ExampleConsumer {
                     "-XPOST",
                     url,
                     "--data-binary",
-                    metrics + ",host=" + host + " value=" + val);
+                    metric + ",host=" + host + " value=" + val);
         } else {
             pb = new ProcessBuilder(
                     "curl",
@@ -263,7 +339,7 @@ public class ExampleConsumer {
                     "-XPOST",
                     url,
                     "--data-binary",
-                    metrics + " value=" + val);
+                    metric + " value=" + val);
         }
         try {
             pb.start();
