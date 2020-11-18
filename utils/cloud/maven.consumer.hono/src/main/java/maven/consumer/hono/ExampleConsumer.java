@@ -17,11 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
-import java.lang.Double;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import javax.annotation.PostConstruct;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -109,20 +107,82 @@ public class ExampleConsumer {
 
     private void handleMessage(final Message msg) {
         // final String deviceId = MessageHelper.getDeviceId(msg);
-        String content = ((Data) msg.getBody()).getValue().toString();
-
+        String telemetry = ((Data) msg.getBody()).getValue().toString();
+        
         /* Post-processing Part (Send the data to InfluxDB) */
-        final Map<String, Object> map = mapJSONDictionary(content);
+        final Map<String, Map<String, Object>> test = mapTelemetry(telemetry);
+        LOG.info(test.toString());
         
-        /* Storing data in the InfluxDB server */
-        Object tscr_bad = map.get("tscr_bad");
-        Object tscr_intermediate = map.get("tscr_intermediate");
-        Object tscr_good = map.get("tscr_good");
-        Object old_good = map.get("old_good");
-        Object pems_cold = map.get("pems_cold");
-        Object pems_hot = map.get("pems_hot");
+        final String database = "dias_kuksa_tut";
+        curlCreateDB(database);
+        //LOG.info(tscr_bad.toString());
+    }
+    
+    private Map<String, Map<String, Object>> mapTelemetry(String telemetry) {
+    	final Map<String, Map<String, Object>> telemetry_map = new HashMap<String, Map<String, Object>>();
+    	final Map<String, Object> map = mapJSONDictionary(telemetry);
+    	
+    	/* TSCR */
+    	String tscr_mode = null;
+    	Map<String, Object> tscr_bin_map = null;
+        if (map.containsKey("tscr_bad")) {
+        	tscr_mode = "tscr_bad";
+        } else if (map.containsKey("tscr_intermediate")) {
+        	tscr_mode = "tscr_intermediate";
+        } else if (map.containsKey("tscr_good")) {
+        	tscr_mode = "tscr_good";
+        }
+        String tscr_val = map.get(tscr_mode).toString();
+        String tscr_json = jsonizeString(tscr_val);
+        //{"1":{"cumulativeNOxDS_g":0.0, "cumulativePower_J":0.0, "samplingTime":3962}}
+        final Map<String, Object> tscr_map = mapJSONDictionary(tscr_json);
+        final Entry<String, Object> tscr_entry = tscr_map.entrySet().iterator().next();
+        final String tscr_bin_num = tscr_entry.getKey();
+        String tscr_bin_val = tscr_entry.getValue().toString();
+        String tscr_bin_json = jsonizeString(tscr_bin_val);
+        tscr_bin_map = mapJSONDictionary(tscr_bin_json);
+        tscr_bin_map.put("binPos", Integer.parseInt(tscr_bin_num));
+        telemetry_map.put(tscr_mode, tscr_bin_map);
         
-        LOG.info(tscr_bad.toString());
+        /* OLD-GOOD */
+        String old_mode = null;
+        Map<String, Object> old_bin_map = null;
+        if (map.containsKey("old_good")) {
+        	old_mode = "old_good";
+        	String old_val = map.get(old_mode).toString();
+        	String old_json = jsonizeString(old_val);
+        	final Map<String, Object> old_map = mapJSONDictionary(old_json);
+            final Entry<String, Object> old_entry = old_map.entrySet().iterator().next();
+            final String old_bin_num = old_entry.getKey();
+            String old_bin_val = old_entry.getValue().toString();
+            String old_bin_json = jsonizeString(old_bin_val);
+            old_bin_map = mapJSONDictionary(old_bin_json);
+            old_bin_map.put("binPos", Integer.parseInt(old_bin_num));
+            telemetry_map.put(old_mode, old_bin_map);
+        }
+        
+        /* PEMS */
+        String pems_mode = null;
+        Map<String, Object> pems_bin_map = null;
+        if (map.containsKey("pems_cold")) {
+        	pems_mode = "pems_cold";
+        } else if (map.containsKey("pems_hot")) {
+        	pems_mode = "pems_hot";
+        }
+        if (pems_mode != null) {
+        	String pems_val = map.get(pems_mode).toString();
+        	String pems_json = jsonizeString(pems_val);
+            final Map<String, Object> pems_map = mapJSONDictionary(pems_json);
+            final Entry<String, Object> pems_entry = pems_map.entrySet().iterator().next();
+            final String pems_bin_num = pems_entry.getKey();
+            String pems_bin_val = pems_entry.getValue().toString();
+            String pems_bin_json = jsonizeString(pems_bin_val);
+            pems_bin_map = mapJSONDictionary(pems_bin_json);
+            pems_bin_map.put("binPos", Integer.parseInt(pems_bin_num));
+            telemetry_map.put(old_mode, pems_bin_map);
+        }
+        
+        return telemetry_map;
     }
     
     /**
@@ -135,19 +195,6 @@ public class ExampleConsumer {
         Map<String, Object> map = null;
         try {
             map = new ObjectMapper().readValue(dict, HashMap.class);
-            LOG.info("-------- Message successfully received. ---------");
-            // map the bin (JSON dictionary)
-            for (Map.Entry<String,Object> entry : map.entrySet()) {
-                String key = entry.getKey();
-                // this part is case-specific
-                if (key == "Extension") {
-                    if (entry.getValue().getClass().equals(String.class)) {
-                        // TODO: make a map again for the nested dictionary (Extended Bin's Attributes).
-                        LOG.info("\nExtension-----" + key + ": " + entry.getValue() + "-----\n");
-                    }
-                }
-                LOG.info(key + ": " + entry.getValue());
-            }
         } catch (JsonMappingException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
@@ -159,9 +206,20 @@ public class ExampleConsumer {
     }
 
     /**
+     * To JSON-ized a JSON-like string (result of mapJSONDictionary)
+     * @param str		Target string that needs to be JSON-ized
+     * @return			JSON-ized string
+     */
+    private String jsonizeString(String str) {
+    	str = str.replaceAll("=", "\":");
+    	str = str.replaceAll("\\{", "\\{\"");
+    	str = str.replaceAll(", ", ", \"");
+    	return str;
+    }
+    
+    /**
      * To create a database
      * @param db    name of the database you want to create
-     *
      */
     private void curlCreateDB(String db) {
         final String url = "http://" + exportIp + "/query";
