@@ -39,7 +39,7 @@ services:
     depends_on:
       - influxdb
     environment:
-      - GF_INSTALL_PLUGINS=natel-plotly-panel # to add plugins
+      - GF_INSTALL_PLUGINS=natel-plotly-panel,vonage-status-panel # to add plugins
       - GF_SECURITY_ADMIN_USER=${GRAFANA_USERNAME}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
     volumes:
