@@ -53,7 +53,10 @@ class BinInfoProvider:
 
 def preprocessing(binPro):
 	# Current Engine Output Torque
-	curOutToq = (binPro.signals["ActualEngPercentTorque"] - binPro.signals["NominalFrictionPercentTorque"]) * binPro.signals["EngReferenceTorque"] / 100 # divided by 100 because ActualEngPercentTorque - NominalFrictionPercentTorque is in percentage
+	curOutToq = 0
+	temp_torque = binPro.signals["ActualEngPercentTorque"] - binPro.signals["NominalFrictionPercentTorque"]
+	if temp_torque > 0:
+		curOutToq = temp_torque * binPro.signals["EngReferenceTorque"] / 100 # divided by 100 because ActualEngPercentTorque - NominalFrictionPercentTorque is in percentage
 	## Cumulative NOx (DownStream) in g
 	noxDS_gs = 0.001588 * binPro.signals["Aftertreatment1OutletNOx"] * binPro.signals["Aftrtratment1ExhaustGasMassFlow"] / 3600
 	## Cumulative NOx (UpStream) in g

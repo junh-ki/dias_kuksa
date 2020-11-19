@@ -86,19 +86,19 @@ while True:
 	# 1. Store signals' values from the target path to the dictionary keys
 	## A. Calculate integrated NOx mass
 	binPro.signals["Aftrtratment1ExhaustGasMassFlow"] = checkPath(client, "Vehicle.AfterTreatment.ExhaustMassFlow")
-	binPro.signals["Aftrtrtmnt1SCRCtlystIntkGasTemp"] = checkPath(client, "Vehicle.AfterTreatment.SCRIntakeTemp") # Missing
+	binPro.signals["Aftrtrtmnt1SCRCtlystIntkGasTemp"] = checkPath(client, "Vehicle.AfterTreatment.SCRIntakeTemp") # Missing (Not available in EDC17 but MD1)(19/11/2020)
 	binPro.signals["Aftertreatment1IntakeNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.NOxIntake1")
 	binPro.signals["Aftertreatment1OutletNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.NOxOutlet1")
 	## B. Calculate engine work
-	binPro.signals["EngReferenceTorque"] = 2500.0
+	binPro.signals["EngReferenceTorque"] = 2500.0 # BAM - Message EC1 (19/11/2020)
 	## C. Map switch over
 	binPro.signals["AmbientAirTemp"] = checkPath(client, "Vehicle.AmbientAirTemperature")
 	binPro.signals["BarometricPress"] = checkPath(client, "Vehicle.OBD.BarometricPressure")
 	binPro.signals["EngCoolantTemp"] = checkPath(client, "Vehicle.OBD.CoolantTemperature")
 	## D. Bin selection
 	binPro.signals["EngPercentLoadAtCurrentSpeed"] = checkPath(client, "Vehicle.OBD.EngPercentLoadAtCurrentSpeed")
-	binPro.signals["EngSpeedAtIdlePoint1"] = 550.0 # Idle Speed
-	binPro.signals["EngSpeedAtPoint2"] = 2200.0 # High Speed Kick-in Point
+	binPro.signals["EngSpeedAtIdlePoint1"] = 550.0 # BAM - Message EC1 (Idle Speed)(19/11/2020)
+	binPro.signals["EngSpeedAtPoint2"] = 2200.0 # BAM - Message EC1 (High Speed Kick-in Point)(19/11/2020)
 	## A & B & C
 	binPro.signals["EngSpeed"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed")
 	## B & D
@@ -106,7 +106,7 @@ while True:
 	binPro.signals["NominalFrictionPercentTorque"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.NominalFrictionPercentTorque")
 	## C - case 2 & Sampling duration tracking per bin
 	binPro.signals["TimeSinceEngineStart"] = 3000 # needs to be removed once `TimeSinceEngineStart` is available
-	#binPro.signals["TimeSinceEngineStart"] = checkPath(client, "Vehicle.Drivetrain.FuelSystem.TimeSinceStart") # Missing
+	#binPro.signals["TimeSinceEngineStart"] = checkPath(client, "Vehicle.Drivetrain.FuelSystem.TimeSinceStart") # Missing (Not available in EDC17 but MD1)(19/11/2020)
 
 	# 2. Preprocess and show the result
 	tel_dict = preprocessor_bosch.preprocessing(binPro)
