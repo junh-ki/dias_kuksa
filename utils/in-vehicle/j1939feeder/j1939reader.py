@@ -115,4 +115,15 @@ class J1939Reader(j1939.ControllerApplication):
 
     def on_message(self, pgn, data):
         msg = self._ecu._bus.recv()
-        print("msg: " + str(msg))
+
+        try:
+            decode=self.db.decode_message(msg.arbitration_id, msg.data)
+            #print("Decod" +str(decode))
+            rxTime=time.time()
+            for k,v in decode.items():
+                if k in self.mapper:
+                    if self.mapper.minUpdateTimeElapsed(k, rxTime):
+                        self.queue.put((k,v))
+        except Exception as e:
+            self.parseErr+=1
+            #print("Error Decoding: "+str(e))
