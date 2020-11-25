@@ -114,16 +114,36 @@ class J1939Reader(j1939.ControllerApplication):
         
 
     def on_message(self, pgn, data):
-        msg = self._ecu._bus.recv()
+        #msg = self._ecu._bus.recv()
 
-        try:
-            decode=self.db.decode_message(msg.arbitration_id, msg.data)
-            #print("Decod" +str(decode))
-            rxTime=time.time()
-            for k,v in decode.items():
-                if k in self.mapper:
-                    if self.mapper.minUpdateTimeElapsed(k, rxTime):
-                        self.queue.put((k,v))
-        except Exception as e:
-            self.parseErr+=1
-            #print("Error Decoding: "+str(e))
+        if len(data) > 8:
+
+            if str(pgn) == "65251":
+                self.decode_data(pgn, data)
+            #print("PGN: " + str(pgn))
+            #print("DATA: " + str(data))
+
+        #try:
+        #    decode=self.db.decode_message(msg.arbitration_id, msg.data)
+        #    #print("Decod" +str(decode))
+        #    rxTime=time.time()
+        #    for k,v in decode.items():
+        #        if k in self.mapper:
+        #            if self.mapper.minUpdateTimeElapsed(k, rxTime):
+        #                self.queue.put((k,v))
+        #except Exception as e:
+        #    self.parseErr+=1
+        #    #print("Error Decoding: "+str(e))
+
+    def decode_data(self, pgn, data):
+        # INTEL - LITTLE ENDIAN > DECIMAL * FACTOR
+        if str(pgn) == "65251":
+            # EngSpeedAtIdlePoint1
+            b1 = data[0]
+            b2 = data[1]
+            print("Second Byte: " + str(b2) + ", First Byte: " + str(b1))
+
+            # EngSpeedAtPoint2
+
+            # EngReferenceTorque
+
