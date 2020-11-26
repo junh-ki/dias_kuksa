@@ -1,6 +1,32 @@
+"""
+This script is to read CAN messages based on PGN - SAE J1939
+according to the given dbcfile, and dependent on `dbcfeeder.py`
+(https://github.com/eclipse/kuksa.val/blob/master/clients/feeder/dbc2val/dbcfeeder.py)
+Therefore it needs to be located in the same directory where `dbcfeeder.py` is located.
+
+To use the script, the following lines should be added to `dbcfeeder.py`.
+
+	import j1939reader
+	...
+	j1939R = j1939reader.J1939Reader(cfg,canQueue,mapping)
+	j1939R.start_listening()
+
+	## `j1939reader.py` is comparable to `dbcreader.py`, so comment the following lines
+	# dbcR = dbcreader.DBCReader(cfg,canQueue,mapping)
+	# dbcR.start_listening()
+
+Prior to using this script, j1939 and 
+the relevamnt wheel-package should be installed first:
+
+    $ pip3 install j1939
+    $ git clone https://github.com/benkfra/j1939.git
+    $ cd j1939
+    $ pip install .
+"""
+
 import logging
 import time
-import can, cantools
+import cantools
 import j1939
 
 logging.getLogger('j1939').setLevel(logging.DEBUG)
@@ -105,45 +131,54 @@ class J1939Reader(j1939.ControllerApplication):
         print("Open CAN device {}".format(self.cfg['can.port']))
         # create the ElectronicControlUnit (one ECU can hold multiple ControllerApplications)
         ecu = j1939.ElectronicControlUnit()
-        
         # Connect to the CAN bus
         ecu.connect(bustype='socketcan', channel=self.cfg['can.port'])
         # add CA to the ECU
         ecu.add_ca(controller_application=self)
         self.start()
         
-
     def on_message(self, pgn, data):
-        #msg = self._ecu._bus.recv()
+        pgn_hex = hex(pgn)[2:] # only hex(pgn) without '0x' prefix
+        for message in self.db.messages:
+            message_hex = hex(message.frame_id)[-6:-2] # only hex(pgn) without '0x' prefix, priority
+            if pgn_hex == message_hex:
+                signals = message._signals
+                for signal in signals:
+                    name = signal._name
+                    start_byte = int((signal._start / 8) + 1) # start from 1
+                    num_of_bytes = signal._length / 8 # most likely 1 or 2
+                    byte_order = signal._byte_order # 'little_endian' or 'big_endian'
+                    scale = signal._scale
+                    offset = signal._offset
+                    val = self.decode_signal(start_byte-1, num_of_bytes, byte_order, scale, offset, data)
+                    #print("Signal: " + signal._name + ", Value: " + str(val))
+                    if name in self.mapper:
+                        rxTime=time.time()
+                        if self.mapper.minUpdateTimeElapsed(name, rxTime):
+                            self.queue.put((name, val))
+                break
 
-        if len(data) > 8:
+    def decode_signal(self, start_byte, num_of_bytes, byte_order, scale, offset, data):
+        val = 0
+        if num_of_bytes == 1:
+            start_data = data[start_byte]
+            val = offset + start_data * scale
+        else:
+            val = self.decode_2bytes(start_byte, byte_order, scale, offset, data)
+        return val
 
-            if str(pgn) == "65251":
-                self.decode_data(pgn, data)
-            #print("PGN: " + str(pgn))
-            #print("DATA: " + str(data))
-
-        #try:
-        #    decode=self.db.decode_message(msg.arbitration_id, msg.data)
-        #    #print("Decod" +str(decode))
-        #    rxTime=time.time()
-        #    for k,v in decode.items():
-        #        if k in self.mapper:
-        #            if self.mapper.minUpdateTimeElapsed(k, rxTime):
-        #                self.queue.put((k,v))
-        #except Exception as e:
-        #    self.parseErr+=1
-        #    #print("Error Decoding: "+str(e))
-
-    def decode_data(self, pgn, data):
-        # INTEL - LITTLE ENDIAN > DECIMAL * FACTOR
-        if str(pgn) == "65251":
-            # EngSpeedAtIdlePoint1
-            b1 = data[0]
-            b2 = data[1]
-            print("Second Byte: " + str(b2) + ", First Byte: " + str(b1))
-
-            # EngSpeedAtPoint2
-
-            # EngReferenceTorque
-
+    def decode_2bytes(self, start_byte, byte_order, scale, offset, data):
+        start_data = data[start_byte]
+        end_data = data[start_byte + 1]
+        start_data_hex = hex(start_data)[2:] # without '0x' prefix
+        end_data_hex = hex(end_data)[2:] # without '0x' prefix
+        lit_end_hex_str = ""
+        # Little Endian - Intel, AMD
+        if byte_order == 'little_endian':    
+            lit_end_hex_str = "0x" + end_data_hex + start_data_hex
+        # Big Endian (a.k.a Endianness) - Motorola, IBM 
+        else:
+            lit_end_hex_str = "0x" + start_data_hex + end_data_hex
+        raw_Value = int(lit_end_hex_str, base=16)
+        val = offset + raw_Value * scale
+        return val
