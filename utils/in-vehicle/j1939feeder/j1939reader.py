@@ -6,14 +6,14 @@ Therefore it needs to be located in the same directory where `dbcfeeder.py` is l
 
 To use the script, the following lines should be added to `dbcfeeder.py`.
 
-	import j1939reader
-	...
-	j1939R = j1939reader.J1939Reader(cfg,canQueue,mapping)
-	j1939R.start_listening()
+    import j1939reader
+    ...
+    j1939R = j1939reader.J1939Reader(cfg,canQueue,mapping)
+    j1939R.start_listening()
 
-	## `j1939reader.py` is comparable to `dbcreader.py`, so comment the following lines
-	# dbcR = dbcreader.DBCReader(cfg,canQueue,mapping)
-	# dbcR.start_listening()
+    ## `j1939reader.py` is comparable to `dbcreader.py`, so comment the following lines
+    # dbcR = dbcreader.DBCReader(cfg,canQueue,mapping)
+    # dbcR.start_listening()
 
 Prior to using this script, j1939 and 
 the relevamnt wheel-package should be installed first:
@@ -138,25 +138,32 @@ class J1939Reader(j1939.ControllerApplication):
         self.start()
         
     def on_message(self, pgn, data):
+        message = self.identify_message(pgn)
+        if message != None:
+            signals = message._signals
+            for signal in signals:
+                self.put_signal_in_queue(signal)
+
+    def identify_message(self, pgn):
         pgn_hex = hex(pgn)[2:] # only hex(pgn) without '0x' prefix
         for message in self.db.messages:
             message_hex = hex(message.frame_id)[-6:-2] # only hex(pgn) without '0x' prefix, priority
             if pgn_hex == message_hex:
-                signals = message._signals
-                for signal in signals:
-                    name = signal._name
-                    start_byte = int((signal._start / 8) + 1) # start from 1
-                    num_of_bytes = signal._length / 8 # most likely 1 or 2
-                    byte_order = signal._byte_order # 'little_endian' or 'big_endian'
-                    scale = signal._scale
-                    offset = signal._offset
-                    val = self.decode_signal(start_byte-1, num_of_bytes, byte_order, scale, offset, data)
-                    #print("Signal: " + signal._name + ", Value: " + str(val))
-                    if name in self.mapper:
-                        rxTime=time.time()
-                        if self.mapper.minUpdateTimeElapsed(name, rxTime):
-                            self.queue.put((name, val))
-                break
+                return message
+        return None
+
+    def put_signal_in_queue(self, signal):
+        name = signal._name
+        start_byte = int((signal._start / 8) + 1) # start from 1
+        num_of_bytes = signal._length / 8 # most likely 1 or 2
+        byte_order = signal._byte_order # 'little_endian' or 'big_endian'
+        scale = signal._scale
+        offset = signal._offset
+        val = self.decode_signal(start_byte-1, num_of_bytes, byte_order, scale, offset, data)
+        if name in self.mapper:
+            rxTime=time.time()
+            if self.mapper.minUpdateTimeElapsed(name, rxTime):
+                self.queue.put((name, val))
 
     def decode_signal(self, start_byte, num_of_bytes, byte_order, scale, offset, data):
         val = 0
