@@ -147,7 +147,7 @@ class J1939Reader(j1939.ControllerApplication):
     def identify_message(self, pgn):
         pgn_hex = hex(pgn)[2:] # only hex(pgn) without '0x' prefix
         for message in self.db.messages:
-            message_hex = hex(message.frame_id)[-6:-2] # only hex(pgn) without '0x' prefix, priority
+            message_hex = hex(message.frame_id)[-6:-2] # only hex(pgn) without '0x' prefix, priority and source address
             if pgn_hex == message_hex:
                 return message
         return None
