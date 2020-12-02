@@ -16,7 +16,7 @@ To use the script, the following lines should be added to `dbcfeeder.py`.
     # dbcR.start_listening()
 
 Prior to using this script, j1939 and 
-the relevamnt wheel-package should be installed first:
+the relevant wheel-package should be installed first:
 
     $ pip3 install j1939
     $ git clone https://github.com/benkfra/j1939.git
@@ -142,7 +142,7 @@ class J1939Reader(j1939.ControllerApplication):
         if message != None:
             signals = message._signals
             for signal in signals:
-                self.put_signal_in_queue(signal)
+                self.put_signal_in_queue(signal, data)
 
     def identify_message(self, pgn):
         pgn_hex = hex(pgn)[2:] # only hex(pgn) without '0x' prefix
@@ -152,7 +152,7 @@ class J1939Reader(j1939.ControllerApplication):
                 return message
         return None
 
-    def put_signal_in_queue(self, signal):
+    def put_signal_in_queue(self, signal, data):
         name = signal._name
         start_byte = int((signal._start / 8) + 1) # start from 1
         num_of_bytes = signal._length / 8 # most likely 1 or 2
