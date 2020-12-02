@@ -16,7 +16,7 @@ To use the script, the following lines should be added to `dbcfeeder.py`.
     # dbcR.start_listening()
 
 Prior to using this script, j1939 and 
-the relevant wheel-package should be installed first:
+the relevamnt wheel-package should be installed first:
 
     $ pip3 install j1939
     $ git clone https://github.com/benkfra/j1939.git
@@ -154,12 +154,23 @@ class J1939Reader(j1939.ControllerApplication):
 
     def put_signal_in_queue(self, signal, data):
         name = signal._name
-        start_byte = int((signal._start / 8) + 1) # start from 1
-        num_of_bytes = signal._length / 8 # most likely 1 or 2
         byte_order = signal._byte_order # 'little_endian' or 'big_endian'
         scale = signal._scale
         offset = signal._offset
-        val = self.decode_signal(start_byte-1, num_of_bytes, byte_order, scale, offset, data)
+        data_type = type(data).__name__
+        val = 0
+        if data_type != "bytearray":
+            # when data_type is "list", `decode_signal` should be used.
+            start_byte = int((signal._start / 8) + 1) # start from 1
+            num_of_bytes = signal._length / 8 # most likely 1 or 2
+            val = self.decode_signal(start_byte-1, num_of_bytes, byte_order, scale, offset, data)
+        else:
+            # when data_type is "bytearray", `decode_signal` can be also used in the most cases.
+            # However, some messages like `DM1` require more sophisticated bit access.
+            # Therefore `decode_byte_array` should be used to deal with such messages like `DM1`.
+            start_bit = signal._start
+            num_of_bits = signal._length
+            val = self.decode_byte_array(start_bit, num_of_bits, byte_order, scale, offset, data)
         if name in self.mapper:
             rxTime=time.time()
             if self.mapper.minUpdateTimeElapsed(name, rxTime):
@@ -186,6 +197,27 @@ class J1939Reader(j1939.ControllerApplication):
         # Big Endian (a.k.a Endianness) - Motorola, IBM 
         else:
             lit_end_hex_str = "0x" + start_data_hex + end_data_hex
-        raw_Value = int(lit_end_hex_str, base=16)
-        val = offset + raw_Value * scale
+        raw_value = int(lit_end_hex_str, base=16)
+        val = offset + raw_value * scale
         return val
+
+    def decode_byte_array(self, start_bit, num_of_bits, byte_order, scale, offset, data):
+        bit_array = self.byteArr2bitArr(data)
+        binary_str = ""
+        for i in range(0, num_of_bits):
+            if byte_order == 'little_endian':
+                binary_str = str(bit_array[start_bit + i]) + binary_str
+            else:
+                binary_str = binary_str + str(bit_array[start_bit + i])
+        binary_str = "0b" + binary_str
+        raw_value = int(binary_str, base=2)
+        val = offset + raw_value * scale
+        return val
+
+    def byteArr2bitArr(self, data):
+        return [self.access_bit(i,data) for i in range(len(data)*8)]
+
+    def access_bit(self, num, data):
+        base = int(num // 8)
+        shift = int(num % 8)
+        return (data[base] & (1<<shift)) >> shift
