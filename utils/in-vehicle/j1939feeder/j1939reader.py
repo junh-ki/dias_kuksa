@@ -16,7 +16,7 @@ To use the script, the following lines should be added to `dbcfeeder.py`.
     # dbcR.start_listening()
 
 Prior to using this script, j1939 and 
-the relevamnt wheel-package should be installed first:
+the relevant wheel-package should be installed first:
 
     $ pip3 install j1939
     $ git clone https://github.com/benkfra/j1939.git
