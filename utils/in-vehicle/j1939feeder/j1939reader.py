@@ -128,6 +128,7 @@ class J1939Reader(j1939.ControllerApplication):
         return None
 
     def start_listening(self):
+        print("Open CAN device {}".format(self.cfg['can.port']))
         # create the ElectronicControlUnit (one ECU can hold multiple ControllerApplications)
         ecu = j1939.ElectronicControlUnit()
         # Connect to the CAN bus
