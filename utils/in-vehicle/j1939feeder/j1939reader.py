@@ -128,7 +128,6 @@ class J1939Reader(j1939.ControllerApplication):
         return None
 
     def start_listening(self):
-        print("Open CAN device {}".format(self.cfg['can.port']))
         # create the ElectronicControlUnit (one ECU can hold multiple ControllerApplications)
         ecu = j1939.ElectronicControlUnit()
         # Connect to the CAN bus
@@ -138,6 +137,7 @@ class J1939Reader(j1939.ControllerApplication):
         self.start()
         
     def on_message(self, pgn, data):
+        # print("PGN: {}, Data: {}".format(pgn, data))
         message = self.identify_message(pgn)
         if message != None:
             signals = message._signals
@@ -159,18 +159,20 @@ class J1939Reader(j1939.ControllerApplication):
         offset = signal._offset
         data_type = type(data).__name__
         val = 0
+        # When data_type is "list", `decode_signal` should be used. (Byte Level)
         if data_type != "bytearray":
-            # when data_type is "list", `decode_signal` should be used.
             start_byte = int((signal._start / 8) + 1) # start from 1
             num_of_bytes = signal._length / 8 # most likely 1 or 2
             val = self.decode_signal(start_byte-1, num_of_bytes, byte_order, scale, offset, data)
+        # When data_type is "bytearray", `decode_byte_array` should be used. (Bit Level)
         else:
-            # when data_type is "bytearray", `decode_signal` can be also used in the most cases.
-            # However, some messages like `DM1` require more sophisticated bit access.
-            # Therefore `decode_byte_array` should be used to deal with such messages like `DM1`.
             start_bit = signal._start
             num_of_bits = signal._length
             val = self.decode_byte_array(start_bit, num_of_bits, byte_order, scale, offset, data)
+        if val < signal._minimum:
+            val = signal._minimum
+        elif val > signal._maximum:
+        	val = signal._maximum
         if name in self.mapper:
             rxTime=time.time()
             if self.mapper.minUpdateTimeElapsed(name, rxTime):
@@ -192,9 +194,9 @@ class J1939Reader(j1939.ControllerApplication):
         end_data_hex = hex(end_data)[2:] # without '0x' prefix
         lit_end_hex_str = ""
         # Little Endian - Intel, AMD
-        if byte_order == 'little_endian':    
+        if byte_order == 'little_endian':
             lit_end_hex_str = "0x" + end_data_hex + start_data_hex
-        # Big Endian (a.k.a Endianness) - Motorola, IBM 
+        # Big Endian (a.k.a Endianness) - Motorola, IBM
         else:
             lit_end_hex_str = "0x" + start_data_hex + end_data_hex
         raw_value = int(lit_end_hex_str, base=16)
@@ -202,13 +204,18 @@ class J1939Reader(j1939.ControllerApplication):
         return val
 
     def decode_byte_array(self, start_bit, num_of_bits, byte_order, scale, offset, data):
-        bit_array = self.byteArr2bitArr(data)
         binary_str = ""
+        temp_bit_array = []
+        # Little Endian - Intel, AMD
+        if byte_order == 'little_endian':
+        	data = bytearray(reversed(data))
+        	temp_bit_array = self.byteArr2bitArr(data)
+        # Big Endian (a.k.a Endianness) - Motorola, IBM
+        else:
+        	temp_bit_array = self.byteArr2bitArr(data)
+        bit_array = list(reversed(temp_bit_array)) # To call the smallest bit first
         for i in range(0, num_of_bits):
-            if byte_order == 'little_endian':
-                binary_str = str(bit_array[start_bit + i]) + binary_str
-            else:
-                binary_str = binary_str + str(bit_array[start_bit + i])
+        	binary_str = str(bit_array[start_bit + i]) + binary_str
         binary_str = "0b" + binary_str
         raw_value = int(binary_str, base=2)
         val = offset + raw_value * scale
