@@ -138,7 +138,6 @@ class J1939Reader(j1939.ControllerApplication):
         self.start()
         
     def on_message(self, pgn, data):
-        # print("PGN: {}, Data: {}".format(pgn, data))
         message = self.identify_message(pgn)
         if message != None:
             signals = message._signals
@@ -162,9 +161,9 @@ class J1939Reader(j1939.ControllerApplication):
         val = 0
         # When data_type is "list", `decode_signal` should be used. (Byte Level)
         if data_type != "bytearray":
-            start_byte = int((signal._start / 8) + 1) # start from 1
+            start_byte = int(signal._start / 8) # start from 0
             num_of_bytes = signal._length / 8 # most likely 1 or 2
-            val = self.decode_signal(start_byte-1, num_of_bytes, byte_order, scale, offset, data)
+            val = self.decode_signal(start_byte, num_of_bytes, byte_order, scale, offset, data)
         # When data_type is "bytearray", `decode_byte_array` should be used. (Bit Level)
         else:
             start_bit = signal._start
@@ -182,8 +181,8 @@ class J1939Reader(j1939.ControllerApplication):
     def decode_signal(self, start_byte, num_of_bytes, byte_order, scale, offset, data):
         val = 0
         if num_of_bytes == 1:
-            start_data = data[start_byte]
-            val = offset + start_data * scale
+            raw_value = data[start_byte]
+            val = offset + raw_value * scale
         else:
             val = self.decode_2bytes(start_byte, byte_order, scale, offset, data)
         return val
