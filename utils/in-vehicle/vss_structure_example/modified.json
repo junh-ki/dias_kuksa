@@ -78,6 +78,69 @@
             "unit": "%",
             "description": "Engine load percentage at the current speed",
             "uuid": "f5839135fdb058659b84e779b1c02009"
+          },
+          "FaultDetectionSystem": {
+            "type": "branch",
+            "description": "Signals from the fault detection system",
+            "uuid": "38ec10219efb5f4ea7997207985971c1",
+            "children": {
+              "ProtectLampStatus": {
+                "datatype": "int",
+                "type": "sensor",
+                "unit": "",
+                "description": "Protect Lamp Status",
+                "uuid": "8774e901048d5c3f8c69b7e106336995"
+              },
+              "RedStopLampState": {
+                "datatype": "int",
+                "type": "sensor",
+                "unit": "",
+                "description": "Red Stop Lamp State",
+                "uuid": "6a4f94512e3051edbb8f82b060fa248f"
+              },
+              "AmberWarningLampStatus": {
+                "datatype": "int",
+                "type": "sensor",
+                "unit": "",
+                "description": "Amber Warning Lamp Status",
+                "uuid": "640e545ea7135796b90091fec0b8d071"
+              },
+              "MalfunctionIndicatorLampStatus": {
+                "datatype": "int",
+                "type": "sensor",
+                "unit": "",
+                "description": "Malfunction Indicator Lamp Status",
+                "uuid": "3ef43aee12d951c89ab117b1af8f107e"
+              },
+              "FlashAmberWarningLamp": {
+                "datatype": "int",
+                "type": "sensor",
+                "unit": "",
+                "description": "Flash Amber Warning Lamp",
+                "uuid": "24bacc98d2715d008b52deb59240a1cb"
+              },
+              "FlashMalfuncIndicatorLamp": {
+                "datatype": "int",
+                "type": "sensor",
+                "unit": "",
+                "description": "Flash Malfunc Indicator Lamp",
+                "uuid": "cf704fef802c5c1ca7b3d61b1d12ef36"
+              },
+              "FlashProtectLamp": {
+                "datatype": "int",
+                "type": "sensor",
+                "unit": "",
+                "description": "Flash Protect Lamp",
+                "uuid": "b1f0e3842d8857ffb50f53cc04e247d1"
+              },
+              "FlashRedStopLamp": {
+                "datatype": "int",
+                "type": "sensor",
+                "unit": "",
+                "description": "Flash Red Stop Lamp",
+                "uuid": "e7505db3d931521190b666643018c5c3"
+              }
+            }
           }
         }
       },

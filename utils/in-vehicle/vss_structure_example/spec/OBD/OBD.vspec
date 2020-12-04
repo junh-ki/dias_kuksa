@@ -20,3 +20,5 @@
   type: sensor
   unit: "%"
   description: Engine load percentage at the current speed
+
+#include FaultDetectionSystem/FaultDetectionSystem.vspec OBD
