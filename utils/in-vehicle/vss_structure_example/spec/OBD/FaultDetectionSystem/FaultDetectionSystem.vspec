@@ -4,49 +4,49 @@
   description: Signals from the fault detection system
 
 - FaultDetectionSystem.ProtectLampStatus:
-  datatype: int
+  datatype: uint8
   type: sensor
   unit: ""
   description: Protect Lamp Status
 
 - FaultDetectionSystem.RedStopLampState:
-  datatype: int
+  datatype: uint8
   type: sensor
   unit: ""
   description: Red Stop Lamp State
 
 - FaultDetectionSystem.AmberWarningLampStatus:
-  datatype: int
+  datatype: uint8
   type: sensor
   unit: ""
   description: Amber Warning Lamp Status
 
 - FaultDetectionSystem.MalfunctionIndicatorLampStatus:
-  datatype: int
+  datatype: uint8
   type: sensor
   unit: ""
   description: Malfunction Indicator Lamp Status
 
 - FaultDetectionSystem.FlashAmberWarningLamp:
-  datatype: int
+  datatype: uint8
   type: sensor
   unit: ""
   description: Flash Amber Warning Lamp
 
 - FaultDetectionSystem.FlashMalfuncIndicatorLamp:
-  datatype: int
+  datatype: uint8
   type: sensor
   unit: ""
   description: Flash Malfunc Indicator Lamp
 
 - FaultDetectionSystem.FlashProtectLamp:
-  datatype: int
+  datatype: uint8
   type: sensor
   unit: ""
   description: Flash Protect Lamp
 
 - FaultDetectionSystem.FlashRedStopLamp:
-  datatype: int
+  datatype: uint8
   type: sensor
   unit: ""
   description: Flash Red Stop Lamp

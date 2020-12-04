@@ -3,32 +3,32 @@
 AmbientAirTemp:
   minupdatedelay: 100
   targets:
-    - Vehicle.AmbientAirTemperature
+    - Vehicle.AmbientAirTemp
 
 Aftrtrtmnt1SCRCtlystIntkGasTemp:
   minupdatedelay: 100
   targets:
-    - Vehicle.AfterTreatment.SCRIntakeTemp
+    - Vehicle.AfterTreatment.Aftrtrtmnt1SCRCtlystIntkGasTemp
 
 Aftrtratment1ExhaustGasMassFlow:
   minupdatedelay: 100
   targets:
-    - Vehicle.AfterTreatment.ExhaustMassFlow
+    - Vehicle.AfterTreatment.Aftrtratment1ExhaustGasMassFlow
 
 Aftertreatment1IntakeNOx:
   minupdatedelay: 100
   targets:
-    - Vehicle.AfterTreatment.NOxLevel.NOxIntake1
+    - Vehicle.AfterTreatment.NOxLevel.Aftertreatment1IntakeNOx
 
 Aftertreatment1OutletNOx:
   minupdatedelay: 100
   targets:
-    - Vehicle.AfterTreatment.NOxLevel.NOxOutlet1
+    - Vehicle.AfterTreatment.NOxLevel.Aftertreatment1OutletNOx
 
 TimeSinceEngineStart:
   minupdatedelay: 100
   targets:
-    - Vehicle.Drivetrain.FuelSystem.TimeSinceStart
+    - Vehicle.Drivetrain.FuelSystem.TimeSinceEngineStart
 
 ActualEngPercentTorque:
   minupdatedelay: 100
@@ -48,27 +48,27 @@ NominalFrictionPercentTorque:
 EngSpeed:
   minupdatedelay: 100
   targets:
-    - Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed
+    - Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngSpeed
 
 EngSpeedAtIdlePoint1:
   minupdatedelay: 100
   targets:
-    - Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtIdle
+    - Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngSpeedAtIdlePoint1
 
 EngSpeedAtPoint2:
   minupdatedelay: 100
   targets:
-    - Vehicle.Drivetrain.InternalCombustionEngine.Engine.SpeedAtKickIn
+    - Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngSpeedAtPoint2
 
 BarometricPress:
   minupdatedelay: 100
   targets:
-    - Vehicle.OBD.BarometricPressure
+    - Vehicle.OBD.BarometricPress
 
 EngCoolantTemp:
   minupdatedelay: 100
   targets:
-    - Vehicle.OBD.CoolantTemperature
+    - Vehicle.OBD.EngCoolantTemp
 
 EngPercentLoadAtCurrentSpeed:
   minupdatedelay: 100

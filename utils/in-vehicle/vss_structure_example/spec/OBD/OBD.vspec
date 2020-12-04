@@ -3,22 +3,22 @@
   type: branch
   description: Signals from the On-Board Dignostics system
   
-- OBD.BarometricPressure:
+- OBD.BarometricPress:
   datatype: float
   type: sensor
-  unit: kPa
+  unit: "kPa"
   description: The pressure within the atmosphere of Earth
 
-- OBD.CoolantTemperature:
-  datatype: float
+- OBD.EngCoolantTemp:
+  datatype: int16
   type: sensor
   unit: "°C"
-  description: The vehicle's current engine coolant temperature
+  description: Engine Coolant Temperature
 
 - OBD.EngPercentLoadAtCurrentSpeed:
-  datatype: float
+  datatype: uint8
   type: sensor
   unit: "%"
-  description: Engine load percentage at the current speed
+  description: Engine Percentage Load At Current Speed
 
 #include FaultDetectionSystem/FaultDetectionSystem.vspec OBD

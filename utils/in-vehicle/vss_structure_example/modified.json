@@ -4,50 +4,50 @@
     "description": "Vehicle signals",
     "uuid": "ccc825f94139544dbb5f4bfd033bece6",
     "children": {
-      "AmbientAirTemperature": {
+      "AmbientAirTemp": {
         "datatype": "float",
         "type": "sensor",
         "unit": "\u00b0C",
-        "description": "Temperature of the ambient environment",
-        "uuid": "2ffcbc2e6ea75dd991e3ae80b29a1d85"
+        "description": "Ambient Air Temperature",
+        "uuid": "c4bbd7f257815dc99488353e80d34a90"
       },
       "AfterTreatment": {
         "type": "branch",
         "description": "Signals from the Aftertreatment system (UreaLevel, NOx)",
         "uuid": "e07dd60c53355ae78f292f08696b1175",
         "children": {
-          "ExhaustMassFlow": {
+          "Aftrtratment1ExhaustGasMassFlow": {
             "datatype": "float",
             "type": "sensor",
             "unit": "kg/h",
-            "description": "Aftertreatment Exhaust Gas Mass Flow",
-            "uuid": "fe3ea913a581540cba2f316449d6da0f"
+            "description": "Aftertreatment 1 Exhaust Gas Mass Flow",
+            "uuid": "ab1bddc2a2ae5663adb4d58cfa7c1573"
           },
-          "SCRIntakeTemp": {
+          "Aftrtrtmnt1SCRCtlystIntkGasTemp": {
             "datatype": "float",
             "type": "sensor",
             "unit": "\u00b0C",
-            "description": "Temperature of engine combustion byproducts entering the SCR catalyst in exhaust bank 1",
-            "uuid": "9224b9d7f85c57c8b582371a73741018"
+            "description": "Aftertreatment 1 SCR Catalyst Intake Gas Temperature",
+            "uuid": "8268dd2d53da5d7f81ae97fd50114f7e"
           },
           "NOxLevel": {
             "type": "branch",
             "description": "Intake or outlet NOx level data from After Treatment System.",
             "uuid": "bb33e23490bc590284094699ad3ef2c0",
             "children": {
-              "NOxIntake1": {
+              "Aftertreatment1IntakeNOx": {
                 "datatype": "float",
                 "type": "sensor",
                 "unit": "ppm",
-                "description": "After Treatment Intake NOx",
-                "uuid": "3b9872d9959e5dd4a2994d27f4309aac"
+                "description": "Aftertreatment 1 Intake NOx",
+                "uuid": "f93923cacc535fdda3bbb53116219a2c"
               },
-              "NOxOutlet1": {
+              "Aftertreatment1OutletNOx": {
                 "datatype": "float",
                 "type": "sensor",
                 "unit": "ppm",
-                "description": "After Treatment Outlet NOx",
-                "uuid": "e2c26e6a379d58ce9bdf391e1fe924ca"
+                "description": "Aftertreatment 1 Outlet NOx",
+                "uuid": "0f3e7c4539bc5181a7923f7039c4d50f"
               }
             }
           }
@@ -58,25 +58,25 @@
         "description": "Signals from the On-Board Dignostics system",
         "uuid": "7ad7c512ed5d52c8b31944d2d47a4bc3",
         "children": {
-          "BarometricPressure": {
+          "BarometricPress": {
             "datatype": "float",
             "type": "sensor",
             "unit": "kPa",
             "description": "The pressure within the atmosphere of Earth",
-            "uuid": "1966bfff4d235767bfd9a21afb445ac7"
+            "uuid": "8fcc28cd6aa2524db44dcd415b477386"
           },
-          "CoolantTemperature": {
-            "datatype": "float",
+          "EngCoolantTemp": {
+            "datatype": "int16",
             "type": "sensor",
             "unit": "\u00b0C",
-            "description": "The vehicle's current engine coolant temperature",
-            "uuid": "824892cdc72d5f92a38ef3136576edc8"
+            "description": "Engine Coolant Temperature",
+            "uuid": "6089cbe913175eb4900ef4f9c098a134"
           },
           "EngPercentLoadAtCurrentSpeed": {
-            "datatype": "float",
+            "datatype": "uint8",
             "type": "sensor",
             "unit": "%",
-            "description": "Engine load percentage at the current speed",
+            "description": "Engine Percentage Load At Current Speed",
             "uuid": "f5839135fdb058659b84e779b1c02009"
           },
           "FaultDetectionSystem": {
@@ -85,56 +85,56 @@
             "uuid": "38ec10219efb5f4ea7997207985971c1",
             "children": {
               "ProtectLampStatus": {
-                "datatype": "int",
+                "datatype": "uint8",
                 "type": "sensor",
                 "unit": "",
                 "description": "Protect Lamp Status",
                 "uuid": "8774e901048d5c3f8c69b7e106336995"
               },
               "RedStopLampState": {
-                "datatype": "int",
+                "datatype": "uint8",
                 "type": "sensor",
                 "unit": "",
                 "description": "Red Stop Lamp State",
                 "uuid": "6a4f94512e3051edbb8f82b060fa248f"
               },
               "AmberWarningLampStatus": {
-                "datatype": "int",
+                "datatype": "uint8",
                 "type": "sensor",
                 "unit": "",
                 "description": "Amber Warning Lamp Status",
                 "uuid": "640e545ea7135796b90091fec0b8d071"
               },
               "MalfunctionIndicatorLampStatus": {
-                "datatype": "int",
+                "datatype": "uint8",
                 "type": "sensor",
                 "unit": "",
                 "description": "Malfunction Indicator Lamp Status",
                 "uuid": "3ef43aee12d951c89ab117b1af8f107e"
               },
               "FlashAmberWarningLamp": {
-                "datatype": "int",
+                "datatype": "uint8",
                 "type": "sensor",
                 "unit": "",
                 "description": "Flash Amber Warning Lamp",
                 "uuid": "24bacc98d2715d008b52deb59240a1cb"
               },
               "FlashMalfuncIndicatorLamp": {
-                "datatype": "int",
+                "datatype": "uint8",
                 "type": "sensor",
                 "unit": "",
                 "description": "Flash Malfunc Indicator Lamp",
                 "uuid": "cf704fef802c5c1ca7b3d61b1d12ef36"
               },
               "FlashProtectLamp": {
-                "datatype": "int",
+                "datatype": "uint8",
                 "type": "sensor",
                 "unit": "",
                 "description": "Flash Protect Lamp",
                 "uuid": "b1f0e3842d8857ffb50f53cc04e247d1"
               },
               "FlashRedStopLamp": {
-                "datatype": "int",
+                "datatype": "uint8",
                 "type": "sensor",
                 "unit": "",
                 "description": "Flash Red Stop Lamp",
@@ -160,46 +160,46 @@
                 "uuid": "32665e44a07f519ba959086cb9c53b18",
                 "children": {
                   "ActualEngPercentTorque": {
-                    "datatype": "float",
+                    "datatype": "uint8",
                     "type": "sensor",
                     "unit": "%",
-                    "description": "ActualEngPercentTorque??",
+                    "description": "Actual Engine Percent Torque",
                     "uuid": "64e04138f3e45ad39af7ad7eb909cb18"
                   },
                   "EngReferenceTorque": {
-                    "datatype": "float",
+                    "datatype": "uint16",
                     "type": "sensor",
                     "unit": "Nm",
-                    "description": "EngReferenceTorque??",
+                    "description": "Engine Reference Torque",
                     "uuid": "dd85a39e2709536b94a0e9c83e406cd8"
                   },
                   "NominalFrictionPercentTorque": {
-                    "datatype": "float",
+                    "datatype": "uint8",
                     "type": "sensor",
                     "unit": "%",
-                    "description": "NominalFrictionPercentTorque??",
+                    "description": "Nominal Friction Percent Torque",
                     "uuid": "c7597c67fe79529c86a0de42a7ba7017"
                   },
-                  "Speed": {
+                  "EngSpeed": {
                     "datatype": "float",
                     "type": "sensor",
                     "unit": "rpm",
                     "description": "Engine Speed",
-                    "uuid": "2664f056995755f8bd40653f5d6b7a09"
+                    "uuid": "559c0ab49d925fc09e5ec4d5b5bd9244"
                   },
-                  "SpeedAtIdle": {
+                  "EngSpeedAtIdlePoint1": {
                     "datatype": "float",
                     "type": "sensor",
                     "unit": "rpm",
-                    "description": "Engine Speed At Idle",
-                    "uuid": "413b97d577745b0b85ae6805cf586a69"
+                    "description": "Engine Speed At Idle Point 1",
+                    "uuid": "a2bb7a3fb4ec5ae985dddecf62e6a5f8"
                   },
-                  "SpeedAtKickIn": {
+                  "EngSpeedAtPoint2": {
                     "datatype": "float",
                     "type": "sensor",
                     "unit": "rpm",
-                    "description": "Engine Speed At High Speed Governor Kick In Point(2)",
-                    "uuid": "6859a202cfe257f5ac0db0c7438175af"
+                    "description": "Engine Speed At High Speed Governor Kick In Point 2",
+                    "uuid": "3406341726e45d9fb1ee5918d80c0e50"
                   }
                 }
               }
@@ -210,12 +210,12 @@
             "description": "Signals from the fuel system",
             "uuid": "2030cd40fae15ae994137549ae642c77",
             "children": {
-              "TimeSinceStart": {
-                "datatype": "float",
+              "TimeSinceEngineStart": {
+                "datatype": "uint16",
                 "type": "sensor",
-                "unit": "%",
+                "unit": "sec",
                 "description": "Time Since Engine Start",
-                "uuid": "65792db440ee50689fadc986fe0d509c"
+                "uuid": "af843545825d577399fb8271d3e916b7"
               }
             }
           }

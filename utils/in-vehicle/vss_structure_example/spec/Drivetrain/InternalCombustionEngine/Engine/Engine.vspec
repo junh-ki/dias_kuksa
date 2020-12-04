@@ -4,37 +4,37 @@
   description: Signals from the engine
   
 - Engine.ActualEngPercentTorque:
-  datatype: float
+  datatype: uint8
   type: sensor
   unit: "%"
-  description: ActualEngPercentTorque??
+  description: Actual Engine Percent Torque
   
 - Engine.EngReferenceTorque:
-  datatype: float
+  datatype: uint16
   type: sensor
   unit: Nm
-  description: EngReferenceTorque??
+  description: Engine Reference Torque
 
 - Engine.NominalFrictionPercentTorque:
-  datatype: float
+  datatype: uint8
   type: sensor
   unit: "%"
-  description: NominalFrictionPercentTorque??
+  description: Nominal Friction Percent Torque
   
-- Engine.Speed:
+- Engine.EngSpeed:
   datatype: float
   type: sensor
   unit: rpm
   description: Engine Speed
 
-- Engine.SpeedAtIdle:
+- Engine.EngSpeedAtIdlePoint1:
   datatype: float
   type: sensor
   unit: rpm
-  description: Engine Speed At Idle
+  description: Engine Speed At Idle Point 1
 
-- Engine.SpeedAtKickIn:
+- Engine.EngSpeedAtPoint2:
   datatype: float
   type: sensor
   unit: rpm
-  description: Engine Speed At High Speed Governor Kick In Point(2)
+  description: Engine Speed At High Speed Governor Kick In Point 2

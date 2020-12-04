@@ -3,8 +3,8 @@
   type: branch
   description: Signals from the fuel system
 
-- FuelSystem.TimeSinceStart:
-  datatype: float
+- FuelSystem.TimeSinceEngineStart:
+  datatype: uint16
   type: sensor
-  unit: "%"
+  unit: "sec"
   description: Time Since Engine Start

@@ -3,11 +3,11 @@
   type: branch
   description: Vehicle signals
 
-- Vehicle.AmbientAirTemperature:
+- Vehicle.AmbientAirTemp:
   datatype: float
   type: sensor
   unit: "°C"
-  description: Temperature of the ambient environment
+  description: Ambient Air Temperature
 
 #include AfterTreatment/AfterTreatment.vspec Vehicle
 
