@@ -74,3 +74,43 @@ EngPercentLoadAtCurrentSpeed:
   minupdatedelay: 100
   targets:
     - Vehicle.OBD.EngPercentLoadAtCurrentSpeed
+
+ProtectLampStatus:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.OBD.FaultDetectionSystem.ProtectLampStatus
+
+RedStopLampState:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.OBD.FaultDetectionSystem.RedStopLampState
+
+AmberWarningLampStatus:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.OBD.FaultDetectionSystem.AmberWarningLampStatus
+
+MalfunctionIndicatorLampStatus:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.OBD.FaultDetectionSystem.MalfunctionIndicatorLampStatus
+
+FlashAmberWarningLamp:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.OBD.FaultDetectionSystem.FlashAmberWarningLamp
+
+FlashMalfuncIndicatorLamp:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.OBD.FaultDetectionSystem.FlashMalfuncIndicatorLamp
+
+FlashProtectLamp:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.OBD.FaultDetectionSystem.FlashProtectLamp
+
+FlashRedStopLamp:
+  minupdatedelay: 100
+  targets:
+    - Vehicle.OBD.FaultDetectionSystem.FlashRedStopLamp
