@@ -10,8 +10,11 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
 import javax.annotation.PostConstruct;
 import org.apache.qpid.proton.amqp.messaging.Data;
 import org.apache.qpid.proton.message.Message;
@@ -119,17 +122,13 @@ public class ExampleConsumer {
         if (telemetry_map.containsKey("total_sampling")) {
         	total_sampling = telemetry_map.get("total_sampling").get("samplingTime").toString();
     	}
+        
         /* TSCR Metrics */
         HashMap<String, String> tscr = new HashMap<String, String>();
         String tscr_mode = null;
-        if (telemetry_map.containsKey("tscr_bad")) {
-        	tscr_mode = "tscr_bad";
-        } else if (telemetry_map.containsKey("tscr_intermediate")) {
-        	tscr_mode = "tscr_intermediate";
-        } else if (telemetry_map.containsKey("tscr_good")) {
-        	tscr_mode = "tscr_good";
-        }
-        if (tscr_mode != null) {
+        final List<String> tscr_list = telemetry_map.keySet().stream().filter(k -> k.contains("tscr")).collect(Collectors.toList());
+        if (tscr_list.size() > 0) {
+        	tscr_mode = tscr_list.get(0);
         	final Map<String, Object> tscr_temp = telemetry_map.get(tscr_mode);
         	for (Map.Entry<String, Object> entry : tscr_temp.entrySet()) {
         		tscr.put(entry.getKey(), entry.getValue().toString());
@@ -138,8 +137,9 @@ public class ExampleConsumer {
         /* OLD-GOOD Metrics */
         HashMap<String, String> old = new HashMap<String, String>();
         String old_mode = null;
-        if (telemetry_map.containsKey("old_good")) {
-        	old_mode = "old_good";
+        final List<String> old_list = telemetry_map.keySet().stream().filter(k -> k.contains("old")).collect(Collectors.toList());
+        if (old_list.size() > 0) {
+        	old_mode = old_list.get(0);
         	final Map<String, Object> old_temp = telemetry_map.get(old_mode);
         	for (Map.Entry<String, Object> entry : old_temp.entrySet()) {
         		old.put(entry.getKey(), entry.getValue().toString());
@@ -148,12 +148,9 @@ public class ExampleConsumer {
         /* PEMS */
         HashMap<String, String> pems = new HashMap<String, String>();
         String pems_mode = null;
-        if (telemetry_map.containsKey("pems_cold")) {
-        	pems_mode = "pems_cold";
-        } else if (telemetry_map.containsKey("pems_hot")) {
-        	pems_mode = "pems_hot";
-        }
-        if (pems_mode != null) {
+        final List<String> pems_list = telemetry_map.keySet().stream().filter(k -> k.contains("pems")).collect(Collectors.toList());
+        if (pems_list.size() > 0) {
+        	pems_mode = pems_list.get(0);
         	final Map<String, Object> pems_temp = telemetry_map.get(pems_mode);
         	for (Map.Entry<String, Object> entry : pems_temp.entrySet()) {
         		pems.put(entry.getKey(), entry.getValue().toString());
@@ -165,11 +162,9 @@ public class ExampleConsumer {
         transmitDBMetrics(database, tscr_mode, tscr);
         transmitDBMetrics(database, old_mode, old);
         transmitDBMetrics(database, pems_mode, pems);
-        LOG.info("TSCR: \n" + tscr.toString() + "\n");
-        LOG.info("Old: \n" + old.toString() + "\n");
-        LOG.info("PEMS: \n" + pems.toString() + "\n");
-        // how about setting x-coordinate, y-coordinate according to the number of binPos?
-        // how about making 12 * 6 = 72 panels?
+        LOG.info("TSCR: \n" + tscr.toString());
+        LOG.info("Old: \n" + old.toString());
+        LOG.info("PEMS: \n" + pems.toString());
     }
     
     /**
@@ -196,16 +191,12 @@ public class ExampleConsumer {
         	tscr_mode = "tscr_good";
         }
         if (tscr_mode != null) {
-        	final Object tscr_val = map.get(tscr_mode);
-        	final Map<String, Object> tscr_bin_map = mapAccordingToTheMode(tscr_mode, tscr_val);
-        	telemetry_map.put(tscr_mode, tscr_bin_map);
+        	mapAccordingToTheMode(tscr_mode, map, telemetry_map);
         }
         /* OLD-GOOD */
         if (map.containsKey("old_good")) {
         	final String old_mode = "old_good";
-        	final Object old_val = map.get(old_mode);
-        	final Map<String, Object> old_bin_map = mapAccordingToTheMode(old_mode, old_val);
-        	telemetry_map.put(old_mode, old_bin_map);
+        	mapAccordingToTheMode(old_mode, map, telemetry_map);
         }
         /* PEMS */
         String pems_mode = null;
@@ -215,9 +206,7 @@ public class ExampleConsumer {
         	pems_mode = "pems_hot";
         }
         if (pems_mode != null) {
-        	final Object pems_val = map.get(pems_mode);
-        	final Map<String, Object> pems_bin_map = mapAccordingToTheMode(pems_mode, pems_val);
-        	telemetry_map.put(pems_mode, pems_bin_map);
+        	mapAccordingToTheMode(pems_mode, map, telemetry_map);
         }
         return telemetry_map;
     }
@@ -243,25 +232,24 @@ public class ExampleConsumer {
     }
     
     /**
-     * To create a map according to the corresponding mode and value
-     * @param mode		NOx Map mode 
-     * 					(T-SCR: Bad / Intermediate/ Good)
-     * 					(Old: Good)
-     * 					(PEMS: Cold / Hot)
-     * @param val		Corresponding String Value
-     * @return			the result map
+     * To extract a map according to the mapping mode
+     * @param mapping_mode		the mapping mode 
+     * 							TSCR-Bad / -Intermediate / -Good
+     * 							Old-Good
+     * 							PEMS-Cold / PEMS-Hot
+     * @param map				the observed telemetry map
+     * @param telemetry_map		the mapped map instance
      */
-    private Map<String, Object> mapAccordingToTheMode(String mode, Object val) {
-    	Map<String, Object> map = null;
-    	final String tscr_json = jsonizeString(val.toString());
-        final Map<String, Object> tscr_map = mapJSONDictionary(tscr_json);
-        final Entry<String, Object> tscr_entry = tscr_map.entrySet().iterator().next();
-        final String tscr_bin_num = tscr_entry.getKey();
-        final String tscr_bin_val = tscr_entry.getValue().toString();
-        final String tscr_bin_json = jsonizeString(tscr_bin_val);
-        map = mapJSONDictionary(tscr_bin_json);
-        map.put("binPos", Integer.parseInt(tscr_bin_num));
-        return map;
+    private void mapAccordingToTheMode(String mapping_mode, Map<String, Object> map, Map<String, Map<String, Object>> telemetry_map) {
+        final Object selected_map_val = map.get(mapping_mode);
+    	final String selected_map_json = jsonizeString(selected_map_val.toString());
+    	final Map<String, Object> selected_map = mapJSONDictionary(selected_map_json);
+    	final Entry<String, Object> selected_map_entry = selected_map.entrySet().iterator().next();
+    	final String selected_map_bin_val = selected_map_entry.getValue().toString();
+        final String selected_map_bin_json = jsonizeString(selected_map_bin_val);
+        final Map<String, Object> result_map = mapJSONDictionary(selected_map_bin_json);
+        final String binPos = selected_map_entry.getKey();
+        telemetry_map.put(mapping_mode + "_" + binPos, result_map);
     }
 
     /**
