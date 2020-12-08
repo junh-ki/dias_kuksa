@@ -158,7 +158,7 @@ public class ExampleConsumer {
         }
         final String database = "dias_kuksa_tut";
         curlCreateDB(database);
-        curlWriteDBMetric(database, "sampling_time", "total_sampling", total_sampling);
+        curlWriteDBMetric(database, "total_sampling_time", "total_sampling", total_sampling);
         transmitDBMetrics(database, tscr_mode, tscr);
         transmitDBMetrics(database, old_mode, old);
         transmitDBMetrics(database, pems_mode, pems);
