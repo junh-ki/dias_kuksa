@@ -11,7 +11,7 @@
   
 - Engine.EngReferenceTorque:
   datatype: uint16
-  type: sensor
+  type: attribute
   unit: Nm
   description: Engine Reference Torque
 
@@ -29,12 +29,12 @@
 
 - Engine.EngSpeedAtIdlePoint1:
   datatype: float
-  type: sensor
+  type: attribute
   unit: rpm
   description: Engine Speed At Idle Point 1
 
 - Engine.EngSpeedAtPoint2:
   datatype: float
-  type: sensor
+  type: attribute
   unit: rpm
   description: Engine Speed At High Speed Governor Kick In Point 2
