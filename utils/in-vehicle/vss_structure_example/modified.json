@@ -168,7 +168,7 @@
                   },
                   "EngReferenceTorque": {
                     "datatype": "uint16",
-                    "type": "sensor",
+                    "type": "attribute",
                     "unit": "Nm",
                     "description": "Engine Reference Torque",
                     "uuid": "dd85a39e2709536b94a0e9c83e406cd8"
@@ -189,14 +189,14 @@
                   },
                   "EngSpeedAtIdlePoint1": {
                     "datatype": "float",
-                    "type": "sensor",
+                    "type": "attribute",
                     "unit": "rpm",
                     "description": "Engine Speed At Idle Point 1",
                     "uuid": "a2bb7a3fb4ec5ae985dddecf62e6a5f8"
                   },
                   "EngSpeedAtPoint2": {
                     "datatype": "float",
-                    "type": "sensor",
+                    "type": "attribute",
                     "unit": "rpm",
                     "description": "Engine Speed At High Speed Governor Kick In Point 2",
                     "uuid": "3406341726e45d9fb1ee5918d80c0e50"
