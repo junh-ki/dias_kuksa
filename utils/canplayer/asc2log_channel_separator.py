@@ -14,7 +14,6 @@ example.asc > can0_example.log, can1_example.log, can2_example.log
 """
 
 import os
-import sys
 import ntpath
 import argparse
 
@@ -33,7 +32,7 @@ asc = args.asc
 # The name of the CAN interface your hardware has (e.g., can0 or vcan0 or, ...)
 interface = args.can
 
-# Create an intermediate log file by using asc2log from can-utils
+# Create an intermediary log string by using asc2log from can-utils
 cmd = 'asc2log -I ' + asc
 data = os.popen(cmd).read()
 
