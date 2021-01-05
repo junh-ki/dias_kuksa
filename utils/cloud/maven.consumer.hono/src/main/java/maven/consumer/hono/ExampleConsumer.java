@@ -39,6 +39,9 @@ public class ExampleConsumer {
     @Value(value = "${export.ip}")
     protected String exportIp;
 
+    @Value(value = "${measure.time}") // second
+    protected int measureTime;
+
     @Autowired
     private Vertx vertx;
 
@@ -57,6 +60,10 @@ public class ExampleConsumer {
 
     void setExportIp(String exportIp) {
         this.exportIp = exportIp;
+    }
+
+    void setMeasureTime(int measureTime) {
+        this.measureTime = measureTime;
     }
 
     @PostConstruct
@@ -118,11 +125,15 @@ public class ExampleConsumer {
         /* Post-processing Part (Send the data to InfluxDB) */
         final Map<String, Map<String, Object>> telemetry_map = mapTelemetry(telemetry);
         /* Total Sampling Time */
-        String total_sampling = null;
-        if (telemetry_map.containsKey("total_sampling")) {
-        	total_sampling = telemetry_map.get("total_sampling").get("samplingTime").toString();
-    	}
-        
+        HashMap<String, String> sampling_time_hash = new HashMap<String, String>();
+        final Map<String, Object> time_hash = telemetry_map.get("sampling_time");
+        for (Map.Entry<String, Object> entry : time_hash.entrySet()) {
+            sampling_time_hash.put(entry.getKey(), entry.getValue().toString());
+        }
+        final int total_sam = Integer.parseInt(sampling_time_hash.get("total_sampling"));
+        if (total_sam > measureTime) {
+            return ;
+        }
         /* TSCR Metrics */
         HashMap<String, String> tscr = new HashMap<String, String>();
         String tscr_mode = null;
@@ -158,7 +169,7 @@ public class ExampleConsumer {
         }
         final String database = "dias_kuksa_tut";
         curlCreateDB(database);
-        curlWriteDBMetric(database, "total_sampling_time", "total_sampling", total_sampling);
+        transmitDBMetrics(database, null, sampling_time_hash);
         transmitDBMetrics(database, tscr_mode, tscr);
         transmitDBMetrics(database, old_mode, old);
         transmitDBMetrics(database, pems_mode, pems);
@@ -304,7 +315,7 @@ public class ExampleConsumer {
 
     /**
      * To run a curl call to write metrics data to the target InfluxDB database.
-     * @param db            target database name
+     * @param database      target database name
      * @param metric		target metric's name
      * @param host          source can channel (can0 or can1) // null works
      * @param val           target metric's value

@@ -31,6 +31,8 @@ The telemetry consumer application needs a few parameters set to run. Please mak
 * `messaging-username`: the username for the IoT Hub messaging endpoint (messaging@tenant-id)
 * `messaging-password`: the password for the IoT Hub messaging endpoint
 * `tenant-id`: the tenant ID
+* `export-ip`: the export db IP address
+* `measure-time`: measurement time in sec
 
 All the information needed for setting these parameters can be found in the 'Credentials' information of a IoT Hub service subscription information.
 
@@ -39,11 +41,11 @@ To start the example consumer application (Linux & Mac)
 e.g) Navigate to the folder where this `README.md` file is located,
 and run:
 ~~~
-java -jar target/maven.consumer.hono-0.0.1-SNAPSHOT.jar --hono.client.tlsEnabled=true --hono.client.username=messaging@t20babfe7fb2840119f69e692f184127d --hono.client.password=s9VrzSsOQMzlSKFDgHrj --tenant.id=t20babfe7fb2840119f69e692f184127d --export.ip=localhost:8086
+java -jar target/maven.consumer.hono-0.0.1-SNAPSHOT.jar --hono.client.tlsEnabled=true --hono.client.username=messaging@t20babfe7fb2840119f69e692f184127d --hono.client.password=s9VrzSsOQMzlSKFDgHrj --tenant.id=t20babfe7fb2840119f69e692f184127d --export.ip=localhost:8086 --measure.point=300
 ~~~
 The above command shall be changed depending on the target service instance's credential info and it should follow the following format:
 ~~~
-java -jar {Target jar file directory} --hono.client.tlsEnabled=true --hono.client.username={messaging-username} --hono.client.password={messaging-password} --tenant.id={tenant-id} --device.id={device-id} --export.ip={ip-address}
+java -jar {Target jar file directory} --hono.client.tlsEnabled=true --hono.client.username={messaging-username} --hono.client.password={messaging-password} --tenant.id={tenant-id} --device.id={device-id} --export.ip={export-ip} --measure.time={measure-time}
 ~~~
 
 The consumer application is ready as soon as 'Consumer ready' is printed on the console. The startup can take up to 10 seconds.
