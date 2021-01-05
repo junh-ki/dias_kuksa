@@ -187,10 +187,17 @@ public class ExampleConsumer {
     	final Map<String, Map<String, Object>> telemetry_map = new HashMap<String, Map<String, Object>>();
     	final Map<String, Object> map = mapJSONDictionary(telemetry);
     	/* Total Sampling Time */
-    	final Map<String, Object> sampling_map = new HashMap<String, Object>(); 
-    	if (map.containsKey("total_sampling")) {
-    		sampling_map.put("samplingTime", map.get("total_sampling"));
-    		telemetry_map.put("total_sampling", sampling_map);
+    	if (map.containsKey("sampling_time")) {
+    		final Object selected_map_val = map.get("sampling_time");
+    		final String selected_map_json = jsonizeString(selected_map_val.toString());
+    		final Map<String, Object> result_map = new HashMap<String, Object>();
+    		final Map<String, Object> selected_map = mapJSONDictionary(selected_map_json);
+    		selected_map.entrySet().stream().forEach(k -> {
+    			final String key = k.getKey().toString();
+    			final String val = k.getValue().toString();
+    			result_map.put(key, val);
+    		});
+    		telemetry_map.put("sampling_time", result_map);
     	}
     	/* TSCR */
     	String tscr_mode = null;

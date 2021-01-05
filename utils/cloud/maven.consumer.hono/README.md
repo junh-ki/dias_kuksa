@@ -41,7 +41,7 @@ To start the example consumer application (Linux & Mac)
 e.g) Navigate to the folder where this `README.md` file is located,
 and run:
 ~~~
-java -jar target/maven.consumer.hono-0.0.1-SNAPSHOT.jar --hono.client.tlsEnabled=true --hono.client.username=messaging@t20babfe7fb2840119f69e692f184127d --hono.client.password=s9VrzSsOQMzlSKFDgHrj --tenant.id=t20babfe7fb2840119f69e692f184127d --export.ip=localhost:8086 --measure.point=300
+java -jar target/maven.consumer.hono-0.0.1-SNAPSHOT.jar --hono.client.tlsEnabled=true --hono.client.username=messaging@t20babfe7fb2840119f69e692f184127d --hono.client.password=s9VrzSsOQMzlSKFDgHrj --tenant.id=t20babfe7fb2840119f69e692f184127d --export.ip=localhost:8086 --measure.time=300
 ~~~
 The above command shall be changed depending on the target service instance's credential info and it should follow the following format:
 ~~~
