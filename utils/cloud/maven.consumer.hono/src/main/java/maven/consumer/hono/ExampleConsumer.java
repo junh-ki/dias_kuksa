@@ -169,10 +169,11 @@ public class ExampleConsumer {
         }
         final String database = "dias_kuksa_tut";
         curlCreateDB(database);
-        transmitDBMetrics(database, null, sampling_time_hash);
+        transmitDBSamplingTime(database, "total_sampling_time", sampling_time_hash);
         transmitDBMetrics(database, tscr_mode, tscr);
         transmitDBMetrics(database, old_mode, old);
         transmitDBMetrics(database, pems_mode, pems);
+        LOG.info("Sampling: \n" + sampling_time_hash.toString());
         LOG.info("TSCR: \n" + tscr.toString());
         LOG.info("Old: \n" + old.toString());
         LOG.info("PEMS: \n" + pems.toString());
@@ -301,6 +302,20 @@ public class ExampleConsumer {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * To transmit the target database all the metrics in the sampling time map
+     * @param database		the name of the target database
+     * @param query_name	the name of the target sampling time metric (total_sampling)
+     * @param map			target map variable
+     */
+    private void transmitDBSamplingTime(String database, String query_name, HashMap<String, String> map) {
+    	for (Map.Entry<String, String> entry : map.entrySet()) {
+        	final String host_name = entry.getKey();
+        	final String val = entry.getValue();
+        	curlWriteDBMetric(database, query_name, host_name, val);
+    	}
     }
     
     /**
