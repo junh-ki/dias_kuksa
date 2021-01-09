@@ -8,7 +8,7 @@ import org.influxdb.dto.QueryResult;
 import org.influxdb.dto.QueryResult.Series;
 
 public class InfluxAPI {
-	public Double getTheLatestMetricValueUnderHost(InfluxDB influxDB, String metric, String host) {
+	public Double getTheLastMetricValueUnderHost(InfluxDB influxDB, String metric, String host) {
 		// Last Value: SELECT * FROM cumulativeNOxDS_g WHERE "host"='tscr_bad_1' ORDER BY DESC LIMIT 1
 		final Query query = new Query("SELECT * FROM " + metric + " WHERE \"host\"=" + "\'" + 
 				host + "\'" + " ORDER BY DESC LIMIT 1");
@@ -24,6 +24,18 @@ public class InfluxAPI {
 			return null;
 		}
 	}
+	
+	/*
+	public boolean doesTheBinHostExist(InfluxDB influxDB, String metric, String host) {
+		final Query query = new Query("SELECT * FROM " + metric + " WHERE \"host\"=" + "\'" + 
+				host + "\'" + " ORDER BY DESC LIMIT 1");
+		final QueryResult queryResult = influxDB.query(query);
+		final Result result = queryResult.getResults().get(0);
+		if (result.getSeries() != null) {
+			return true;
+		}
+		return false;
+	}*/
 	
 	/*
 	//influxDB.query(new Query("CREATE DATABASE " + database));

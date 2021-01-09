@@ -1,25 +1,17 @@
 package com.dias.diagnostics.manager;
 
-import org.influxdb.BatchOptions;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.dias.diagnostics.service.DIAS;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.annotation.PostConstruct;
-import javax.validation.Valid;
 
 @Component
 public class Manager {
-	private static final Logger LOG = LoggerFactory.getLogger(Manager.class);
-	
 	private InfluxDB influxDB;
 	private DIAS dias;
 	
