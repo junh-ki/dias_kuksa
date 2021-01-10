@@ -29,7 +29,15 @@ public class DIAS {
 	public static final String PEMS_COLD = "pems_cold";
 	public static final String PEMS_HOT = "pems_hot";
 	
-	private final InfluxAPI influxAPI = new InfluxAPI();
+	private final InfluxAPI influxAPI;
+	private final Map<String, String> binEvalMap;
+	private String averEval;
+	private int evalCount = 0;
+	
+	public DIAS() {
+		influxAPI = new InfluxAPI();
+		binEvalMap = new HashMap<String, String>();
+	}
 	
 	public void diagnoseTargetNOxMap(InfluxDB influxDB, String noxMapMode, int evalPoint) {
 		if (isItEvalPointForTargetNOxMap(influxDB, noxMapMode, evalPoint)) {
@@ -40,6 +48,13 @@ public class DIAS {
 			System.out.println("RESULT 2: " + preEvalBinMap.toString());
 			final Map<String, Double> factorMap = transformIntoFactorMap(preEvalBinMap, noxMapMode, refNOxMap);
 			System.out.println("RESULT 3: " + factorMap.toString());
+			if (isTampering(factorMap, noxMapMode)) {
+				// TODO: SEND SOMETHING TO INFLUXDB (whether it is tampering or not)
+				System.out.println("TAMPERING !!!");
+			} else {
+				System.out.println("NOT TAMPERING ^^");
+			}
+			// TODO: send binEvalMap, averEval, evalCount
 		}
 	}
 	
@@ -48,7 +63,9 @@ public class DIAS {
 		if (val == null) {
 			return false;
 		} else {
-			if (val >= evalPoint) {
+			final int evalRound = (int) val.doubleValue() / evalPoint;
+			if (evalRound > evalCount) {
+				evalCount++;
 				return true;
 			}
 		}
@@ -59,20 +76,20 @@ public class DIAS {
 		final Map<String, Map<String, Double>> binMap = new HashMap<String, Map<String, Double>>();
 		for (int i = 0; i < 12; i++) {
 			final Map<String, Double> map = new HashMap<String, Double>();
-			String host = noxMapMode + "_" + (i + 1);
+			String bin = noxMapMode + "_" + (i + 1);
 			//SHOW TAG VALUES FROM "cumulativeNOxDS_g" WITH KEY = "host"
-			final Double noxDSg = influxAPI.getTheLastMetricValueUnderHost(influxDB, NOxDS_G, host);
+			final Double noxDSg = influxAPI.getTheLastMetricValueUnderHost(influxDB, NOxDS_G, bin);
 			map.put(NOxDS_G, noxDSg);
-			final Double samplingTime = influxAPI.getTheLastMetricValueUnderHost(influxDB, SAMPLING_TIME, host);
+			final Double samplingTime = influxAPI.getTheLastMetricValueUnderHost(influxDB, SAMPLING_TIME, bin);
 			map.put(SAMPLING_TIME, samplingTime);
-			final Double workJ = influxAPI.getTheLastMetricValueUnderHost(influxDB, WORK_J, host);
+			final Double workJ = influxAPI.getTheLastMetricValueUnderHost(influxDB, WORK_J, bin);
 			if (workJ != null) {
 				final Double workKWh = convertJoulesToKWh(workJ);
 				map.put(WORK_kWh, workKWh);
 			} else {
 				map.put(WORK_kWh, null);
 			}
-			binMap.put(host, map);
+			binMap.put(bin, map);
 		}
 		return binMap;
 	}
@@ -95,8 +112,8 @@ public class DIAS {
 	private Map<String, Double> transformIntoFactorMap(Map<String, Map<String, Double>> binMap, String noxMapMode, double[] refNOxMap) {
 		final Map<String, Double> factorMap = new HashMap<String, Double>();
 		for (int i = 0; i < 12; i++) {
-			final String host = noxMapMode + "_" + (i + 1);
-			final Map<String, Double> bin = binMap.get(host);
+			final String binName = noxMapMode + "_" + (i + 1);
+			final Map<String, Double> bin = binMap.get(binName);
 			if (bin != null) {
 				// (valid bin)
 				// 1. for each bin_i, take noxds_i and kwh_i
@@ -106,29 +123,112 @@ public class DIAS {
 				final double noxForWork = noxds / workkwh;
 				final double factor = noxForWork / refNOxMap[i];
 				// 3. factor_i = noxForWork_i / refNOxMap[i-1]
-				factorMap.put(host, factor);
+				factorMap.put(binName, factor);
 			} else { 
 				// (invalid bin)
-				factorMap.put(host, null);
+				factorMap.put(binName, null);
 			}
 		}
 		return factorMap;
 	}
 	
-	private boolean doBinWiseEvaluation() {
-		
-		return true;
+	private boolean isTampering(Map<String, Double> factorMap, String noxMapMode) {
+		final boolean binEval = doBinWiseEvaluation(factorMap, noxMapMode);
+		final boolean averEval = doAverageEvaluation(factorMap, noxMapMode);
+		if (binEval || averEval) {
+			return true;
+		}
+		return false;
 	}
 	
-	private boolean doAverageEvaluation() {
-		
+	private boolean doBinWiseEvaluation(Map<String, Double> factorMap, String noxMapMode) {
+		final int[] countList = { 0, 0, 0, 0, 0, 0 };
+		for (int i = 0; i < 12; i++) {
+			final String bin = noxMapMode + "_" + (i + 1);
+			final Double factor = factorMap.get(bin);
+			if (factor != null) {
+				doDIASClassification(factor, countList, bin, binEvalMap);
+			} else {
+				binEvalMap.put(bin, "Void");
+			}
+		}
+		final int weight = doWeightNumberingEval(countList);
+		if (weight >= 12) { // tampering
+			return true;
+		}
+		return false;
+	}
+	
+	private void doDIASClassification(double factor, int[] countList, String bin, Map<String, String> exportMap) {
+		if (factor < 0.3) { // suspiciously low
+			countList[0]++;
+			exportMap.put(bin, "Suspiciously_Low");
+		} else if (factor >= 0.3 && factor < 1) { // excellent
+			countList[1]++;
+			exportMap.put(bin, "Excellent");
+		} else if (factor >= 1 && factor < 3) { // good
+			countList[2]++;
+			exportMap.put(bin, "Good");
+		} else if (factor >= 3 && factor < 5) { // questionable
+			countList[3]++;
+			exportMap.put(bin, "Questionable");
+		} else if (factor >= 5 && factor < 8) { // bad
+			countList[4]++;
+			exportMap.put(bin, "Bad");
+		} else if (factor >= 8) { // very bad
+			countList[5]++;
+			exportMap.put(bin, "Very_Bad");
+		}
+	}
+	
+	private int doWeightNumberingEval(int[] countList) {
+		int total = 0;
+		for (int i = 0; i < countList.length; i++) {
+			final int counts = countList[i];
+			if (i == 0) { // suspiciously low
+				total += counts * 1;
+			} else if (i == 1) { // excellent
+				total += counts * 0;
+			} else if (i == 2) { // good
+				total += counts * 0;
+			} else if (i == 3) { // questionable
+				total += counts * 1;
+			} else if (i == 4) { // bad
+				total += counts * 2;
+			} else if (i == 5) { // very bad
+				total += counts * 4;
+			}
+		}
+		return total;
+	}
+	
+	private boolean doAverageEvaluation(Map<String, Double> factorMap, String noxMapMode) {
+		int numOfBins = 0;
+		int total = 0;
+		for (int i = 0; i < 12; i++) {
+			final String bin = noxMapMode + "_" + (i + 1);
+			final Double factor = factorMap.get(bin);
+			if (factor != null) {
+				total += factor;
+				numOfBins++;
+			}
+		}
+		final int average = total / numOfBins;
+		if (average < 0.3) {
+			averEval = "Suspiciously_Low";
+			return false;
+		} else if (average >= 0.3 && average < 4) {
+			averEval = "No_Tampering";
+			return false;
+		}
+		averEval = "Tampering";
 		return true;
 	}
 	
 	private double convertJoulesToKWh(double joules) {
 		// 1 kW = 1000 J, 1 kWh = 1000 J * 3600
 		// 1 kWh = 3,600,000 J, 1 J = 1 / 3,600,000
-		int denominator = 3600000;
+		final int denominator = 3600000;
 		return joules / denominator;
 	}
 }
