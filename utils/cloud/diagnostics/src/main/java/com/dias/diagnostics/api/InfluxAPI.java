@@ -1,8 +1,10 @@
 package com.dias.diagnostics.api;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.influxdb.InfluxDB;
+import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.dto.QueryResult.Series;
@@ -25,39 +27,11 @@ public class InfluxAPI {
 		}
 	}
 	
-	/*
-	public boolean doesTheBinHostExist(InfluxDB influxDB, String metric, String host) {
-		final Query query = new Query("SELECT * FROM " + metric + " WHERE \"host\"=" + "\'" + 
-				host + "\'" + " ORDER BY DESC LIMIT 1");
-		final QueryResult queryResult = influxDB.query(query);
-		final Result result = queryResult.getResults().get(0);
-		if (result.getSeries() != null) {
-			return true;
-		}
-		return false;
-	}*/
-	
-	/*
-	//influxDB.query(new Query("CREATE DATABASE " + database));
-	// Write points to InfluxDB.
-	influxDB.write(Point.measurement("h2o_feet")
-	    .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-	    .tag("location", "santa_monica")
-	    .addField("level description", "below 3 feet")
-	    .addField("water_level", 2.064d)
-	    .build());
-
-	influxDB.write(Point.measurement("h2o_feet")
-	    .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-	    .tag("location", "coyote_creek")
-	    .addField("level description", "between 6 and 9 feet")
-	    .addField("water_level", 8.12d)
-	    .build());
-	// Wait a few seconds in order to let the InfluxDB client
-	// write your points asynchronously (note: you can adjust the
-	// internal time interval if you need via 'enableBatch' call).
-	Thread.sleep(5_000L);
-	QueryResult queryResult = influxDB.query(new Query("SELECT * FROM h2o_feet"));
-	System.out.println(queryResult);
-	*/
+	public void writeMetricDataUnderHost(InfluxDB influxDB, String metric, String host, String value) {
+		influxDB.write(Point.measurement(metric)
+			    .time(System.currentTimeMillis(), TimeUnit.MICROSECONDS)
+			    .tag("host", host)
+			    .addField("value", value)
+			    .build());
+	}
 }
