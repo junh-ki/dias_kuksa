@@ -39,7 +39,7 @@ public class DIAS {
 		binEvalMap = new HashMap<String, String>();
 	}
 	
-	public void diagnoseTargetNOxMap(InfluxDB influxDB, String noxMapMode, int evalPoint, String database) {
+	public void diagnoseTargetNOxMap(InfluxDB influxDB, String noxMapMode, int evalPoint) {
 		if (isItEvalPointForTargetNOxMap(influxDB, noxMapMode, evalPoint)) {
 			LOG.info("Let's evaluate!");
 			final Map<String, Map<String, Double>> binMap = getTargetNOxMap(influxDB, noxMapMode);

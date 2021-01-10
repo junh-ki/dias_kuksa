@@ -71,6 +71,6 @@ public class Manager {
 	
 	@Scheduled(fixedRate=1000) // Executes every second until evalPoint
 	private void diagnose() {
-		dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint, database);
+		dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint);
 	}
 }
