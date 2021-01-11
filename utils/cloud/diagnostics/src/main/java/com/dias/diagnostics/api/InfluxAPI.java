@@ -28,10 +28,17 @@ public class InfluxAPI {
 	}
 	
 	public void writeMetricDataUnderHost(InfluxDB influxDB, String metric, String host, String value) {
-		influxDB.write(Point.measurement(metric)
-			    .time(System.currentTimeMillis(), TimeUnit.MICROSECONDS)
-			    .tag("host", host)
-			    .addField("value", value)
-			    .build());
+		if (host != null) {
+			influxDB.write(Point.measurement(metric)
+				    .time(System.currentTimeMillis(), TimeUnit.MICROSECONDS)
+				    .tag("host", host)
+				    .addField("value", value)
+				    .build());
+		} else {
+			influxDB.write(Point.measurement(metric)
+				    .time(System.currentTimeMillis(), TimeUnit.MICROSECONDS)
+				    .addField("value", value)
+				    .build());
+		}
 	}
 }

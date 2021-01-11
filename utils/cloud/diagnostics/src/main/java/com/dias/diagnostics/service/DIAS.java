@@ -30,13 +30,16 @@ public class DIAS {
 	public static final String PEMS_HOT = "pems_hot";
 	
 	private final InfluxAPI influxAPI;
-	private final Map<String, String> binEvalMap;
-	private String avgEvalmsg;
-	private int evalCount = 0;
+	private int evalRound = 0;
+	private int binEvalResult = 0;
+	private final Map<String, Integer> binEvalMap;
+	private int avgEvalStatus;
+	private double factorAVG = 0;
+	private int avgEvalResult = 0;
 	
 	public DIAS() {
 		influxAPI = new InfluxAPI();
-		binEvalMap = new HashMap<String, String>();
+		binEvalMap = new HashMap<String, Integer>();
 	}
 	
 	public void diagnoseTargetNOxMap(InfluxDB influxDB, String noxMapMode, int evalPoint) {
@@ -57,9 +60,9 @@ public class DIAS {
 		if (val == null) {
 			return false;
 		} else {
-			final int evalRound = (int) val.doubleValue() / evalPoint;
-			if (evalRound > evalCount) {
-				evalCount++;
+			final int evalCount = (int) val.doubleValue() / evalPoint;
+			if (evalCount > evalRound) {
+				evalRound++;
 				return true;
 			}
 		}
@@ -143,35 +146,37 @@ public class DIAS {
 			if (factor != null) {
 				doDIASClassification(factor, countList, bin, binEvalMap);
 			} else {
-				binEvalMap.put(bin, "Void");
+				binEvalMap.put(bin, 0);
 			}
 		}
 		final int weight = doWeightNumberingEval(countList);
 		if (weight >= 12) { // tampering
+			binEvalResult = 1;
 			return true;
 		}
+		binEvalResult = 0;
 		return false;
 	}
 	
-	private void doDIASClassification(double factor, int[] countList, String bin, Map<String, String> binEvalMap) {
+	private void doDIASClassification(double factor, int[] countList, String bin, Map<String, Integer> binEvalMap) {
 		if (factor < 0.3) { // suspiciously low
 			countList[0]++;
-			binEvalMap.put(bin, "Suspiciously_Low");
+			binEvalMap.put(bin, 6);
 		} else if (factor >= 0.3 && factor < 1) { // excellent
 			countList[1]++;
-			binEvalMap.put(bin, "Excellent");
+			binEvalMap.put(bin, 5);
 		} else if (factor >= 1 && factor < 3) { // good
 			countList[2]++;
-			binEvalMap.put(bin, "Good");
+			binEvalMap.put(bin, 4);
 		} else if (factor >= 3 && factor < 5) { // questionable
 			countList[3]++;
-			binEvalMap.put(bin, "Questionable");
+			binEvalMap.put(bin, 3);
 		} else if (factor >= 5 && factor < 8) { // bad
 			countList[4]++;
-			binEvalMap.put(bin, "Bad");
+			binEvalMap.put(bin, 2);
 		} else if (factor >= 8) { // very bad
 			countList[5]++;
-			binEvalMap.put(bin, "Very_Bad");
+			binEvalMap.put(bin, 1);
 		}
 	}
 	
@@ -207,36 +212,58 @@ public class DIAS {
 				numOfBins++;
 			}
 		}
-		final double average = total / numOfBins;
-		if (average < 0.3) {
-			avgEvalmsg = "Suspiciously_Low (Factor AVG: " + average + ")";
+		factorAVG = total / numOfBins;
+		if (factorAVG < 0.3) {
+			avgEvalStatus = 2;
+			avgEvalResult = 0;
 			return false;
-		} else if (average >= 0.3 && average < 4) {
-			avgEvalmsg = "No_Tampering (Factor AVG: " + average + ")";
+		} else if (factorAVG >= 0.3 && factorAVG < 4) {
+			avgEvalStatus = 0;
+			avgEvalResult = 0;
 			return false;
 		}
-		avgEvalmsg = "Tampering (Factor AVG: " + average + ")";
+		avgEvalStatus = 1;
+		avgEvalResult = 1;
 		return true;
 	}
 	
 	private void writeResultsToInfluxDB(InfluxDB influxDB, String noxMapMode, Map<String, Double> factorMap) {
-		String resultMSG;
+		influxAPI.writeMetricDataUnderHost(influxDB, "eval_round", null, evalRound + ""); // 1-a eval_round		
+		int evalResult = 0;
 		if (isTampering(factorMap, noxMapMode)) {
-			resultMSG = "Tampering (Y/N): Y" + "\n" + "Evaluation Round: " + evalCount;
-		} else {
-			resultMSG = "Tampering (Y/N): N" + "\n" + "Evaluation Round: " + evalCount;
+			evalResult = 1;
 		}
-		influxAPI.writeMetricDataUnderHost(influxDB, "eval_result", noxMapMode, resultMSG);
-		influxAPI.writeMetricDataUnderHost(influxDB, "avg_eval_status", noxMapMode, avgEvalmsg);
+		influxAPI.writeMetricDataUnderHost(influxDB, "eval_result", null, evalResult + ""); // 1-b eval_result 0-N, 1-Y
+		int nox_map_mode = -1;
+		if (noxMapMode == "tscr_bad") {
+			nox_map_mode = 0;
+		} else if (noxMapMode == "tscr_intermediate") {
+			nox_map_mode = 1;
+		} else if (noxMapMode == "tscr_good") {
+			nox_map_mode = 2;
+		} else if (noxMapMode == "old_good") {
+			nox_map_mode = 3;
+		} else if (noxMapMode == "pems_cold") {
+			nox_map_mode = 4;
+		} else if (noxMapMode == "pems_hot") {
+			nox_map_mode = 5;
+		}
+		influxAPI.writeMetricDataUnderHost(influxDB, "nox_map_mode", null, nox_map_mode + ""); // 1-c nox_map_mode
 		for (int i = 0; i < 12; i++) {
 			final String bin = noxMapMode + "_" + (i + 1);
 			final Double factorVal = factorMap.get(bin);
-			final String binEvalVal = binEvalMap.get(bin);
+			final int binEvalVal = binEvalMap.get(bin);
 			if (factorVal != null) {
-				influxAPI.writeMetricDataUnderHost(influxDB, "factor_val", bin, factorVal + "");
+				influxAPI.writeMetricDataUnderHost(influxDB, "factor_val", null, factorVal + ""); // 2-a  factor_val
+			} else {
+				influxAPI.writeMetricDataUnderHost(influxDB, "factor_val", null, "-1"); // 2-a  factor_val
 			}
-			influxAPI.writeMetricDataUnderHost(influxDB, "bin_eval_val", bin, binEvalVal);
+			influxAPI.writeMetricDataUnderHost(influxDB, "bin_eval_val", null, binEvalVal + ""); // 2-b  bin_eval_val
 		}
+		influxAPI.writeMetricDataUnderHost(influxDB, "bin_eval_result", null, binEvalResult + ""); // 2-c avg_eval_result
+		influxAPI.writeMetricDataUnderHost(influxDB, "avg_eval_status", null, avgEvalStatus + ""); // 3-a avg_eval_status
+		influxAPI.writeMetricDataUnderHost(influxDB, "factor_avg", null, factorAVG + ""); // 3-b factor_avg
+		influxAPI.writeMetricDataUnderHost(influxDB, "avg_eval_result", null, avgEvalResult + ""); // 3-c avg_eval_result
 	}
 	
 	private double convertJoulesToKWh(double joules) {
