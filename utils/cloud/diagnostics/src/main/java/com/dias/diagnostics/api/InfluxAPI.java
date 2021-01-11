@@ -30,13 +30,13 @@ public class InfluxAPI {
 	public void writeMetricDataUnderHost(InfluxDB influxDB, String metric, String host, String value) {
 		if (host != null) {
 			influxDB.write(Point.measurement(metric)
-				    .time(System.nanoTime(), TimeUnit.NANOSECONDS)
+				    .time(System.currentTimeMillis() * 1000000, TimeUnit.NANOSECONDS)
 				    .tag("host", host)
 				    .addField("value", value)
 				    .build());
 		} else {
 			influxDB.write(Point.measurement(metric)
-				    .time(System.nanoTime(), TimeUnit.NANOSECONDS)
+				    .time(System.currentTimeMillis() * 1000000, TimeUnit.NANOSECONDS)
 				    .addField("value", value)
 				    .build());
 		}
