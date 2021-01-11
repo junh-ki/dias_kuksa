@@ -47,6 +47,18 @@ services:
       - ./grafana_config/grafana.ini:/etc/grafana/grafana.ini
       - ./grafana_config/grafana-provisioning/:/etc/grafana/provisioning/
 
+  diagnostics:
+    image: mrki102/diagnostics
+    container_name: diagnostics
+    command: --server.url=http://${CONNECTOR_EXPORTIP} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=dias_kuksa_tut --nox.map.mode=tscr_bad --eval.point=50
+    restart: always
+    ports:
+      - "4040:4040"
+    networks:
+      - monitor_network
+    depends_on:
+      - influxdb
+
 networks:
   monitor_network:
 
