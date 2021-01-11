@@ -228,12 +228,12 @@ public class DIAS {
 	}
 	
 	private void writeResultsToInfluxDB(InfluxDB influxDB, String noxMapMode, Map<String, Double> factorMap) {
-		influxAPI.writeMetricDataUnderHost(influxDB, "eval_round", null, evalRound + ""); // 1-a eval_round		
+		influxAPI.writeMetricDataUnderHost(influxDB, "eval_round", "eval", evalRound + ""); // 1-a eval_round		
 		int evalResult = 0;
 		if (isTampering(factorMap, noxMapMode)) {
 			evalResult = 1;
 		}
-		influxAPI.writeMetricDataUnderHost(influxDB, "eval_result", null, evalResult + ""); // 1-b eval_result 0-N, 1-Y
+		influxAPI.writeMetricDataUnderHost(influxDB, "eval_result", "eval", evalResult + ""); // 1-b eval_result 0-N, 1-Y
 		int nox_map_mode = -1;
 		if (noxMapMode == "tscr_bad") {
 			nox_map_mode = 0;
@@ -248,22 +248,22 @@ public class DIAS {
 		} else if (noxMapMode == "pems_hot") {
 			nox_map_mode = 5;
 		}
-		influxAPI.writeMetricDataUnderHost(influxDB, "nox_map_mode", null, nox_map_mode + ""); // 1-c nox_map_mode
+		influxAPI.writeMetricDataUnderHost(influxDB, "nox_map_mode", "eval", nox_map_mode + ""); // 1-c nox_map_mode
 		for (int i = 0; i < 12; i++) {
 			final String bin = noxMapMode + "_" + (i + 1);
 			final Double factorVal = factorMap.get(bin);
 			final int binEvalVal = binEvalMap.get(bin);
 			if (factorVal != null) {
-				influxAPI.writeMetricDataUnderHost(influxDB, "factor_val", null, factorVal + ""); // 2-a  factor_val
+				influxAPI.writeMetricDataUnderHost(influxDB, "factor_val", "eval_" + (i + 1), factorVal + ""); // 2-a  factor_val
 			} else {
-				influxAPI.writeMetricDataUnderHost(influxDB, "factor_val", null, "-1"); // 2-a  factor_val
+				influxAPI.writeMetricDataUnderHost(influxDB, "factor_val", "eval_" + (i + 1), "-1"); // 2-a  factor_val
 			}
-			influxAPI.writeMetricDataUnderHost(influxDB, "bin_eval_val", null, binEvalVal + ""); // 2-b  bin_eval_val
+			influxAPI.writeMetricDataUnderHost(influxDB, "bin_eval_val", "eval_" + (i + 1), binEvalVal + ""); // 2-b  bin_eval_val
 		}
-		influxAPI.writeMetricDataUnderHost(influxDB, "bin_eval_result", null, binEvalResult + ""); // 2-c avg_eval_result
-		influxAPI.writeMetricDataUnderHost(influxDB, "avg_eval_status", null, avgEvalStatus + ""); // 3-a avg_eval_status
-		influxAPI.writeMetricDataUnderHost(influxDB, "factor_avg", null, factorAVG + ""); // 3-b factor_avg
-		influxAPI.writeMetricDataUnderHost(influxDB, "avg_eval_result", null, avgEvalResult + ""); // 3-c avg_eval_result
+		influxAPI.writeMetricDataUnderHost(influxDB, "bin_eval_result", "eval", binEvalResult + ""); // 2-c avg_eval_result
+		influxAPI.writeMetricDataUnderHost(influxDB, "avg_eval_status", "eval", avgEvalStatus + ""); // 3-a avg_eval_status
+		influxAPI.writeMetricDataUnderHost(influxDB, "factor_avg", "eval", factorAVG + ""); // 3-b factor_avg
+		influxAPI.writeMetricDataUnderHost(influxDB, "avg_eval_result", "eval", avgEvalResult + ""); // 3-c avg_eval_result
 	}
 	
 	private double convertJoulesToKWh(double joules) {
