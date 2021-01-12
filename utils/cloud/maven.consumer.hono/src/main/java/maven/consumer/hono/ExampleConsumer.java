@@ -8,7 +8,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import java.io.IOException;
+import maven.consumer.influxdb.service.InfluxService;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,9 @@ import org.eclipse.hono.client.ApplicationClientFactory;
 import org.eclipse.hono.client.DisconnectListener;
 import org.eclipse.hono.client.HonoConnection;
 import org.eclipse.hono.client.MessageConsumer;
+import org.influxdb.InfluxDB;
+import org.influxdb.InfluxDBFactory;
+import org.influxdb.dto.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,15 +37,48 @@ public class ExampleConsumer {
     private static final Logger LOG = LoggerFactory.getLogger(ExampleConsumer.class);
     private static final int RECONNECT_INTERVAL_MILLIS = 1000;
 
-    @Value(value = "${tenant.id}")
+    @Value(value = "${tenant.id:t20babfe7fb2840119f69e692f184127d}")
     protected String tenantId;
 
-    @Value(value = "${export.ip}")
-    protected String exportIp;
+    void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+    
+    @Value(value = "${server.url:http://localhost:8086}")
+    protected String serverURL;
 
-    @Value(value = "${measure.time}") // second
+    void setServerURL(String serverURL) {
+        this.serverURL = serverURL;
+    }
+    
+    @Value(value = "${username:admin}")
+	protected String username;
+	
+	void setUserName(String username) {
+		this.username = username;
+	}
+	
+	@Value(value = "${password:admin}")
+	protected String password;
+
+	void setPassWord(String password) {
+		this.password = password;
+	}
+    
+    @Value(value = "${database:dias_kuksa_tut}")
+	protected String database;
+
+	void setDatabase(String database) {
+		this.database = database;
+	}
+    
+    @Value(value = "${measure.time:50}") // second
     protected int measureTime;
 
+    void setMeasureTime(int measureTime) {
+        this.measureTime = measureTime;
+    }
+    
     @Autowired
     private Vertx vertx;
 
@@ -49,26 +86,24 @@ public class ExampleConsumer {
     private ApplicationClientFactory clientFactory; // A factory for creating clients for Hono's north bound APIs.
 
     private long reconnectTimerId = -1;
+    private InfluxDB influxDB;
+	private InfluxService influxService;
 
     void setClientFactory(ApplicationClientFactory clientFactory) {
         this.clientFactory = clientFactory;
     }
 
-    void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
-
-    void setExportIp(String exportIp) {
-        this.exportIp = exportIp;
-    }
-
-    void setMeasureTime(int measureTime) {
-        this.measureTime = measureTime;
-    }
-
     @PostConstruct
     private void start() {
+    	initialize();
         connectWithRetry();
+    }
+    
+    private void initialize() {
+    	influxService = new InfluxService();
+		influxDB = InfluxDBFactory.connect(serverURL, username, password); // connectInfluxDBDatabase
+		influxDB.query(new Query("CREATE DATABASE " + database));
+		influxDB.setDatabase(database);
     }
 
     /**
@@ -167,12 +202,10 @@ public class ExampleConsumer {
         		pems.put(entry.getKey(), entry.getValue().toString());
         	}
         }
-        final String database = "dias_kuksa_tut";
-        curlCreateDB(database);
-        transmitDBSamplingTime(database, "total_sampling_time", sampling_time_hash);
-        transmitDBMetrics(database, tscr_mode, tscr);
-        transmitDBMetrics(database, old_mode, old);
-        transmitDBMetrics(database, pems_mode, pems);
+        influxService.writeSamplingTimeToInfluxDB(influxDB, "total_sampling_time", sampling_time_hash);
+        influxService.writeMetricsToInfluxDB(influxDB, tscr_mode, tscr);
+        influxService.writeMetricsToInfluxDB(influxDB, old_mode, old);
+        influxService.writeMetricsToInfluxDB(influxDB, pems_mode, pems);
         LOG.info("Sampling: \n" + sampling_time_hash.toString());
         LOG.info("TSCR: \n" + tscr.toString());
         LOG.info("Old: \n" + old.toString());
@@ -281,94 +314,5 @@ public class ExampleConsumer {
     	str = str.replaceAll("\\{", "\\{\"");
     	str = str.replaceAll(", ", ", \"");
     	return str;
-    }
-    
-    /**
-     * To create a database
-     * @param db    name of the database you want to create
-     */
-    private void curlCreateDB(String db) {
-        final String url = "http://" + exportIp + "/query";
-        ProcessBuilder pb = new ProcessBuilder(
-            "curl",
-            "-i",
-            "-XPOST",
-            url,
-            "--data-urlencode",
-            "q=CREATE DATABASE " + db);
-        try {
-            pb.start();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-    
-    /**
-     * To transmit the target database all the metrics in the sampling time map
-     * @param database		the name of the target database
-     * @param query_name	the name of the target sampling time metric (total_sampling)
-     * @param map			target map variable
-     */
-    private void transmitDBSamplingTime(String database, String query_name, HashMap<String, String> map) {
-    	for (Map.Entry<String, String> entry : map.entrySet()) {
-        	final String host_name = entry.getKey();
-        	final String val = entry.getValue();
-        	curlWriteDBMetric(database, query_name, host_name, val);
-    	}
-    }
-    
-    /**
-     * To transmit the target database all the metrics in the map
-     * @param database		target database name
-     * @param mode			NOx Map mode 
-     * 						(T-SCR: Bad / Intermediate/ Good)
-     * 						(Old: Good)
-     * 						(PEMS: Cold / Hot)
-     * @param map			target map variable
-     */
-    private void transmitDBMetrics(String database, String mode, HashMap<String, String> map) {
-    	for (Map.Entry<String, String> entry : map.entrySet()) {
-        	final String metric = entry.getKey();
-        	final String val = entry.getValue();
-        	curlWriteDBMetric(database, metric, mode, val);
-    	}
-    }
-
-    /**
-     * To run a curl call to write metrics data to the target InfluxDB database.
-     * @param database      target database name
-     * @param metric		target metric's name
-     * @param host          source can channel (can0 or can1) // null works
-     * @param val           target metric's value
-     */
-    private void curlWriteDBMetric(String database, String metric, String host, String val) {
-        final String url = "http://" + exportIp + "/write?db=" + database;
-        ProcessBuilder pb;
-        if (host != null) {
-            pb = new ProcessBuilder(
-                    "curl",
-                    "-i",
-                    "-XPOST",
-                    url,
-                    "--data-binary",
-                    metric + ",host=" + host + " value=" + val);
-        } else {
-            pb = new ProcessBuilder(
-                    "curl",
-                    "-i",
-                    "-XPOST",
-                    url,
-                    "--data-binary",
-                    metric + " value=" + val);
-        }
-        try {
-            pb.start();
-            //LOG.info("*** New " + metrics + " successfully stored in " + db + "/InfluxDB. ***");
-            //LOG.info("----- Exported to URL, \"" + url + "\" -----\n");
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
     }
 }

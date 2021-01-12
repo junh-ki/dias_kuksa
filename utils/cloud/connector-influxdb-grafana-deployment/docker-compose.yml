@@ -12,14 +12,14 @@ services:
     volumes:
       - influxdb-storage:/var/lib/influxdb
     environment:
-      - INFLUXDB_DB=dias_kuksa_tut
+      - INFLUXDB_DB=${INFLUXDB_DATABASE}
       - INFLUXDB_ADMIN_USER=${INFLUXDB_USERNAME}
       - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_PASSWORD}
 
   connector:
     image: mrki102/hono-influxdb-connector
     container_name: hono-influxdb-connector
-    command: --hono.client.tlsEnabled=true --hono.client.username=messaging@${HONO_TENANTID} --hono.client.password=${HONO_MESSAGINGPW} --tenant.id=${HONO_TENANTID} --export.ip=${CONNECTOR_EXPORTIP} --measure.time=${CONNECTOR_MEASURETIME}
+    command: --hono.client.tlsEnabled=true --hono.client.username=messaging@${HONO_TENANTID} --hono.client.password=${HONO_MESSAGINGPW} --tenant.id=${HONO_TENANTID} --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --measure.time=${EVALUATION_POINT}
     restart: always
     ports:
       - "8080:8080"
@@ -50,7 +50,7 @@ services:
   diagnostics:
     image: mrki102/diagnostics
     container_name: diagnostics
-    command: --server.url=http://${CONNECTOR_EXPORTIP} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=dias_kuksa_tut --nox.map.mode=tscr_bad --eval.point=50
+    command: --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --nox.map.mode=${EVALUATION_TARGET} --eval.point=${EVALUATION_POINT}
     restart: always
     ports:
       - "4040:4040"
@@ -67,5 +67,4 @@ volumes:
   grafana-storage:
 
 # docker-compose up -d
-# docker-compose down
 # docker-compose down --volumes

@@ -114,19 +114,11 @@
             <artifactId>hono-client</artifactId>
 	        <version>1.0.1</version>
         </dependency>
-        
-        <!-- testing dependencies -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-unit</artifactId>
-            <version>3.5.4</version>
-            <scope>test</scope>
-        </dependency>
+			<groupId>org.influxdb</groupId>
+			<artifactId>influxdb-java</artifactId>
+			<version>2.20</version>
+		</dependency>
     </dependencies>
   
 </project>
