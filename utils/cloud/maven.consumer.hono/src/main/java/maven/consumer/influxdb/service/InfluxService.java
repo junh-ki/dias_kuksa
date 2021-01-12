@@ -18,6 +18,17 @@ public class InfluxService {
 	}
 	
 	/**
+	 * To transmit the target database a single metric
+	 * @param influxDB		InfluxDB instance with a database configured
+	 * @param metric		The name of the target sampling time metric
+	 * @param host			The host(tag) of the metric
+	 * @param value			Value that should be sent
+	 */
+	public void writeSingleMetricToInfluxDB(InfluxDB influxDB, String metric, String host, String value) {
+		influxAPI.writeMetricDataUnderHost(influxDB, metric, host, value);
+	}
+	
+	/**
 	 * To transmit the target database all the metrics in the sampling time map
 	 * @param influxDB		InfluxDB instance with a database configured
 	 * @param metric		The name of the target sampling time metric
@@ -34,7 +45,7 @@ public class InfluxService {
 	/**
 	 * To transmit the target database all the metrics in the map
 	 * @param influxDB		InfluxDB instance with a database configured
-	 * @param host			
+	 * @param host			The host(tag) of the metric
 	 * @param map			The target map variable
 	 */
 	public void writeMetricsToInfluxDB(InfluxDB influxDB, String host, Map<String, String> map) {

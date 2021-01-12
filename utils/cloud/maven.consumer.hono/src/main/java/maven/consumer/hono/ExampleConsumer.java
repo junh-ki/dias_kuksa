@@ -72,11 +72,11 @@ public class ExampleConsumer {
 		this.database = database;
 	}
     
-    @Value(value = "${measure.time:50}") // second
-    protected int measureTime;
+    @Value(value = "${eval.Point:50}") // second
+    protected int evalPoint;
 
-    void setMeasureTime(int measureTime) {
-        this.measureTime = measureTime;
+    void setEvalPoint(int evalPoint) {
+        this.evalPoint = evalPoint;
     }
     
     @Autowired
@@ -104,6 +104,7 @@ public class ExampleConsumer {
 		influxDB = InfluxDBFactory.connect(serverURL, username, password); // connectInfluxDBDatabase
 		influxDB.query(new Query("CREATE DATABASE " + database));
 		influxDB.setDatabase(database);
+		influxService.writeSingleMetricToInfluxDB(influxDB, "eval_point", "eval", evalPoint + "");
     }
 
     /**
@@ -166,7 +167,7 @@ public class ExampleConsumer {
             sampling_time_hash.put(entry.getKey(), entry.getValue().toString());
         }
         final int total_sam = Integer.parseInt(sampling_time_hash.get("total_sampling"));
-        if (total_sam > measureTime) {
+        if (total_sam > evalPoint) {
             return ;
         }
         /* TSCR Metrics */
