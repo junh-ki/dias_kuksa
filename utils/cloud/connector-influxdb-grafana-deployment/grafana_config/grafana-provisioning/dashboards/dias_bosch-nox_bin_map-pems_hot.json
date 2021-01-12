@@ -15,6 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
+  "id": 14,
   "links": [],
   "panels": [
     {
@@ -169,6 +170,56 @@
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "C",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "host",
+              "operator": "=",
+              "value": "pems_hot_9"
+            }
+          ],
+          "units": "none",
+          "valueHandler": "Text Only"
+        },
+        {
+          "aggregation": "Last",
+          "alias": "Cumulative Work (kWh)",
+          "decimals": 2,
+          "displayAliasType": "Warning / Critical",
+          "displayType": "Regular",
+          "displayValueWithAlias": "Never",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "cumulativePower_kWh",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "D",
           "resultFormat": "time_series",
           "select": [
             [
@@ -375,6 +426,56 @@
           ],
           "units": "none",
           "valueHandler": "Text Only"
+        },
+        {
+          "aggregation": "Last",
+          "alias": "Cumulative Work (kWh)",
+          "decimals": 2,
+          "displayAliasType": "Warning / Critical",
+          "displayType": "Regular",
+          "displayValueWithAlias": "Never",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "cumulativePower_kWh",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "D",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "host",
+              "operator": "=",
+              "value": "pems_hot_10"
+            }
+          ],
+          "units": "none",
+          "valueHandler": "Text Only"
         }
       ],
       "timeFrom": null,
@@ -533,6 +634,56 @@
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "C",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "host",
+              "operator": "=",
+              "value": "pems_hot_11"
+            }
+          ],
+          "units": "none",
+          "valueHandler": "Text Only"
+        },
+        {
+          "aggregation": "Last",
+          "alias": "Cumulative Work (kWh)",
+          "decimals": 2,
+          "displayAliasType": "Warning / Critical",
+          "displayType": "Regular",
+          "displayValueWithAlias": "Never",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "cumulativePower_kWh",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "D",
           "resultFormat": "time_series",
           "select": [
             [
@@ -739,6 +890,56 @@
           ],
           "units": "none",
           "valueHandler": "Text Only"
+        },
+        {
+          "aggregation": "Last",
+          "alias": "Cumulative Work (kWh)",
+          "decimals": 2,
+          "displayAliasType": "Warning / Critical",
+          "displayType": "Regular",
+          "displayValueWithAlias": "Never",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "cumulativePower_kWh",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "D",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "host",
+              "operator": "=",
+              "value": "pems_hot_12"
+            }
+          ],
+          "units": "none",
+          "valueHandler": "Text Only"
         }
       ],
       "timeFrom": null,
@@ -897,6 +1098,56 @@
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "C",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "host",
+              "operator": "=",
+              "value": "pems_hot_5"
+            }
+          ],
+          "units": "none",
+          "valueHandler": "Text Only"
+        },
+        {
+          "aggregation": "Last",
+          "alias": "Cumulative Work (kWh)",
+          "decimals": 2,
+          "displayAliasType": "Warning / Critical",
+          "displayType": "Regular",
+          "displayValueWithAlias": "Never",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "cumulativePower_kWh",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "D",
           "resultFormat": "time_series",
           "select": [
             [
@@ -1103,6 +1354,56 @@
           ],
           "units": "none",
           "valueHandler": "Text Only"
+        },
+        {
+          "aggregation": "Last",
+          "alias": "Cumulative Work (kWh)",
+          "decimals": 2,
+          "displayAliasType": "Warning / Critical",
+          "displayType": "Regular",
+          "displayValueWithAlias": "Never",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "cumulativePower_kWh",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "D",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "host",
+              "operator": "=",
+              "value": "pems_hot_6"
+            }
+          ],
+          "units": "none",
+          "valueHandler": "Text Only"
         }
       ],
       "timeFrom": null,
@@ -1261,6 +1562,56 @@
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "C",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "host",
+              "operator": "=",
+              "value": "pems_hot_7"
+            }
+          ],
+          "units": "none",
+          "valueHandler": "Text Only"
+        },
+        {
+          "aggregation": "Last",
+          "alias": "Cumulative Work (kWh)",
+          "decimals": 2,
+          "displayAliasType": "Warning / Critical",
+          "displayType": "Regular",
+          "displayValueWithAlias": "Never",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "cumulativePower_kWh",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "D",
           "resultFormat": "time_series",
           "select": [
             [
@@ -1467,6 +1818,56 @@
           ],
           "units": "none",
           "valueHandler": "Text Only"
+        },
+        {
+          "aggregation": "Last",
+          "alias": "Cumulative Work (kWh)",
+          "decimals": 2,
+          "displayAliasType": "Warning / Critical",
+          "displayType": "Regular",
+          "displayValueWithAlias": "Never",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "cumulativePower_kWh",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "D",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "host",
+              "operator": "=",
+              "value": "pems_hot_8"
+            }
+          ],
+          "units": "none",
+          "valueHandler": "Text Only"
         }
       ],
       "timeFrom": null,
@@ -1625,6 +2026,56 @@
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "C",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "host",
+              "operator": "=",
+              "value": "pems_hot_1"
+            }
+          ],
+          "units": "none",
+          "valueHandler": "Text Only"
+        },
+        {
+          "aggregation": "Last",
+          "alias": "Cumulative Work (kWh)",
+          "decimals": 2,
+          "displayAliasType": "Warning / Critical",
+          "displayType": "Regular",
+          "displayValueWithAlias": "Never",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "cumulativePower_kWh",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "D",
           "resultFormat": "time_series",
           "select": [
             [
@@ -1831,6 +2282,56 @@
           ],
           "units": "none",
           "valueHandler": "Text Only"
+        },
+        {
+          "aggregation": "Last",
+          "alias": "Cumulative Work (kWh)",
+          "decimals": 2,
+          "displayAliasType": "Warning / Critical",
+          "displayType": "Regular",
+          "displayValueWithAlias": "Never",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "cumulativePower_kWh",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "D",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "host",
+              "operator": "=",
+              "value": "pems_hot_2"
+            }
+          ],
+          "units": "none",
+          "valueHandler": "Text Only"
         }
       ],
       "timeFrom": null,
@@ -1989,6 +2490,56 @@
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "C",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "host",
+              "operator": "=",
+              "value": "pems_hot_3"
+            }
+          ],
+          "units": "none",
+          "valueHandler": "Text Only"
+        },
+        {
+          "aggregation": "Last",
+          "alias": "Cumulative Work (kWh)",
+          "decimals": 2,
+          "displayAliasType": "Warning / Critical",
+          "displayType": "Regular",
+          "displayValueWithAlias": "Never",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "cumulativePower_kWh",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "D",
           "resultFormat": "time_series",
           "select": [
             [
@@ -2195,6 +2746,56 @@
           ],
           "units": "none",
           "valueHandler": "Text Only"
+        },
+        {
+          "aggregation": "Last",
+          "alias": "Cumulative Work (kWh)",
+          "decimals": 2,
+          "displayAliasType": "Warning / Critical",
+          "displayType": "Regular",
+          "displayValueWithAlias": "Never",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "cumulativePower_kWh",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "D",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "host",
+              "operator": "=",
+              "value": "pems_hot_4"
+            }
+          ],
+          "units": "none",
+          "valueHandler": "Text Only"
         }
       ],
       "timeFrom": null,
@@ -2239,7 +2840,7 @@
     ]
   },
   "timezone": "",
-  "title": "DIAS-BOSCH NOx Bin Map - PEMS (Hot)",
-  "uid": "BvTXzMJGz",
-  "version": 1
+  "title": "DIAS-BOSCH: NOx Bin Map - PEMS (Hot)",
+  "uid": "B5Ev-qaGk",
+  "version": 2
 }
