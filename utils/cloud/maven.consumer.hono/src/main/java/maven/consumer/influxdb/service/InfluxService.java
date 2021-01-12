@@ -1,5 +1,7 @@
 package maven.consumer.influxdb.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
 
 import org.influxdb.InfluxDB;
@@ -7,12 +9,7 @@ import org.influxdb.InfluxDB;
 import maven.consumer.influxdb.api.InfluxAPI;
 
 public class InfluxService {
-	public static final String TSCR_BAD = "tscr_bad";
-	public static final String TSCR_INTERMEDIATE = "tscr_intermediate";
-	public static final String TSCR_GOOD = "tscr_good";
-	public static final String OLD_GOOD = "old_good";
-	public static final String PEMS_COLD = "pems_cold";
-	public static final String PEMS_HOT = "pems_hot";
+	public static final String SAMPLING = "samplingTime";
 	
 	private final InfluxAPI influxAPI;
 	
@@ -44,7 +41,14 @@ public class InfluxService {
 		for (Map.Entry<String, String> entry : map.entrySet()) {
 			final String metric = entry.getKey();
 			final String val = entry.getValue();
-			influxAPI.writeMetricDataUnderHost(influxDB, metric, host, val);
+			if (metric != SAMPLING) {
+				final double value = Double.parseDouble(val);
+				final BigDecimal bdValue = new BigDecimal(value).setScale(3, RoundingMode.HALF_EVEN);
+				final double roValue = bdValue.doubleValue();
+				influxAPI.writeMetricDataUnderHost(influxDB, metric, host, roValue + "");
+			} else {
+				influxAPI.writeMetricDataUnderHost(influxDB, metric, host, val);
+			}
 		}
 	}
 }
