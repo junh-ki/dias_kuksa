@@ -15,7 +15,6 @@ public class DIAS {
 	private static final Logger LOG = LoggerFactory.getLogger(DIAS.class);
 	private static final String TOTAL_SAMPLING = "total_sampling_time";
 	private static final String NOxDS_G = "cumulativeNOxDS_g";
-	private static final String WORK_J = "cumulativePower_J";
 	private static final String WORK_kWh = "cumulativePower_kWh";
 	private static final String SAMPLING_TIME = "samplingTime"; // a bin's sampling time
 	private static final double[] refNOxMap = {
@@ -81,9 +80,8 @@ public class DIAS {
 			map.put(NOxDS_G, noxDSg);
 			final Double samplingTime = influxAPI.getTheLastMetricValueUnderHost(influxDB, SAMPLING_TIME, bin);
 			map.put(SAMPLING_TIME, samplingTime);
-			final Double workJ = influxAPI.getTheLastMetricValueUnderHost(influxDB, WORK_J, bin);
-			if (workJ != null) {
-				final Double workKWh = convertJoulesToKWh(workJ);
+			final Double workKWh = influxAPI.getTheLastMetricValueUnderHost(influxDB, WORK_kWh, bin);
+			if (workKWh != null) {
 				map.put(WORK_kWh, workKWh);
 			} else {
 				map.put(WORK_kWh, null);
@@ -270,12 +268,5 @@ public class DIAS {
 		influxAPI.writeMetricDataUnderHost(influxDB, "avg_eval_status", "eval", avgEvalStatus + ""); // 3-a avg_eval_status
 		influxAPI.writeMetricDataUnderHost(influxDB, "factor_avg", "eval", factorAVG + ""); // 3-b factor_avg
 		influxAPI.writeMetricDataUnderHost(influxDB, "avg_eval_result", "eval", avgEvalResult + ""); // 3-c avg_eval_result
-	}
-	
-	private double convertJoulesToKWh(double joules) {
-		// 1 kW = 1000 J, 1 kWh = 1000 J * 3600
-		// 1 kWh = 3,600,000 J, 1 J = 1 / 3,600,000
-		final int denominator = 3600000;
-		return joules / denominator;
 	}
 }
