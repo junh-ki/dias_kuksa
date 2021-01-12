@@ -163,22 +163,22 @@ public class DIAS {
 	private void doDIASClassification(double factor, int[] countList, String bin, Map<String, Integer> binEvalMap) {
 		if (factor < 0.3) { // suspiciously low
 			countList[0]++;
-			binEvalMap.put(bin, 6);
+			binEvalMap.put(bin, 1);
 		} else if (factor >= 0.3 && factor < 1) { // excellent
 			countList[1]++;
-			binEvalMap.put(bin, 5);
+			binEvalMap.put(bin, 2);
 		} else if (factor >= 1 && factor < 3) { // good
 			countList[2]++;
-			binEvalMap.put(bin, 4);
+			binEvalMap.put(bin, 3);
 		} else if (factor >= 3 && factor < 5) { // questionable
 			countList[3]++;
-			binEvalMap.put(bin, 3);
+			binEvalMap.put(bin, 4);
 		} else if (factor >= 5 && factor < 8) { // bad
 			countList[4]++;
-			binEvalMap.put(bin, 2);
+			binEvalMap.put(bin, 5);
 		} else if (factor >= 8) { // very bad
 			countList[5]++;
-			binEvalMap.put(bin, 1);
+			binEvalMap.put(bin, 6);
 		}
 	}
 	
