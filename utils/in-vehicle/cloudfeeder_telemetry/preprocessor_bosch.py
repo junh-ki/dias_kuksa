@@ -44,8 +44,9 @@ class BinInfoProvider:
                         "cumulativeNOxDS_g": 0,
                         "cumulativeNOxDS_ppm": 0,
                         "cumulativeNOxUS_g": 0,
-                        "cumulativeNOxDS_ppm": 0,
+                        "cumulativeNOxUS_ppm": 0,
                         "cumulativePower_J": 0,
+                        "cumulativePower_kWh": 0,
                         "samplingTime": 0,
                     }
             else:
@@ -54,6 +55,7 @@ class BinInfoProvider:
                     self.dashboard[key][str(x)] = {
                         "cumulativeNOxDS_g": 0,
                         "cumulativePower_J": 0,
+                        "cumulativePower_kWh": 0,
                         "samplingTime": 0,
                     }
 
@@ -227,6 +229,8 @@ def storeMetrics(noxDS_gs, power_Js, mapKeyword, binPos, binPro):
     binPro.dashboard[mapKeyword][binPos]['cumulativeNOxDS_g'] += noxDS_gs
     # Cumulative Work in J
     binPro.dashboard[mapKeyword][binPos]['cumulativePower_J'] += power_Js
+    # Cumulative Work in kWh
+    binPro.dashboard[mapKeyword][binPos]['cumulativePower_kWh'] += convertJoulesToKWh(power_Js)
     # Cumulative Sampling Time
     binPro.dashboard[mapKeyword][binPos]['samplingTime'] += 1
 
@@ -241,8 +245,16 @@ def storeTscrGoodMetrics(noxDS_gs, noxUS_gs, power_Js, mapKeyword, binPos, binPr
     binPro.dashboard[mapKeyword][binPos]['cumulativeNOxUS_ppm'] += binPro.signals["Aftertreatment1IntakeNOx"]
     # Cumulative Work in J
     binPro.dashboard[mapKeyword][binPos]['cumulativePower_J'] += power_Js
+    # Cumulative Work in kWh
+    binPro.dashboard[mapKeyword][binPos]['cumulativePower_kWh'] += convertJoulesToKWh(power_Js)
     # Cumulative Sampling Time
     binPro.dashboard[mapKeyword][binPos]['samplingTime'] += 1
+
+def convertJoulesToKWh(joules):
+    # 1 kW = 1000 J, 1 kWh = 1000 J * 3600
+    # 1 kWh = 3600000 J, 1 J = 1 / 3600000 kWh
+    denominator = 3600000
+    return joules / denominator
 
 def createTelemetry(catEvalNum, isOldEvalActive, pemsEvalNum, binPos, binPro):
     tel_dict = {}
