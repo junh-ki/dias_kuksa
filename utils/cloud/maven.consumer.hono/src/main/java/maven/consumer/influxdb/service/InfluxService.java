@@ -28,11 +28,11 @@ public class InfluxService {
 	 */
 	public void writeSamplingTimeToInfluxDB(InfluxDB influxDB, String metric, Map<String, String> map) {
 		for (Map.Entry<String, String> entry : map.entrySet()) {
-        	final String host = entry.getKey();
-        	final String val = entry.getValue();
-        	influxAPI.writeMetricDataUnderHost(influxDB, metric, host, val);
-    	}
-    }
+			final String host = entry.getKey();
+			final String val = entry.getValue();
+			influxAPI.writeMetricDataUnderHost(influxDB, metric, host, val);
+		}
+	}
 	
 	/**
 	 * To transmit the target database all the metrics in the map
