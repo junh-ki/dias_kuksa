@@ -15,7 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 11,
+  "id": 9,
   "links": [],
   "panels": [
     {
@@ -4547,8 +4547,12 @@
           "valueHandler": "Text Only"
         },
         {
+          "aggregation": "Last",
           "alias": "Cumulative Work (kWh)",
+          "decimals": 2,
+          "displayAliasType": "Warning / Critical",
           "displayType": "Regular",
+          "displayValueWithAlias": "Never",
           "groupBy": [
             {
               "params": [
@@ -4589,7 +4593,8 @@
               "value": "tscr_good_4"
             }
           ],
-          "valueHandler": "Number Threshold"
+          "units": "none",
+          "valueHandler": "Text Only"
         }
       ],
       "timeFrom": null,
@@ -4634,7 +4639,7 @@
     ]
   },
   "timezone": "",
-  "title": "DIAS-BOSCH: NOx Bin Map - TSCR (Good)",
-  "uid": "bWv7a3-Mk",
+  "title": "DIAS-BOSCH: NOx Bin Map - TSCR (Good) Copy",
+  "uid": "DMg833aGk",
   "version": 2
 }
