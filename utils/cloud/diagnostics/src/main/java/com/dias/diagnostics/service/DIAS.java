@@ -1,5 +1,7 @@
 package com.dias.diagnostics.service;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -249,20 +251,24 @@ public class DIAS {
 			nox_map_mode = 5;
 		}
 		influxAPI.writeMetricDataUnderHost(influxDB, "nox_map_mode", "eval", nox_map_mode + ""); // 1-c nox_map_mode
+		final DecimalFormat df = new DecimalFormat("#.###");
+		df.setRoundingMode(RoundingMode.HALF_UP);
 		for (int i = 0; i < 12; i++) {
 			final String bin = noxMapMode + "_" + (i + 1);
 			final Double factorVal = factorMap.get(bin);
+			final String ruFactorVal = df.format(factorVal);
 			final int binEvalVal = binEvalMap.get(bin);
 			if (factorVal != null) {
-				influxAPI.writeMetricDataUnderHost(influxDB, "factor_val", "eval_" + (i + 1), factorVal + ""); // 2-a  factor_val
+				influxAPI.writeMetricDataUnderHost(influxDB, "factor_val", "eval_" + (i + 1), ruFactorVal + ""); // 2-a  factor_val
 			} else {
 				influxAPI.writeMetricDataUnderHost(influxDB, "factor_val", "eval_" + (i + 1), "-1"); // 2-a  factor_val
 			}
 			influxAPI.writeMetricDataUnderHost(influxDB, "bin_eval_val", "eval_" + (i + 1), binEvalVal + ""); // 2-b  bin_eval_val
 		}
+		final String ruFactorAVG = df.format(factorAVG);
 		influxAPI.writeMetricDataUnderHost(influxDB, "bin_eval_result", "eval", binEvalResult + ""); // 2-c avg_eval_result
 		influxAPI.writeMetricDataUnderHost(influxDB, "avg_eval_status", "eval", avgEvalStatus + ""); // 3-a avg_eval_status
-		influxAPI.writeMetricDataUnderHost(influxDB, "factor_avg", "eval", factorAVG + ""); // 3-b factor_avg
+		influxAPI.writeMetricDataUnderHost(influxDB, "factor_avg", "eval", ruFactorAVG); // 3-b factor_avg
 		influxAPI.writeMetricDataUnderHost(influxDB, "avg_eval_result", "eval", avgEvalResult + ""); // 3-c avg_eval_result
 	}
 	
