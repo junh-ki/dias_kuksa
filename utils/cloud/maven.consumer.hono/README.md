@@ -28,14 +28,14 @@ mvn clean package -DskipTests
 
 The telemetry consumer application needs a few parameters set to run. Please make sure the following are set correctly:
 
-* `messaging-username`: the username for the IoT Hub messaging endpoint (messaging@tenant-id)
-* `messaging-password`: the password for the IoT Hub messaging endpoint
-* `tenant-id`: the tenant ID (Default: t20babfe7fb2840119f69e692f184127d)
-* `server-url`: the target InfluxDB URL address (Default: http://localhost:8086)
+* `messaging-username`: The username for the IoT Hub messaging endpoint (messaging@tenant-id)
+* `messaging-password`: The password for the IoT Hub messaging endpoint
+* `tenant-id`: The tenant ID (Default: t20babfe7fb2840119f69e692f184127d)
+* `server-url`: The target InfluxDB URL address (Default: http://localhost:8086)
 * `username`: InfluxDB username (Default: admin)
 * `password`: InfluxDB password (Default: admin)
-* `database`: the target database in InfluxDB (Default: dias_kuksa_tut)
-* `measure-time`: measurement time in sec (Default: 50)
+* `database`: The target database in InfluxDB (Default: dias_kuksa_tut)
+* `eval-point`: THe evaluation point in time (Default: 50)
 
 All the information needed for setting these parameters can be found in the 'Credentials' information of a IoT Hub service subscription information.
 
@@ -44,11 +44,11 @@ To start the example consumer application (Linux & Mac)
 e.g) Navigate to the folder where this `README.md` file is located,
 and run:
 ~~~
-java -jar target/maven.consumer.hono-0.0.1-SNAPSHOT.jar --hono.client.tlsEnabled=true --hono.client.username=messaging@t20babfe7fb2840119f69e692f184127d --hono.client.password=s9VrzSsOQMzlSKFDgHrj --tenant.id=t20babfe7fb2840119f69e692f184127d --server.url=http://localhost:8086 --username=admin --password=admin --database=dias_kuksa_tut --measure.time=50
+java -jar target/maven.consumer.hono-0.0.1-SNAPSHOT.jar --hono.client.tlsEnabled=true --hono.client.username=messaging@t20babfe7fb2840119f69e692f184127d --hono.client.password=s9VrzSsOQMzlSKFDgHrj --tenant.id=t20babfe7fb2840119f69e692f184127d --server.url=http://localhost:8086 --username=admin --password=admin --database=dias_kuksa_tut --eval.point=50
 ~~~
 The above command shall be changed depending on the target service instance's credential info and it should follow the following format:
 ~~~
-java -jar {Target jar file directory} --hono.client.tlsEnabled=true --hono.client.username=messaging@${HONO_TENANTID} --hono.client.password=${HONO_MESSAGINGPW} --tenant.id=${HONO_TENANTID} --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --measure.time=${EVALUATION_POINT}
+java -jar {Target jar file directory} --hono.client.tlsEnabled=true --hono.client.username=messaging@${HONO_TENANTID} --hono.client.password=${HONO_MESSAGINGPW} --tenant.id=${HONO_TENANTID} --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --eval.point=${EVALUATION_POINT}
 ~~~
 
 The consumer application is ready as soon as 'Consumer ready' is printed on the console. The startup can take up to 10 seconds.
