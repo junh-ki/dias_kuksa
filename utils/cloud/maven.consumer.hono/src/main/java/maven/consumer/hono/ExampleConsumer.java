@@ -37,42 +37,42 @@ public class ExampleConsumer {
     private static final Logger LOG = LoggerFactory.getLogger(ExampleConsumer.class);
     private static final int RECONNECT_INTERVAL_MILLIS = 1000;
 
-    @Value(value = "${tenant.id:t20babfe7fb2840119f69e692f184127d}")
+    @Value("${tenant.id:t20babfe7fb2840119f69e692f184127d}")
     protected String tenantId;
 
     void setTenantId(String tenantId) {
         this.tenantId = tenantId;
     }
     
-    @Value(value = "${server.url:http://localhost:8086}")
+    @Value("${server.url:http://localhost:8086}")
     protected String serverURL;
 
     void setServerURL(String serverURL) {
         this.serverURL = serverURL;
     }
     
-    @Value(value = "${username:admin}")
+    @Value("${username:admin}")
 	protected String username;
 	
 	void setUserName(String username) {
 		this.username = username;
 	}
 	
-	@Value(value = "${password:admin}")
+	@Value("${password:admin}")
 	protected String password;
 
 	void setPassWord(String password) {
 		this.password = password;
 	}
     
-    @Value(value = "${database:dias_kuksa_tut}")
+    @Value("${database:dias_kuksa_tut}")
 	protected String database;
 
 	void setDatabase(String database) {
 		this.database = database;
 	}
     
-    @Value(value = "${eval.Point:50}") // second
+    @Value("${eval.point:50}") // second
     protected int evalPoint;
 
     void setEvalPoint(int evalPoint) {
