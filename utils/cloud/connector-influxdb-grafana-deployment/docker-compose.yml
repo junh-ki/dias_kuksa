@@ -19,7 +19,7 @@ services:
   connector:
     image: mrki102/hono-influxdb-connector
     container_name: hono-influxdb-connector
-    command: --hono.client.tlsEnabled=true --hono.client.username=messaging@${HONO_TENANTID} --hono.client.password=${HONO_MESSAGINGPW} --tenant.id=${HONO_TENANTID} --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --eval.point=${EVALUATION_POINT}
+    command: --hono.client.tlsEnabled=true --hono.client.username=messaging@${HONO_TENANTID} --hono.client.password=${HONO_MESSAGINGPW} --tenant.id=${HONO_TENANTID} --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --nox.map.mode=${EVALUATION_TARGET} --eval.point=${EVALUATION_POINT}
     restart: always
     ports:
       - "8080:8080"

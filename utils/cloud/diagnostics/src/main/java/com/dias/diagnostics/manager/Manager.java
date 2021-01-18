@@ -46,7 +46,7 @@ public class Manager {
 	@Value(value = "${nox.map.mode:tscr_bad}")
 	protected String noxMapMode;
 
-	void setNOxMode(String noxMapMode) {
+	void setNOxMapMode(String noxMapMode) {
 		this.noxMapMode = noxMapMode;
 	}
 	
@@ -71,6 +71,21 @@ public class Manager {
 	
 	@Scheduled(fixedRate=1000) // Executes every second until evalPoint
 	private void diagnose() {
-		dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint);
+		if (noxMapMode.compareTo(DIAS.TSCR_BAD) == 0) {
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint);
+		} else if (noxMapMode.compareTo(DIAS.TSCR_INTERMEDIATE) == 0) {
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_INTERMEDIATE, evalPoint);
+		} else if (noxMapMode.compareTo(DIAS.TSCR_GOOD) == 0) {
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_GOOD, evalPoint);
+		} else if (noxMapMode.compareTo(DIAS.OLD_GOOD) == 0) {
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.OLD_GOOD, evalPoint);
+		} else if (noxMapMode.compareTo(DIAS.PEMS_COLD) == 0) {
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.PEMS_COLD, evalPoint);
+		} else if (noxMapMode.compareTo(DIAS.PEMS_HOT) == 0) {
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.PEMS_HOT, evalPoint);
+		} else {
+			System.out.println("ERROR: Wrong NOx Map Mode Value! Proceed as \"tscr_bad\".");
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint);
+		}
 	}
 }

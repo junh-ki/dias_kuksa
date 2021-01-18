@@ -71,6 +71,13 @@ public class ExampleConsumer {
 	void setDatabase(String database) {
 		this.database = database;
 	}
+	
+	@Value("${nox.map.mode:tscr_bad}")
+	protected String noxMapMode;
+	
+	void setNOxMapMode(String noxMapMode) {
+		this.noxMapMode = noxMapMode;
+	}
     
     @Value("${eval.point:50}") // second
     protected int evalPoint;
@@ -105,6 +112,23 @@ public class ExampleConsumer {
 		influxDB.query(new Query("CREATE DATABASE " + database));
 		influxDB.setDatabase(database);
 		influxService.writeSingleMetricToInfluxDB(influxDB, "eval_point", "eval", evalPoint + "");
+		int mapCode = 0;
+		if (noxMapMode.compareTo("tscr_bad") == 0) {
+			mapCode = 0;
+		} else if (noxMapMode.compareTo("tscr_intermediate") == 0) {
+			mapCode = 1;
+		} else if (noxMapMode.compareTo("tscr_good") == 0) {
+			mapCode = 2;
+		} else if (noxMapMode.compareTo("old_good") == 0) {
+			mapCode = 3;
+		} else if (noxMapMode.compareTo("pems_cold") == 0) {
+			mapCode = 4;
+		} else if (noxMapMode.compareTo("pems_hot") == 0) {
+			mapCode = 5;
+		} else {
+			System.out.println("ERROR: Wrong NOx Map Mode Value! Proceed as \"tscr_bad\".");
+		}
+		influxService.writeSingleMetricToInfluxDB(influxDB, "nox_map_mode", "eval", mapCode + "");
     }
 
     /**
