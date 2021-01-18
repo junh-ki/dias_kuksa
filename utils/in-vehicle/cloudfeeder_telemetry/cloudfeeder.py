@@ -22,6 +22,7 @@ import preprocessor_bosch
 
 def getConfig():
     parser = argparse.ArgumentParser()
+    parser.add_argument("-j", "--jwt", help="JWT security token file", type=str)
     parser.add_argument("--host", metavar='\b', help="Host URL", type=str) # "mqtt.bosch-iot-hub.com"
     parser.add_argument("-p", "--port", metavar='\b', help="Protocol Port Number", type=str) # "8883"
     parser.add_argument("-u", "--username", metavar='\b', help="Credential Authorization Username (e.g., {username}@{tenant-id} ) / Configured in \"Bosch IoT Hub Management API\"", type=str) # "pc01@t20babfe7fb2840119f69e692f184127d"
@@ -42,23 +43,13 @@ def makePrefixCommand(args):
     cmd = cmd + ' -m '
     return cmd
 
-def getVISSConnectedClient():
+def getVISSConnectedClient(jwt):
     # 1. Create a VISS client instance
     client = testclient.VSSTestClient()
-    # 2. Connect to the running viss server
-    print("\n0-Secure or 1-Insecure connection: ")
-    con = int(input())
-    if con == 0:
-        client.do_connect("--secure")
-        # TODO: do something
-    elif con == 1:
-        client.do_connect("--insecure")
-    else:
-        raise Exception("Only 0 or 1!\n")
+    # 2. Connect to the running viss server insecurely
+    client.do_connect("--insecure")
     # 3. Authorize the connection
-    print("\nEnter the authorization token: ")
-    token = str(input()) # eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJrdWtzYS52YWwiLCJpc3MiOiJFY2xpcHNlIEtVS1NBIERldiIsImFkbWluIjp0cnVlLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MTYwNjIzOTAyMiwidzNjLXZzcyI6eyIqIjoicncifX0.bUcEW4o3HiBHZAdy71qCWcu9oBSZClntI1ZXq7HAM8i8nDtiUP4up-VXxt3S3n8AKJQOZVlHudP_ixGTb1HBKa3_CD0HFurP_Wf2Jnrgguhqi1sUItvGjgq4BPpuBsu9kV1Ds-JDmCPBBuHfRtCck353BmMyv6CHn2CCgVQH-DwW6k7wOqcFkxfxfkClO-nrUSQbad_MrxNHhrnflb3N8bc4r61BQ8gHiEyl7JJIuLhAb7bLgarjqcHABkw6T2TkwfWFsddMR2GL_PYBP4D3_r-2IHAhixiEiO758lxA2-o2D0jtte-KmTHjeEUpaWr-ryv1whZXnE243iV1lMajvjgWq5ZnsYTG4Ff7GsR_4SKyd9j6wInkog5Kkx5tFJr2P9kh7HupXQeUzbuoJ7lZAgpGyD8icxZg7c8VTpLzTs5zowjJwbxze5JAylWcXLXOA3vQKpn8E3MseD_31LoVZGEvD9p372IgVmJ0ui4qT8_ZHeGPc8bV2Iy0vDkdAhjf-4Lwf4rDGDksYpK_PO70KylGRmZ9TqiKqstUI6AWG50Jii8MPnnr8qyNO3FD8Rv7E8BnL8ioLoN5VI9eyxy1HpW2SfLKUuCaLB9iKd6fv4U_DhF1AS-Y-iu8-kOovxkTk801DhDxWJN0nyRwmhqn8exjikNB1jnW5mFWLTeagNA
-    client.do_authorize(token)
+    client.do_authorize(jwt)
     return client
 
 def checkPath(client, path):
@@ -75,7 +66,7 @@ args = getConfig()
 prefix_cmd = makePrefixCommand(args)
 
 # Get a VISS-server-connected client
-client = getVISSConnectedClient()
+client = getVISSConnectedClient(args.jwt)
 
 # Create a BinInfoProvider instance
 binPro = preprocessor_bosch.BinInfoProvider()
