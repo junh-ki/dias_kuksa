@@ -44,7 +44,7 @@ public class DIAS {
 	}
 	
 	public void diagnoseTargetNOxMap(InfluxDB influxDB, String noxMapMode, int evalPoint) {
-		if (isItEvalPointForTargetNOxMap(influxDB, noxMapMode, evalPoint)) {
+		if (isItEvalPointForTargetNOxMap(influxDB, evalPoint)) {
 			LOG.info("Let's evaluate!");
 			final Map<String, Map<String, Double>> binMap = getTargetNOxMap(influxDB, noxMapMode);
 			//LOG.info("RESULT 1: " + binMap.toString());
@@ -56,8 +56,8 @@ public class DIAS {
 		}
 	}
 	
-	private boolean isItEvalPointForTargetNOxMap(InfluxDB influxDB, String noxMapMode, int evalPoint) {
-		final Double val = influxAPI.getTheLastMetricValueUnderHost(influxDB, TOTAL_SAMPLING, noxMapMode);
+	private boolean isItEvalPointForTargetNOxMap(InfluxDB influxDB, int evalPoint) {
+		final Double val = influxAPI.getTheLastMetricValueUnderHost(influxDB, TOTAL_SAMPLING, "total_sampling");
 		if (val == null) {
 			return false;
 		} else {
