@@ -212,19 +212,22 @@ public class DIAS {
 				numOfBins++;
 			}
 		}
-		factorAVG = total / numOfBins;
-		if (factorAVG < 0.3) {
-			avgEvalStatus = 2;
-			avgEvalResult = 0;
-			return false;
-		} else if (factorAVG >= 0.3 && factorAVG < 4) {
-			avgEvalStatus = 0;
-			avgEvalResult = 0;
-			return false;
+		if (numOfBins != 0) {
+			factorAVG = total / numOfBins;
+			if (factorAVG < 0.3) {
+				avgEvalStatus = 2;
+				avgEvalResult = 0;
+				return false;
+			} else if (factorAVG >= 0.3 && factorAVG < 4) {
+				avgEvalStatus = 0;
+				avgEvalResult = 0;
+				return false;
+			}
+			avgEvalStatus = 1;
+			avgEvalResult = 1;
+			return true;
 		}
-		avgEvalStatus = 1;
-		avgEvalResult = 1;
-		return true;
+		return false;
 	}
 	
 	private void writeResultsToInfluxDB(InfluxDB influxDB, String noxMapMode, Map<String, Double> factorMap) {
@@ -264,9 +267,9 @@ public class DIAS {
 		}
 		final BigDecimal bdFactorAVG = new BigDecimal(factorAVG).setScale(3, RoundingMode.HALF_EVEN);
 		factorAVG = bdFactorAVG.doubleValue();
-		influxAPI.writeMetricDataUnderHost(influxDB, "bin_eval_result", "eval", binEvalResult + ""); // 2-c avg_eval_result
-		influxAPI.writeMetricDataUnderHost(influxDB, "avg_eval_status", "eval", avgEvalStatus + ""); // 3-a avg_eval_status
-		influxAPI.writeMetricDataUnderHost(influxDB, "factor_avg", "eval", factorAVG + ""); // 3-b factor_avg
-		influxAPI.writeMetricDataUnderHost(influxDB, "avg_eval_result", "eval", avgEvalResult + ""); // 3-c avg_eval_result
+		influxAPI.writeMetricDataUnderHost(influxDB, "factor_avg", "eval", factorAVG + ""); // factor_avg
+		influxAPI.writeMetricDataUnderHost(influxDB, "bin_eval_result", "eval", binEvalResult + ""); // bin_eval_result
+		influxAPI.writeMetricDataUnderHost(influxDB, "avg_eval_status", "eval", avgEvalStatus + ""); // avg_eval_status
+		influxAPI.writeMetricDataUnderHost(influxDB, "avg_eval_result", "eval", avgEvalResult + ""); // avg_eval_result
 	}
 }
