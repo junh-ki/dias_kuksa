@@ -1,15 +1,3 @@
-#!/usr/bin/python3
-
-########################################################################
-# Copyright (c) 2020 Robert Bosch GmbH
-#
-# This program and the accompanying materials are made
-# available under the terms of the Eclipse Public License 2.0
-# which is available at https://www.eclipse.org/legal/epl-2.0/
-#
-# SPDX-License-Identifier: EPL-2.0
-########################################################################
-
 """
 This script is to read CAN messages based on PGN - SAE J1939
 
@@ -170,7 +158,7 @@ class J1939Reader(j1939.ControllerApplication):
         if val < signal._minimum:
             val = signal._minimum
         elif val > signal._maximum:
-        	val = signal._maximum
+            val = signal._maximum
         if name in self.mapper:
             rxTime=time.time()
             if self.mapper.minUpdateTimeElapsed(name, rxTime):
