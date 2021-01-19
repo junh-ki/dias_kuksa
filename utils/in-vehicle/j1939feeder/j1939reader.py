@@ -1,19 +1,17 @@
+#!/usr/bin/python3
+
+########################################################################
+# Copyright (c) 2020 Robert Bosch GmbH
+#
+# This program and the accompanying materials are made
+# available under the terms of the Eclipse Public License 2.0
+# which is available at https://www.eclipse.org/legal/epl-2.0/
+#
+# SPDX-License-Identifier: EPL-2.0
+########################################################################
+
 """
 This script is to read CAN messages based on PGN - SAE J1939
-according to the given dbcfile, and dependent on `dbcfeeder.py`
-(https://github.com/eclipse/kuksa.val/blob/master/clients/feeder/dbc2val/dbcfeeder.py)
-Therefore it needs to be located in the same directory where `dbcfeeder.py` is located.
-
-To use the script, the following lines should be added to `dbcfeeder.py`.
-
-    import j1939reader
-    ...
-    j1939R = j1939reader.J1939Reader(cfg,canQueue,mapping)
-    j1939R.start_listening()
-
-    ## `j1939reader.py` is comparable to `dbcreader.py`, so comment the following lines
-    # dbcR = dbcreader.DBCReader(cfg,canQueue,mapping)
-    # dbcR.start_listening()
 
 Prior to using this script, j1939 and 
 the relevant wheel-package should be installed first:
@@ -206,25 +204,21 @@ class J1939Reader(j1939.ControllerApplication):
     def decode_byte_array(self, start_bit, num_of_bits, byte_order, scale, offset, data):
         binary_str = ""
         temp_bit_array = []
+        binstr = ''
         # Little Endian - Intel, AMD
         if byte_order == 'little_endian':
-        	data = bytearray(reversed(data))
-        	temp_bit_array = self.byteArr2bitArr(data)
+            for i in range(len(data)):
+                dec = data[i]
+                binstr = binstr + format(dec, '#010b')[2:][::-1]
         # Big Endian (a.k.a Endianness) - Motorola, IBM
         else:
-        	temp_bit_array = self.byteArr2bitArr(data)
-        bit_array = list(reversed(temp_bit_array)) # To call the smallest bit first
+            for i in range(len(data)):
+                dec = data[i]
+                binstr = binstr + format(dec, '#010b')[2:]
+        ##bit_array = list(reversed(temp_bit_array)) # To call the smallest bit first
         for i in range(0, num_of_bits):
-        	binary_str = str(bit_array[start_bit + i]) + binary_str
+            binary_str = binstr[start_bit + i] + binary_str
         binary_str = "0b" + binary_str
         raw_value = int(binary_str, base=2)
         val = offset + raw_value * scale
         return val
-
-    def byteArr2bitArr(self, data):
-        return [self.access_bit(i,data) for i in range(len(data)*8)]
-
-    def access_bit(self, num, data):
-        base = int(num // 8)
-        shift = int(num % 8)
-        return (data[base] & (1<<shift)) >> shift
