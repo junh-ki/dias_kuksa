@@ -16,8 +16,8 @@ return datastore
 import time
 import testclient
 import json
-import os
 import argparse
+import subprocess
 import preprocessor_bosch
 
 def getConfig():
@@ -31,17 +31,6 @@ def getConfig():
     parser.add_argument("-t", "--type", metavar='\b', help="Transmission Type (e.g., telemetry or event)", type=str) # "telemetry"
     args = parser.parse_args()
     return args
-
-def makePrefixCommand(args):
-    cmd = 'mosquitto_pub -d'
-    cmd = cmd + ' -h ' + args.host
-    cmd = cmd + ' -p ' + args.port
-    cmd = cmd + ' -u ' + args.username
-    cmd = cmd + ' -P ' + args.password
-    cmd = cmd + ' --cafile ' + args.cafile
-    cmd = cmd + ' -t ' + args.type
-    cmd = cmd + ' -m '
-    return cmd
 
 def getVISSConnectedClient(jwt):
     # 1. Create a VISS client instance
@@ -63,7 +52,6 @@ print("kuksa.val cloud example feeder")
 
 # Get the pre-fix command for publishing data
 args = getConfig()
-prefix_cmd = makePrefixCommand(args)
 
 # Get a VISS-server-connected client
 client = getVISSConnectedClient(args.jwt)
@@ -87,8 +75,8 @@ while True:
     binPro.signals["EngSpeedAtIdlePoint1"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngSpeedAtIdlePoint1")
     binPro.signals["EngSpeed"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngSpeed")
     binPro.signals["ActualEngPercentTorque"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.ActualEngPercentTorque")
-    binPro.signals["TimeSinceEngineStart"] = 3000 # needs to be removed once `TimeSinceEngineStart` is available
-    #binPro.signals["TimeSinceEngineStart"] = checkPath(client, "Vehicle.Drivetrain.FuelSystem.TimeSinceEngineStart") # Missing (Not available in EDC17 but MD1)(19/11/2020)
+    #binPro.signals["TimeSinceEngineStart"] = 3000 # needs to be removed once `TimeSinceEngineStart` is available
+    binPro.signals["TimeSinceEngineStart"] = checkPath(client, "Vehicle.Drivetrain.FuelSystem.TimeSinceEngineStart") # Missing (Not available in EDC17 but MD1)(19/11/2020)
     binPro.signals["FlashRedStopLamp"] = checkPath(client, "Vehicle.OBD.FaultDetectionSystem.FlashRedStopLamp")
     binPro.signals["FlashProtectLamp"] = checkPath(client, "Vehicle.OBD.FaultDetectionSystem.FlashProtectLamp")
     binPro.signals["FlashMalfuncIndicatorLamp"] = checkPath(client, "Vehicle.OBD.FaultDetectionSystem.FlashMalfuncIndicatorLamp")
@@ -104,12 +92,16 @@ while True:
     preprocessor_bosch.printTelemetry(tel_dict)
     print("")
 
-    # 3. MQTT: Send the result bin to the cloud. (in a JSON format)
+    # 3. MQTT: Send the result dictionary to the cloud. (in a JSON format)
     tel_json = json.dumps(tel_dict)
-    # tel_json = json.dumps(tBin)
-    # Sending device data via MQTT(Device to Cloud)
-    command = prefix_cmd + "'" + tel_json + "'"
-    os.system(command)
+    # Sending device data via Mosquitto_pub (MQTT - Device to Cloud)
+    comb =['mosquitto_pub', '-d', '-h', args.host, '-p', args.port, '-u', args.username, '-P', args.password, '--cafile', args.cafile, '-t', args.type, '-m', tel_json]
+    p = subprocess.Popen(comb)
+    try:
+        p.wait(1)
+    except subprocess.TimeoutExpired:
+        print("\nTimeout")
+        p.kill()
 
     # X. Time delay
     time.sleep(1) # You don't need this when plotting is active
