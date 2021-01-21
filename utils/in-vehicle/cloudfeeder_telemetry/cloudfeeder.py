@@ -18,6 +18,8 @@ import testclient
 import json
 import argparse
 import subprocess
+import urllib.request
+import urllib.error
 import preprocessor_bosch
 
 def getConfig():
@@ -48,6 +50,42 @@ def checkPath(client, path):
     else:
         return float(val)
 
+def internet_on():
+    try:
+        urllib.request.urlopen('http://neverssl.com', timeout=1)
+        return True
+    except urllib.error.URLError as err:
+        return False
+
+def send_telemetry(comb, telemetry_queue):
+    if internet_on():
+        print("Internet On")
+        if len(telemetry_queue) != 0:
+            telemetry_queue.append(comb)
+            for i in range(0, len(telemetry_queue)):
+                tel = telemetry_queue.pop(0)
+                print("Telemetry Queue Length: " + str(len(telemetry_queue)))
+                p = subprocess.Popen(tel)
+                try:
+                    p.wait(1)
+                except subprocess.TimeoutExpired:
+                    print("\nTimeout, telemetry collected.")
+                    p.kill()
+                    telemetry_queue.append(tel)
+                    i -= 1
+        else:
+            p = subprocess.Popen(comb)
+            try:
+                p.wait(1)
+            except subprocess.TimeoutExpired:
+                print("\nTimeout, telemetry collected.")
+                p.kill()
+                telemetry_queue.append(comb)
+    else:
+        print("Internet Off")
+        telemetry_queue.append(comb)
+        print("Telemetry collected, Telemetry Queue: " + str(len(telemetry_queue)))
+
 print("kuksa.val cloud example feeder")
 
 # Get the pre-fix command for publishing data
@@ -59,8 +97,15 @@ client = getVISSConnectedClient(args.jwt)
 # Create a BinInfoProvider instance
 binPro = preprocessor_bosch.BinInfoProvider()
 
+# buffer for mqtt messages in case of connection loss or timeout
+telemetry_queue = []
+
 while True:
-    # 1. Store signals' values from the target path to the dictionary keys
+    # 1. Time delay
+    time.sleep(1)
+    print("\n\n\n")
+    
+    # 2. Store signals' values from the target path to the dictionary keys
     binPro.signals["Aftrtrtmnt1SCRCtlystIntkGasTemp"] = checkPath(client, "Vehicle.AfterTreatment.Aftrtrtmnt1SCRCtlystIntkGasTemp") # Missing (Not available in EDC17 but MD1)(19/11/2020)
     binPro.signals["Aftertreatment1IntakeNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.Aftertreatment1IntakeNOx")
     binPro.signals["Aftertreatment1OutletNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.Aftertreatment1OutletNOx")
@@ -86,23 +131,16 @@ while True:
     binPro.signals["RedStopLampState"] = checkPath(client, "Vehicle.OBD.FaultDetectionSystem.RedStopLampState")
     binPro.signals["ProtectLampStatus"] = checkPath(client, "Vehicle.OBD.FaultDetectionSystem.ProtectLampStatus")
 
-    # 2. Preprocess and show the result
+    # 3. Preprocess and show the result
     tel_dict = preprocessor_bosch.preprocessing(binPro)
     preprocessor_bosch.printSignalValues(binPro)
     preprocessor_bosch.printTelemetry(tel_dict)
     print("")
 
-    # 3. MQTT: Send the result dictionary to the cloud. (in a JSON format)
+    # 3. Format telemetry
     tel_json = json.dumps(tel_dict)
     # Sending device data via Mosquitto_pub (MQTT - Device to Cloud)
     comb =['mosquitto_pub', '-d', '-h', args.host, '-p', args.port, '-u', args.username, '-P', args.password, '--cafile', args.cafile, '-t', args.type, '-m', tel_json]
-    p = subprocess.Popen(comb)
-    try:
-        p.wait(1)
-    except subprocess.TimeoutExpired:
-        print("\nTimeout")
-        p.kill()
-
-    # X. Time delay
-    time.sleep(1) # You don't need this when plotting is active
-    print("\n\n\n")
+    
+    # 4. MQTT: Send telemetry to the cloud. (in a JSON format)
+    send_telemetry(comb, telemetry_queue)
