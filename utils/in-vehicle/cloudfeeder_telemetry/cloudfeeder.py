@@ -13,13 +13,12 @@ return datastore
 
 """
 
+import argparse
+import json
+import socket
+import subprocess
 import time
 import testclient
-import json
-import argparse
-import subprocess
-import urllib.request
-import urllib.error
 import preprocessor_bosch
 
 def getConfig():
@@ -50,29 +49,41 @@ def checkPath(client, path):
     else:
         return float(val)
 
-def internet_on():
+def socket_connection_on(s, host, port):
     try:
-        urllib.request.urlopen('http://neverssl.com', timeout=1)
+        s.connect((host, int(port))) # host and port
+        print("Socket Connected")
         return True
-    except urllib.error.URLError as err:
+    except socket.timeout:
+        print("Socket Timeout")
+        return False
+    except socket.gaierror:
+        print("Temporary failure in name resolution")
         return False
 
-def send_telemetry(comb, telemetry_queue):
-    if internet_on():
-        print("Internet On")
+def send_telemetry(host, port, comb, telemetry_queue):
+    # Create a socket instance
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(0.1)
+    if socket_connection_on(s, host, port):
         if len(telemetry_queue) != 0:
             telemetry_queue.append(comb)
             for i in range(0, len(telemetry_queue)):
                 tel = telemetry_queue.pop(0)
-                print("Telemetry Queue Length: " + str(len(telemetry_queue)))
+                print("Telemetry popped, Queue Length: " + str(len(telemetry_queue)))
                 p = subprocess.Popen(tel)
                 try:
                     p.wait(1)
                 except subprocess.TimeoutExpired:
-                    print("\nTimeout, telemetry collected.")
                     p.kill()
                     telemetry_queue.append(tel)
+                    print("\nTimeout, telemetry collected.")
                     i -= 1
+                except socket.gaierror:
+                    s.close()
+                    telemetry_queue.append(tel)
+                    print("\nTemporary failure in name resolution, telemetry collected.")
+                    break
         else:
             p = subprocess.Popen(comb)
             try:
@@ -81,10 +92,13 @@ def send_telemetry(comb, telemetry_queue):
                 print("\nTimeout, telemetry collected.")
                 p.kill()
                 telemetry_queue.append(comb)
+            except socket.gaierror:
+                s.close()
+                telemetry_queue.append(comb)
+                print("\nTemporary failure in name resolution, telemetry collected.")
     else:
-        print("Internet Off")
         telemetry_queue.append(comb)
-        print("Telemetry collected, Telemetry Queue: " + str(len(telemetry_queue)))
+        print("Telemetry collected, Queue Length: " + str(len(telemetry_queue)))
 
 print("kuksa.val cloud example feeder")
 
@@ -143,4 +157,4 @@ while True:
     comb =['mosquitto_pub', '-d', '-h', args.host, '-p', args.port, '-u', args.username, '-P', args.password, '--cafile', args.cafile, '-t', args.type, '-m', tel_json]
     
     # 4. MQTT: Send telemetry to the cloud. (in a JSON format)
-    send_telemetry(comb, telemetry_queue)
+    send_telemetry(args.host, args.port, comb, telemetry_queue)
