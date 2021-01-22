@@ -52,13 +52,13 @@ def checkPath(client, path):
 def socket_connection_on(s, host, port):
     try:
         s.connect((host, int(port))) # host and port
-        print("Socket Connected")
+        print("# Socket Connected :)")
         return True
     except socket.timeout:
-        print("Socket Timeout")
+        print("# Socket Timeout :(")
         return False
     except socket.gaierror:
-        print("Temporary failure in name resolution")
+        print("# Temporary failure in name resolution :(")
         return False
 
 def send_telemetry(host, port, comb, telemetry_queue):
@@ -67,38 +67,45 @@ def send_telemetry(host, port, comb, telemetry_queue):
     s.settimeout(0.1)
     if socket_connection_on(s, host, port):
         if len(telemetry_queue) != 0:
-            telemetry_queue.append(comb)
             for i in range(0, len(telemetry_queue)):
                 tel = telemetry_queue.pop(0)
-                print("Telemetry popped, Queue Length: " + str(len(telemetry_queue)))
                 p = subprocess.Popen(tel)
+                print("# Popped telemetry being sent... Queue Length: " + str(len(telemetry_queue)))
                 try:
                     p.wait(1)
                 except subprocess.TimeoutExpired:
                     p.kill()
-                    telemetry_queue.append(tel)
-                    print("\nTimeout, telemetry collected.")
-                    i -= 1
+                    telemetry_queue.insert(0, tel)
+                    print("\n# Timeout, the popped telemetry collected. Queue Length: " + str(len(telemetry_queue)))
+                    telemetry_queue.append(comb)
+                    print("# The current telemetry also collected. Queue Length: " + str(len(telemetry_queue)))
+                    return
                 except socket.gaierror:
                     s.close()
-                    telemetry_queue.append(tel)
-                    print("\nTemporary failure in name resolution, telemetry collected.")
-                    break
-        else:
-            p = subprocess.Popen(comb)
-            try:
-                p.wait(1)
-            except subprocess.TimeoutExpired:
-                print("\nTimeout, telemetry collected.")
-                p.kill()
-                telemetry_queue.append(comb)
-            except socket.gaierror:
-                s.close()
-                telemetry_queue.append(comb)
-                print("\nTemporary failure in name resolution, telemetry collected.")
+                    telemetry_queue.insert(0, tel)
+                    print("\n# Temporary failure in name resolution, the popped telemetry collected. Queue Length: " + str(len(telemetry_queue)))
+                    telemetry_queue.append(comb)
+                    print("# The current telemetry also collected. Queue Length: " + str(len(telemetry_queue)))
+                    return
+                print("# Successfully done!\n")
+        p = subprocess.Popen(comb)
+        print("# Current telemetry being sent...")
+        try:
+            p.wait(1)
+        except subprocess.TimeoutExpired:
+            p.kill()
+            telemetry_queue.append(comb)
+            print("\n# Timeout, the current telemetry collected. Queue Length: " + str(len(telemetry_queue)))
+            return
+        except socket.gaierror:
+            s.close()
+            telemetry_queue.append(comb)
+            print("\n# Temporary failure in name resolution, the current telemetry collected. Queue Length: " + str(len(telemetry_queue)))
+            return
+        print("# Successfully done!\n")
     else:
         telemetry_queue.append(comb)
-        print("Telemetry collected, Queue Length: " + str(len(telemetry_queue)))
+        print("# The current telemetry collected, Queue Length: " + str(len(telemetry_queue)))
 
 print("kuksa.val cloud example feeder")
 
@@ -116,7 +123,7 @@ telemetry_queue = []
 
 while True:
     # 1. Time delay
-    time.sleep(1)
+    time.sleep(0.8)
     print("\n\n\n")
     
     # 2. Store signals' values from the target path to the dictionary keys
@@ -145,16 +152,23 @@ while True:
     binPro.signals["RedStopLampState"] = checkPath(client, "Vehicle.OBD.FaultDetectionSystem.RedStopLampState")
     binPro.signals["ProtectLampStatus"] = checkPath(client, "Vehicle.OBD.FaultDetectionSystem.ProtectLampStatus")
 
-    # 3. Preprocess and show the result
-    tel_dict = preprocessor_bosch.preprocessing(binPro)
+    # 3. Show collected signal values
     preprocessor_bosch.printSignalValues(binPro)
-    preprocessor_bosch.printTelemetry(tel_dict)
-    print("")
-
-    # 3. Format telemetry
-    tel_json = json.dumps(tel_dict)
-    # Sending device data via Mosquitto_pub (MQTT - Device to Cloud)
-    comb =['mosquitto_pub', '-d', '-h', args.host, '-p', args.port, '-u', args.username, '-P', args.password, '--cafile', args.cafile, '-t', args.type, '-m', tel_json]
     
-    # 4. MQTT: Send telemetry to the cloud. (in a JSON format)
-    send_telemetry(args.host, args.port, comb, telemetry_queue)
+    # A. Proceed to sample data if the aftertreatment system is ready
+    if binPro.signals["Aftertreatment1IntakeNOx"] != 3012.75 and binPro.signals["Aftertreatment1OutletNOx"] != 3012.75:
+        # 4. Preprocess the data set
+        tel_dict = preprocessor_bosch.preprocessing(binPro)
+        preprocessor_bosch.printTelemetry(tel_dict)
+        print("")
+
+        # 5. Format telemetry
+        tel_json = json.dumps(tel_dict)
+        # Sending device data via Mosquitto_pub (MQTT - Device to Cloud)
+        comb =['mosquitto_pub', '-d', '-h', args.host, '-p', args.port, '-u', args.username, '-P', args.password, '--cafile', args.cafile, '-t', args.type, '-m', tel_json]
+    
+        # 6. MQTT: Send telemetry to the cloud. (in a JSON format)
+        send_telemetry(args.host, args.port, comb, telemetry_queue)
+    # B. Do not sample data if the aftertreatment system is not ready
+    else:
+        print("\n# One or both NOx sensors is(are) not ready (default value: 3012.75).\n# No bin sampling.")
