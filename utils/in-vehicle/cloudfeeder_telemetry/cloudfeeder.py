@@ -152,22 +152,28 @@ while True:
     binPro.signals["RedStopLampState"] = checkPath(client, "Vehicle.OBD.FaultDetectionSystem.RedStopLampState")
     binPro.signals["ProtectLampStatus"] = checkPath(client, "Vehicle.OBD.FaultDetectionSystem.ProtectLampStatus")
 
-    # 3. Show collected signal values
+    # 3. In cases of getting negative values, set to zero
+    if binPro.signals["Aftertreatment1IntakeNOx"] < 0:
+        binPro.signals["Aftertreatment1IntakeNOx"] = 0
+    if binPro.signals["Aftertreatment1OutletNOx"] < 0:
+        binPro.signals["Aftertreatment1OutletNOx"] = 0
+
+    # 4. Show collected signal values
     preprocessor_bosch.printSignalValues(binPro)
     
     # A. Proceed to sample data if the aftertreatment system is ready
     if binPro.signals["Aftertreatment1IntakeNOx"] != 3012.75 and binPro.signals["Aftertreatment1OutletNOx"] != 3012.75:
-        # 4. Preprocess the data set
+        # 5. Preprocess the data set
         tel_dict = preprocessor_bosch.preprocessing(binPro)
         preprocessor_bosch.printTelemetry(tel_dict)
         print("")
 
-        # 5. Format telemetry
+        # 6. Format telemetry
         tel_json = json.dumps(tel_dict)
         # Sending device data via Mosquitto_pub (MQTT - Device to Cloud)
         comb =['mosquitto_pub', '-d', '-h', args.host, '-p', args.port, '-u', args.username, '-P', args.password, '--cafile', args.cafile, '-t', args.type, '-m', tel_json]
     
-        # 6. MQTT: Send telemetry to the cloud. (in a JSON format)
+        # 7. MQTT: Send telemetry to the cloud. (in a JSON format)
         send_telemetry(args.host, args.port, comb, telemetry_queue)
     # B. Do not sample data if the aftertreatment system is not ready
     else:
