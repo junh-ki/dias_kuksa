@@ -108,11 +108,11 @@ def send_telemetry(host, port, comb, telemetry_queue):
         telemetry_queue.append(comb)
         print("# The current telemetry collected, Queue Length: " + str(len(telemetry_queue)))
 
-def load_data(binPro):
+def load_data(binPro, queue):
     try:
         f = open("saved_dict.json", "r")
         binPro.dashboard = json.load(f)
-        print("Saved dictionary data successfully loaded :)")
+        print("Saved dictionary file successfully loaded :)")
     except FileNotFoundError:
         print("Saved dictionary file not found :(")
     except IOError:
@@ -130,12 +130,21 @@ def load_data(binPro):
         print("Saved sampling time file successfully loaded :)")
     except FileNotFoundError:
         print("Saved sampling time file not found :(")
-        print("Starting from scratch.")
     except IOError:
         print("Saved sampling time file not found :(")
+    try:
+    	f = open("saved_queue.json", "r")
+    	queue = json.load(f)
+    	print("Saved telemetry queue file successfully loaded :)")
+    except FileNotFoundError:
+        print("Saved telemetry queue file not found :(")
         print("Starting from scratch.")
+    except IOError:
+        print("Saved telemetry queue file not found :(")
+        print("Starting from scratch.")
+    return queue
 
-def save_data(binPro):
+def save_data(binPro, queue):
     saved_dict = json.dumps(binPro.dashboard)
     f = open("saved_dict.json", "w")
     f.write(saved_dict)
@@ -154,6 +163,10 @@ def save_data(binPro):
     f = open("saved_samp.json", "w")
     f.write(saved_samp)
     f.close()
+    saved_queue = json.dumps(queue)
+    f = open("saved_queue.json", "w")
+    f.write(saved_queue)
+    f.close()
 
 print("kuksa.val cloud example feeder")
 
@@ -165,12 +178,14 @@ client = getVISSConnectedClient(args.jwt)
 
 # Create a BinInfoProvider instance
 binPro = preprocessor_bosch.BinInfoProvider()
-if args.resume:
-    print("Resuming accumulated data....")
-    load_data(binPro)
 
 # buffer for mqtt messages in case of connection loss or timeout
 telemetry_queue = []
+
+if args.resume:
+    print("Resuming accumulated data....")
+    telemetry_queue = load_data(binPro, telemetry_queue)
+    print("Queue Length: " + str(len(telemetry_queue)))
 
 while True:
     # 1. Time delay
@@ -228,7 +243,7 @@ while True:
         send_telemetry(args.host, args.port, comb, telemetry_queue)
         
         # 8. Saving telemetry dictionary
-        save_data(binPro)
+        save_data(binPro, telemetry_queue)
         
     # B. Do not sample data if the aftertreatment system is not ready
     else:
