@@ -44,9 +44,9 @@ for i in range(1, 13):
     if "series" in tempNOxDS.keys():
         tempNOxDS = tempNOxDS["series"][0]["values"]
         if host == "tscr_good":
-            tempNOxDSppm = json.loads(getMetricValuesUnderHost(db, "cumulativeNOxDS_ppm", targetBin))["results"][0]
-            tempNOxUS = json.loads(getMetricValuesUnderHost(db, "cumulativeNOxUS_g", targetBin))["results"][0]
-            tempNOxUSppm = json.loads(getMetricValuesUnderHost(db, "cumulativeNOxUS_ppm", targetBin))["results"][0]    
+            tempNOxDSppm = json.loads(getMetricValuesUnderHost(db, "cumulativeNOxDS_ppm", targetBin))["results"][0]["series"][0]["values"]
+            tempNOxUS = json.loads(getMetricValuesUnderHost(db, "cumulativeNOxUS_g", targetBin))["results"][0]["series"][0]["values"]
+            tempNOxUSppm = json.loads(getMetricValuesUnderHost(db, "cumulativeNOxUS_ppm", targetBin))["results"][0]["series"][0]["values"]
         tempWorkKWh = json.loads(getMetricValuesUnderHost(db, "cumulativePower_kWh", targetBin))["results"][0]["series"][0]["values"]
         tempSampling = json.loads(getMetricValuesUnderHost(db, "samplingTime", targetBin))["results"][0]["series"][0]["values"]
     length = len(tempSampling)
@@ -104,15 +104,18 @@ row = 1
 worksheet.set_column(0, 0, 25)
 worksheet.write(row, 0, "Timestamp") # NOxDS
 for i in range(0, 12):
-    col = i * 3 + 1
-    worksheet.set_column(col, col, 8)
-    worksheet.write(row, col, "NOxDS_g") # NOxDS
     if host != "tscr_good":
+        col = i * 3 + 1
+        worksheet.set_column(col, col, 8)
+        worksheet.write(row, col, "NOxDS_g") # NOxDS
         worksheet.set_column(col + 1, col + 1, 9)
         worksheet.write(row, col + 1, "Work_kWh") # WorkKWh
         worksheet.set_column(col + 2, col + 2, 10)
         worksheet.write(row, col + 2, "Sampling_s") # Sampling
     else:
+        col = i * 6 + 1
+        worksheet.set_column(col, col, 8)
+        worksheet.write(row, col, "NOxDS_g") # NOxDS
         worksheet.set_column(col + 1, col + 1, 10)
         worksheet.write(row, col + 1, "NOxDS_ppm") # NOxDS_ppm
         worksheet.set_column(col + 2, col + 2, 8)
@@ -138,11 +141,16 @@ while True:
             if ms == bins[i][0][0]:
                 inputs = bins[i].pop(0)
                 worksheet.write(row, 0, ms)
-                col = i * 3 + 1
-                worksheet.write(row, col, inputs[1]) # NOxDS
-                worksheet.write(row, col + 1, inputs[2]) # WorkKWh / NOxDS_ppm (tscr_good)
-                worksheet.write(row, col + 2, inputs[3]) # Sampling / NOxUS (tscr_good)
-                if host == "tscr_good":
+                if host != "tscr_good":
+                    col = i * 3 + 1
+                    worksheet.write(row, col, inputs[1]) # NOxDS
+                    worksheet.write(row, col + 1, inputs[2]) # WorkKWh
+                    worksheet.write(row, col + 2, inputs[3]) # Sampling
+                else:
+                    col = i * 6 + 1
+                    worksheet.write(row, col, inputs[1]) # NOxDS
+                    worksheet.write(row, col + 1, inputs[2]) # WorkKWh
+                    worksheet.write(row, col + 2, inputs[3]) # Sampling
                     worksheet.write(row, col + 3, inputs[4]) # NOxUS_ppm
                     worksheet.write(row, col + 4, inputs[5]) # WorkKWh
                     worksheet.write(row, col + 5, inputs[6]) # Sampling
