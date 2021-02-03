@@ -186,11 +186,11 @@ def catalystEval(binPro):
     tAmbient = binPro.signals["AmbientAirTemp"]
     pAmbient = binPro.signals["BarometricPress"] * 10
     tSCR = binPro.signals["Aftrtrtmnt1SCRCtlystIntkGasTemp"]
-    isFaultActive = False
-    if timeAfterEngStart < 180 or tAmbient < -7 or pAmbient < 750 or isFaultActive == True or tSCR < 180:
+    isMILon = binPro.signals["MalfunctionIndicatorLampStatus"]
+    if timeAfterEngStart <= 180 or tAmbient < -7 or pAmbient < 750 or isMILon != 0 or tSCR < 180:
         binPro.ctr_tscr_bad += 1
         return T_SCR_Mode.Bad
-    elif timeAfterEngStart >= 180 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
+    elif timeAfterEngStart > 180 and tAmbient >= -7 and pAmbient >= 750 and isMILon == 0:
         if 180 <= tSCR < 220:
             binPro.ctr_tscr_intermediate += 1
             return T_SCR_Mode.Intermediate
@@ -202,8 +202,8 @@ def oldGoodEval(binPro):
     timeAfterEngStart = binPro.signals["TimeSinceEngineStart"]
     tAmbient = binPro.signals["AmbientAirTemp"]
     pAmbient = binPro.signals["BarometricPress"] * 10
-    isFaultActive = False
-    if timeAfterEngStart >= 1800 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
+    isMILon = binPro.signals["MalfunctionIndicatorLampStatus"]
+    if timeAfterEngStart >= 1800 and tAmbient >= -7 and pAmbient >= 750 and isMILon == 0:
         # print("Old Evalution - Good (Active)")
         binPro.ctr_old_good += 1
         return True
@@ -213,9 +213,9 @@ def pemsEval(binPro):
     timeAfterEngStart = binPro.signals["TimeSinceEngineStart"]
     tAmbient = binPro.signals["AmbientAirTemp"]
     pAmbient = binPro.signals["BarometricPress"] * 10
-    isFaultActive = False
+    isMILon = binPro.signals["MalfunctionIndicatorLampStatus"]
     tCoolant = binPro.signals["EngCoolantTemp"]
-    if timeAfterEngStart >= 60 and tAmbient >= -7 and pAmbient >= 750 and isFaultActive == False:
+    if timeAfterEngStart >= 60 and tAmbient >= -7 and pAmbient >= 750 and isMILon == 0:
         if 30 <= tCoolant < 70:
             binPro.ctr_pems_cold += 1
             return PEMS_Mode.Cold_Start
