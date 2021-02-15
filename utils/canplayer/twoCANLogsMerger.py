@@ -59,18 +59,19 @@ while index < len(sl1):
     l2 = sl2[0]
     ts2 = float(l2.split()[0][1:-1])
     l1 = repCANInterface(l1, interface)
-    l2 = repCANInterface(l2, interface)
     if ts1 < ts2:
         mergedLines.append(l1)
         index += 1
     elif ts1 == ts2:
         mergedLines.append(l1)
-        mergedLines.append(l2)
         sl2.remove(l2)
+        l2 = repCANInterface(l2, interface)
+        mergedLines.append(l2)
         index += 1
     else:
-        mergedLines.append(l2)
         sl2.remove(l2)
+        l2 = repCANInterface(l2, interface)
+        mergedLines.append(l2)
 
 # Append the rest of the remaining log string list (if there are)
 if len(sl2) > 0:
