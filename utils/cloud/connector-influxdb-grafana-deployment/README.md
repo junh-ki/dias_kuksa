@@ -43,7 +43,6 @@ GRAFANA_PASSWORD=admin
 EVALUATION_POINT=evaluation_duration_in_seconds
 # ex) EVALUATION_TARGET=tscr_bad
 EVALUATION_TARGET=nox_map_for_evaluation
-# Choose one between six choices: 'tscr_bad', 'tscr_intermediate', 'tscr_good', 'old_good', 'pems_cold', or 'pems_hot'
 ```
 For EVALUATION_TARGET, choose one among the six following choices: 
 1. `tscr_bad`
