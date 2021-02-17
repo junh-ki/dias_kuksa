@@ -45,6 +45,13 @@ EVALUATION_POINT=evaluation_duration_in_seconds
 EVALUATION_TARGET=nox_map_for_evaluation
 # Choose one between six choices: 'tscr_bad', 'tscr_intermediate', 'tscr_good', 'old_good', 'pems_cold', or 'pems_hot'
 ```
+For EVALUATION_TARGET, choose one among the six following choices: 
+1. `tscr_bad`
+2. `tscr_intermediate`
+3. `tscr_good` 
+4. `old_good` 
+5. `pems_cold`
+6. `pems_hot`
 
 ## Step 4: Navigate to the same directory where this `README.md` file is located and run Docker Compose (with the detached mode)
 
@@ -58,7 +65,7 @@ $ docker-compose up -d
 $ docker-compose down
 ~~~
 
-## Step 5-a: Take all the services down and also terminate volumes (for persistence)
+## Step 5-b: Take all the services down and also terminate volumes (for persistence)
 
 ~~~
 $ docker-compose down --volumes

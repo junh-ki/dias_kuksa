@@ -193,7 +193,7 @@ while True:
     print("\n\n\n")
     
     # 2. Store signals' values from the target path to the dictionary keys
-    binPro.signals["Aftrtrtmnt1SCRCtlystIntkGasTemp"] = 500
+    binPro.signals["Aftrtrtmnt1SCRCtlystIntkGasTemp"] = 220
     #binPro.signals["Aftrtrtmnt1SCRCtlystIntkGasTemp"] = checkPath(client, "Vehicle.AfterTreatment.Aftrtrtmnt1SCRCtlystIntkGasTemp") # Missing (Not available in EDC17 but MD1)(19/11/2020)
     binPro.signals["Aftertreatment1IntakeNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.Aftertreatment1IntakeNOx")
     binPro.signals["Aftertreatment1OutletNOx"] = checkPath(client, "Vehicle.AfterTreatment.NOxLevel.Aftertreatment1OutletNOx")
@@ -208,7 +208,7 @@ while True:
     binPro.signals["EngSpeedAtIdlePoint1"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngSpeedAtIdlePoint1")
     binPro.signals["EngSpeed"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.EngSpeed")
     binPro.signals["ActualEngPercentTorque"] = checkPath(client, "Vehicle.Drivetrain.InternalCombustionEngine.Engine.ActualEngPercentTorque")
-    binPro.signals["TimeSinceEngineStart"] = 4000 # needs to be removed once `TimeSinceEngineStart` is available
+    binPro.signals["TimeSinceEngineStart"] = 181 # needs to be removed once `TimeSinceEngineStart` is available
     #binPro.signals["TimeSinceEngineStart"] = checkPath(client, "Vehicle.Drivetrain.FuelSystem.TimeSinceEngineStart") # Missing (Not available in EDC17 but MD1)(19/11/2020)
     binPro.signals["MalfunctionIndicatorLampStatus"] = checkPath(client, "Vehicle.OBD.FaultDetectionSystem.MalfunctionIndicatorLampStatus")
     #binPro.signals["AmberWarningLampStatus"] = checkPath(client, "Vehicle.OBD.FaultDetectionSystem.AmberWarningLampStatus") # Not required for DIAS-KUKSA
