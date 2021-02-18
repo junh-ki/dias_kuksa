@@ -27,27 +27,25 @@ $ mvn clean package -DskipTests
 
 The application needs a few parameters set to run. Please make sure the following are set correctly:
 
-* `hono.client.username`: The username for the IoT Hub messaging endpoint (messaging@tenant-id)
-* `hono.client.password`: The password for the IoT Hub messaging endpoint
-* `tenant.id`: The tenant ID (Default: `t20babfe7fb2840119f69e692f184127d`)
+* `hono.client.username`: The username for the IoT Hub messaging endpoint (Example Format: `messaging@t20babfe7fb2840119f69e692f184127d`)
+* `hono.client.password`: The password for the IoT Hub messaging endpoint (Example Format: `s9VrzSsOQMzlSKFDgHrj`)
+* `tenant.id`: The tenant ID (Example Format: `t20babfe7fb2840119f69e692f184127d`)
 * `server.url`: The target InfluxDB URL address (Default: `http://localhost:8086`)
 * `username`: InfluxDB username (Default: `admin`)
 * `password`: InfluxDB password (Default: `admin`)
 * `database`: The target database in InfluxDB (Default: `dias_kuksa_tut`)
 * `eval.point`: THe evaluation duration in seconds (Default: `50`)
 
-In regard to information of `hono.client.username`, `hono.client.password`, and `tenant.id` can be found in the 'Binding Credentials' section in the IoT Hub service subscription information.
+In regard to information of `hono.client.username`, `hono.client.password`, and `tenant.id` can be found in 'Show Credentials' in [Bosch-IoT-Suite Subscriptions](https://accounts.bosch-iot-suite.com/subscriptions/).
 
 To start the application (Tested on Ubuntu 18.04 LTS) **(Expected to be orchestrated with InfluxDB using Docker Compose when a Bosch-IoT-Hub instance is running)**
-
-e.g) Navigate to the folder where this `README.md` file is located,
-and run:
+navigate to the folder where this `README.md` file is located and run:
 ~~~
 $ java -jar target/maven.consumer.hono-0.0.1-SNAPSHOT.jar --hono.client.tlsEnabled=true --hono.client.username=messaging@t20babfe7fb2840119f69e692f184127d --hono.client.password=s9VrzSsOQMzlSKFDgHrj --tenant.id=t20babfe7fb2840119f69e692f184127d --server.url=http://localhost:8086 --username=admin --password=admin --database=dias_kuksa_tut --eval.point=50
 ~~~
 The above command shall be changed depending on the target service instance's credential info and it should follow the following format:
 ~~~
-$ java -jar {Target jar file directory} --hono.client.tlsEnabled=true --hono.client.username=messaging@${HONO_TENANTID} --hono.client.password=${HONO_MESSAGINGPW} --tenant.id=${HONO_TENANTID} --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --eval.point=${EVALUATION_POINT}
+$ java -jar ${Target-jar-file-directory} --hono.client.tlsEnabled=true --hono.client.username=messaging@${HONO_TENANTID} --hono.client.password=${HONO_MESSAGINGPW} --tenant.id=${HONO_TENANTID} --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --eval.point=${EVALUATION_POINT}
 ~~~
 
 The consumer application is ready as soon as 'Consumer ready' is printed on the console. The startup can take up to 10 seconds.

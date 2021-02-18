@@ -58,13 +58,13 @@ For EVALUATION_TARGET, choose one among the six following choices:
 $ docker-compose up -d
 ~~~
 
-## Step 5-a: Take all the services down but do not terminate volumes (for persistence)
+## Step 5-A: Take all the services down but do not terminate volumes (for persistence)
 
 ~~~
 $ docker-compose down
 ~~~
 
-## Step 5-b: Take all the services down and also terminate volumes (for persistence)
+## Step 5-B: Take all the services down and also terminate volumes (for persistence)
 
 ~~~
 $ docker-compose down --volumes

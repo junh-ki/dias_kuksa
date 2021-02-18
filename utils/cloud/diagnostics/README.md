@@ -29,15 +29,13 @@ The application needs a few parameters set to run. Please make sure the followin
 * `eval.point`: THe evaluation duration in seconds (Default: 50)
 
 To start the application (Tested on Ubuntu 18.04 LTS) **(Expected to be orchestrated with InfluxDB using Docker Compose)**
-
-e.g) Navigate to the folder where this `README.md` file is located,
-and run:
+navigate to the folder where this `README.md` file is located and run:
 ~~~
 $ java -jar target/diagnostics-0.0.1-SNAPSHOT.jar --server.url=http://localhost:8086 --username=admin --password=admin --database=dias_kuksa_tut --nox.map.mode=tscr_good --eval.point=50
 ~~~
 The above command shall be changed depending on the target service instance's credential info and it should follow the following format:
 ~~~
-$ java -jar {Target jar file directory} --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --nox.map.mode=${EVALUATION_TARGET} --eval.point=${EVALUATION_POINT}
+$ java -jar ${Target-jar-file-directory} --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --nox.map.mode=${EVALUATION_TARGET} --eval.point=${EVALUATION_POINT}
 ~~~
 
 The startup can take up to 10 seconds.

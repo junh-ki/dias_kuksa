@@ -1,6 +1,6 @@
 """
-This script is to collect the required data from the in-vehicle server,
-pre-process them, and feed them to the KUKSA cloud.
+This script is to collect the required data from the in-vehicle server, `kuksa-val-server`, 
+pre-process them, and transmit the result to the DIAS-KUKSA cloud.
 
 The script needs to be located in the same directory where testclient.py 
 is also located: ~/kuksa.val/vss-testclient/
@@ -30,7 +30,7 @@ def getConfig():
     parser.add_argument("-P", "--password", metavar='\b', help="Credential Authorization Password / Configured in \"Bosch IoT Hub Management API\"", type=str) # "junhyungki@123"
     parser.add_argument("-c", "--cafile", metavar='\b', help="Server Certificate File (e.g., iothub.crt)", type=str) # "iothub.crt"
     parser.add_argument("-t", "--type", metavar='\b', help="Transmission Type (e.g., telemetry or event)", type=str) # "telemetry"
-    parser.add_argument("-r", "--resume", action='store_true', help="Resume the application with the accumulated data", default=False)
+    parser.add_argument("-r", "--resume", action='store_true', help="Resume the application with the accumulated data when restarting", default=False)
     args = parser.parse_args()
     return args
 
