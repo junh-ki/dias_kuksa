@@ -48,9 +48,9 @@ A few parameters need to be set for the script to run. Please make sure the foll
 
 To start the script (Tested on Ubuntu 18.04 LTS), navigate to the directory, `kuksa.val/clients/vss-testclient/`, and run (in the resume mode):
 ~~~
-$ python3 cloudfeeder.py -jwt ../../certificates/jwt/super-admin.json.token --host mqtt.bosch-iot-hub.com --port 8883 --username pc01@t20babfe7fb2840119f69e692f184127d --password kuksatutisfun01 --cafile iothub.crt --type telemetry --resume
+$ python3 cloudfeeder.py --jwt ../../certificates/jwt/super-admin.json.token --host mqtt.bosch-iot-hub.com --port 8883 --username pc01@t20babfe7fb2840119f69e692f184127d --password kuksatutisfun01 --cafile iothub.crt --type telemetry --resume
 ~~~
-The above command shall be changed depending on the target Bosch-IoT-Hub instance's credential info and it should follow the following format (in the resume mode):
+The above command shall be changed according to the target Bosch-IoT-Hub instance's credential info and it should follow the following format (in the resume mode):
 ~~~
-$ python3 cloudfeeder.py -jwt ${Target-JWT-token-file-relative-directory} --host ${MQTT-Host-URL} --port ${MQTT-Port-number} --username ${Credential-authorization-username} --password ${Credential-authorization-password} --cafile ${Name-of-the-certificate-file} --type ${Data-transmission-type} --resume
+$ python3 cloudfeeder.py --jwt ${Relative-JWT-JSON-Token-File-Directory} --host ${MQTT-Host-URL} --port ${MQTT-Port-Number} --username ${Credential-Authorization-Username} --password ${Credential-Authorization-Password} --cafile ${Name-Of-The-Certificate-File} --type ${Data-Transmission-Type} --resume
 ~~~

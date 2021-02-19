@@ -43,9 +43,9 @@ navigate to the folder where this `README.md` file is located and run:
 ~~~
 $ java -jar target/maven.consumer.hono-0.0.1-SNAPSHOT.jar --hono.client.tlsEnabled=true --hono.client.username=messaging@t20babfe7fb2840119f69e692f184127d --hono.client.password=s9VrzSsOQMzlSKFDgHrj --tenant.id=t20babfe7fb2840119f69e692f184127d --server.url=http://localhost:8086 --username=admin --password=admin --database=dias_kuksa_tut --eval.point=50
 ~~~
-The above command shall be changed depending on the target service instance's credential info and it should follow the following format:
+The above command shall be changed according to the target service instance's credential info and it should follow the following format:
 ~~~
-$ java -jar ${Target-jar-file-directory} --hono.client.tlsEnabled=true --hono.client.username=messaging@${HONO_TENANTID} --hono.client.password=${HONO_MESSAGINGPW} --tenant.id=${HONO_TENANTID} --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --eval.point=${EVALUATION_POINT}
+$ java -jar ${Target-JAR-File-Directory} --hono.client.tlsEnabled=true --hono.client.username=messaging@${HONO_TENANTID} --hono.client.password=${HONO_MESSAGINGPW} --tenant.id=${HONO_TENANTID} --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --eval.point=${EVALUATION_POINT}
 ~~~
 
 The consumer application is ready as soon as 'Consumer ready' is printed on the console. The startup can take up to 10 seconds.
