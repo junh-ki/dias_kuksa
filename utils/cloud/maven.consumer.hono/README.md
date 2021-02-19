@@ -45,7 +45,7 @@ $ java -jar target/maven.consumer.hono-0.0.1-SNAPSHOT.jar --hono.client.tlsEnabl
 ~~~
 The above command shall be changed according to the target service instance's credential info and it should follow the following format:
 ~~~
-$ java -jar ${Target-JAR-File-Directory} --hono.client.tlsEnabled=true --hono.client.username=messaging@${HONO_TENANTID} --hono.client.password=${HONO_MESSAGINGPW} --tenant.id=${HONO_TENANTID} --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --eval.point=${EVALUATION_POINT}
+$ java -jar ${Relative-Target-JAR-File-Directory} --hono.client.tlsEnabled=true --hono.client.username=messaging@${HONO_TENANTID} --hono.client.password=${HONO_MESSAGINGPW} --tenant.id=${HONO_TENANTID} --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --eval.point=${EVALUATION_POINT}
 ~~~
 
 The consumer application is ready as soon as 'Consumer ready' is printed on the console. The startup can take up to 10 seconds.

@@ -52,5 +52,5 @@ $ python3 cloudfeeder.py --jwt ../../certificates/jwt/super-admin.json.token --h
 ~~~
 The above command shall be changed according to the target Bosch-IoT-Hub instance's credential info and it should follow the following format (in the resume mode):
 ~~~
-$ python3 cloudfeeder.py --jwt ${Relative-JWT-JSON-Token-File-Directory} --host ${MQTT-Host-URL} --port ${MQTT-Port-Number} --username ${Credential-Authorization-Username} --password ${Credential-Authorization-Password} --cafile ${Name-Of-The-Certificate-File} --type ${Data-Transmission-Type} --resume
+$ python3 cloudfeeder.py --jwt ${Relative-JWT-JSON-Token-File-Directory} --host ${MQTT-Host-URL} --port ${MQTT-Port-Number} --username ${Credential-Authorization-Username} --password ${Credential-Authorization-Password} --cafile ${Relative-Certificate-File-Directory} --type ${Data-Transmission-Type} --resume
 ~~~

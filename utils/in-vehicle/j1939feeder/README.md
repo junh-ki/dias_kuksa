@@ -28,7 +28,7 @@ According to the JSON file you put into `kuksa-val-server`, create a mapping YML
 A few parameters need to be set for the script to run. Please make sure the following are set correctly:
 
 * `--device`: Configured CAN Interface (Example: `--device can0` or `--device vcan0`)
-* `--jwt`: Relative path to the JWT Security token file (Example: `../../../certificates/jwt/super-admin.json.token`)
+* `--jwt`: Relative path to the JWT Security token file (Example: `--jwt ../../../certificates/jwt/super-admin.json.token`)
 * `--dbc`: Name of the target J1939 DBC file (Example: `--dbc dbcfile.dbc`)
 * `--mapping`: Name of the mapping YML file (Example: `--mapping mappingfile.yml`)
 * `--j1939`: Enable SAE-J1939 Mode (Example: `--j1939`)
