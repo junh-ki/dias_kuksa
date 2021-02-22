@@ -7,7 +7,7 @@ The application is intended not only to read telemetries but also process and st
 
 An existing IoT Hub (Hono) service instance and a valid tenant ID are needed to run the example application. Please refer to [DIAS-KUKSA: Bosch IoT Hub as Hono](https://dias-kuksa-doc.readthedocs.io/en/latest/contents/cloud.html#bosch-iot-hub-as-hono) to create a service instance.
 
-## Prerequisites  
+## Prerequisites
 
 Following software must be installed:
 

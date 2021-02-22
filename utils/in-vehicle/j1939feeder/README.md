@@ -3,7 +3,7 @@
 J1939Reader is to read CAN messages based on PGN (Parameter Group Number).
 **It has already been merged to KUKSA.val** [J1939 Reader in KUKSA.val](https://github.com/eclipse/kuksa.val/blob/master/clients/feeder/dbc2val/j1939reader.py). To understand the concept and implementation, please refer to [DIAS Extension: SAE J1939 Option](https://dias-kuksa-doc.readthedocs.io/en/latest/contents/j1939.html).
 
-## Prerequisites  
+## Prerequisites
 
 * Running `kuksa-val-server`. Please refer to [DIAS-KUKSA: KUKSA.val VSS Server Setup](https://dias-kuksa-doc.readthedocs.io/en/latest/contents/invehicle.html#kuksa-val-kuksa-val-vss-server-setup) if you haven't built the KUKSA.val infrastructure yet.
 * `j1939` and other relevant Python libraries

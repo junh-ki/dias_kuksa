@@ -4,7 +4,7 @@ These scripts are to collect the required data from the in-vehicle server, `kuks
 
 Please refer to [DIAS-KUKSA: CloudFeeder Setup](https://dias-kuksa-doc.readthedocs.io/en/latest/contents/invehicle.html#kuksa-val-cloudfeeder-py-setup) to set up an MQTT publisher in order to trasmit vehicle telemetry data to Bosch-IoT-Hub (Eclipse Hono).
 
-## Prerequisites  
+## Prerequisites
 
 Followings must be prepared:
 
