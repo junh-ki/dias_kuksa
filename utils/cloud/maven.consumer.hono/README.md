@@ -25,7 +25,7 @@ $ mvn clean package -DskipTests
 
 ## Step 2: Run Hono-InfluxDB-Connector
 
-The application needs a few parameters set to run. Please make sure the following are set correctly:
+The application needs a few parameters that need to be set to run. Please make sure the following are set correctly:
 
 * `hono.client.username`: The username for the IoT Hub messaging endpoint (Example Format: `messaging@t20babfe7fb2840119f69e692f184127d`)
 * `hono.client.password`: The password for the IoT Hub messaging endpoint (Example Format: `s9VrzSsOQMzlSKFDgHrj`)
