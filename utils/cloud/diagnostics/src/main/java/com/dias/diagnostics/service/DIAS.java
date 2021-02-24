@@ -122,7 +122,7 @@ public class DIAS {
 				if (workkwh != null && workkwh.compareTo(0d) != 0) {
 					// 2. noxForWork_i = noxds_i / kwh_i
 					final double noxForWork = noxds / workkwh;
-					final double factor = noxForWork / refNOxMap[i];
+					final double factor = noxForWork / refNOxMap[i-1];
 					// 3. factor_i = noxForWork_i / refNOxMap[i-1]
 					factorMap.put(binName, factor);
 				} else {
@@ -148,8 +148,8 @@ public class DIAS {
 	
 	private boolean doBinWiseEvaluation(Map<String, Double> factorMap, String noxMapMode) {
 		final int[] countList = { 0, 0, 0, 0, 0, 0 };
-		for (int i = 0; i < 12; i++) {
-			final String bin = noxMapMode + "_" + (i + 1);
+		for (int i = 1; i <= 12; i++) {
+			final String bin = noxMapMode + "_" + i;
 			final Double factor = factorMap.get(bin);
 			if (factor != null) {
 				doDIASClassification(factor, countList, bin, binEvalMap);
@@ -212,8 +212,8 @@ public class DIAS {
 	private boolean doAverageEvaluation(Map<String, Double> factorMap, String noxMapMode) {
 		int numOfBins = 0;
 		double total = 0;
-		for (int i = 0; i < 12; i++) {
-			final String bin = noxMapMode + "_" + (i + 1);
+		for (int i = 1; i <= 12; i++) {
+			final String bin = noxMapMode + "_" + i;
 			final Double factor = factorMap.get(bin);
 			if (factor != null) {
 				total += factor;
@@ -260,18 +260,18 @@ public class DIAS {
 			nox_map_mode = 5;
 		}
 		influxAPI.writeMetricDataUnderHost(influxDB, "nox_map_mode", "eval", nox_map_mode + ""); // 1-c nox_map_mode
-		for (int i = 0; i < 12; i++) {
-			final String bin = noxMapMode + "_" + (i + 1);
+		for (int i = 1; i <= 12; i++) {
+			final String bin = noxMapMode + "_" + i;
 			Double factorVal = factorMap.get(bin);
 			final int binEvalVal = binEvalMap.get(bin);
 			if (factorVal != null) {
 				final BigDecimal bdFactorVal = new BigDecimal(factorVal).setScale(3, RoundingMode.HALF_EVEN);
 				factorVal = bdFactorVal.doubleValue();
-				influxAPI.writeMetricDataUnderHost(influxDB, "factor_val", "eval_" + (i + 1), factorVal + ""); // 2-a  factor_val
+				influxAPI.writeMetricDataUnderHost(influxDB, "factor_val", "eval_" + i, factorVal + ""); // 2-a  factor_val
 			} else {
-				influxAPI.writeMetricDataUnderHost(influxDB, "factor_val", "eval_" + (i + 1), "-1"); // 2-a  factor_val
+				influxAPI.writeMetricDataUnderHost(influxDB, "factor_val", "eval_" + i, "-1"); // 2-a  factor_val
 			}
-			influxAPI.writeMetricDataUnderHost(influxDB, "bin_eval_val", "eval_" + (i + 1), binEvalVal + ""); // 2-b  bin_eval_val
+			influxAPI.writeMetricDataUnderHost(influxDB, "bin_eval_val", "eval_" + i, binEvalVal + ""); // 2-b  bin_eval_val
 		}
 		final BigDecimal bdFactorAVG = new BigDecimal(factorAVG).setScale(3, RoundingMode.HALF_EVEN);
 		factorAVG = bdFactorAVG.doubleValue();
