@@ -43,6 +43,8 @@ GRAFANA_PASSWORD=admin
 EVALUATION_POINT=evaluation_duration_in_seconds
 # ex) EVALUATION_TARGET=tscr_bad
 EVALUATION_TARGET=nox_map_for_evaluation
+# PRE_EVALUATION_DISABLED=false
+PRE_EVALUATION_DISABLED=true_or_false
 ```
 For EVALUATION_TARGET, choose one among the six following choices: 
 1. `tscr_bad`
@@ -51,6 +53,16 @@ For EVALUATION_TARGET, choose one among the six following choices:
 4. `old_good` 
 5. `pems_cold`
 6. `pems_hot`
+
+For PRE_EVALUATION_DISABLED, choose one between the two following choices:
+
+1. `false`
+
+This enables the pre-evaluation process.
+
+2. `true`
+
+This disables the pre-evaluation process.
 
 ## Step 4: Navigate to the same directory where this `README.md` file is located and run Docker Compose (with the detached mode)
 

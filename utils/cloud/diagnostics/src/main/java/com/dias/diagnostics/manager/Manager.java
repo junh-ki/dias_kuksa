@@ -57,6 +57,13 @@ public class Manager {
 		this.evalPoint = evalPoint;
 	}
 	
+	@Value(value = "${pre.eval.disabled:false}")
+	protected boolean isPreEvalDisabled;
+	
+	void setIsPreEvalDisabled(boolean isPreEvalDisabled) {
+		this.isPreEvalDisabled = isPreEvalDisabled;
+	}
+	
 	@PostConstruct
 	private void start() throws InterruptedException {
 		initialize();
@@ -72,20 +79,20 @@ public class Manager {
 	@Scheduled(fixedRate=1000) // Executes every second until evalPoint
 	private void diagnose() {
 		if (noxMapMode.compareTo(DIAS.TSCR_BAD) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint, isPreEvalDisabled);
 		} else if (noxMapMode.compareTo(DIAS.TSCR_INTERMEDIATE) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_INTERMEDIATE, evalPoint);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_INTERMEDIATE, evalPoint, isPreEvalDisabled);
 		} else if (noxMapMode.compareTo(DIAS.TSCR_GOOD) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_GOOD, evalPoint);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_GOOD, evalPoint, isPreEvalDisabled);
 		} else if (noxMapMode.compareTo(DIAS.OLD_GOOD) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.OLD_GOOD, evalPoint);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.OLD_GOOD, evalPoint, isPreEvalDisabled);
 		} else if (noxMapMode.compareTo(DIAS.PEMS_COLD) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.PEMS_COLD, evalPoint);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.PEMS_COLD, evalPoint, isPreEvalDisabled);
 		} else if (noxMapMode.compareTo(DIAS.PEMS_HOT) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.PEMS_HOT, evalPoint);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.PEMS_HOT, evalPoint, isPreEvalDisabled);
 		} else {
 			System.out.println("ERROR: Wrong NOx Map Mode Value! Proceed as \"tscr_bad\".");
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint, isPreEvalDisabled);
 		}
 	}
 }

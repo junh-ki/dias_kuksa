@@ -24,4 +24,4 @@ Docker Compose is an automated deployment tool. In the context of the DIAS-KUKSA
 
 ## InfluxDB to Excel
 
-`influxNOx2Excel.py` is a Python script that fetches accumulated data that are, or related to, `NOx`, and stores them in the excel sheet in chronological order after the evaluation interval ends. This can be found in the same directory, where this `README.md` file is located.
+`influxNOx2Excel.py` is a Python script that fetches accumulated data that are, or related to, `NOx`, from `InfluxDB`, and stores them in the excel sheet in chronological order after the evaluation interval ends. This can be found in the same directory, where this `README.md` file is located.

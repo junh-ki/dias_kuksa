@@ -43,14 +43,21 @@ public class DIAS {
 		binEvalMap = new HashMap<String, Integer>();
 	}
 	
-	public void diagnoseTargetNOxMap(InfluxDB influxDB, String noxMapMode, int evalPoint) {
+	public void diagnoseTargetNOxMap(InfluxDB influxDB, String noxMapMode, int evalPoint, boolean isPreEvalDisabled) {
 		if (isItEvalPointForTargetNOxMap(influxDB, evalPoint)) {
 			LOG.info("Let's evaluate!");
 			final Map<String, Map<String, Double>> binMap = getTargetNOxMap(influxDB, noxMapMode);
 			//LOG.info("RESULT 1: " + binMap.toString());
-			final Map<String, Map<String, Double>> preEvalBinMap = doPreEvaluation(binMap);
-			//LOG.info("RESULT 2: " + preEvalBinMap.toString());
-			final Map<String, Double> factorMap = transformIntoFactorMap(preEvalBinMap, noxMapMode, refNOxMap);
+			Map<String, Double> factorMap;
+			if (!isPreEvalDisabled) {
+				// A. Do pre-evaluation if pre-evaluation is not disabled 
+				final Map<String, Map<String, Double>> preEvalBinMap = doPreEvaluation(binMap);
+				//LOG.info("RESULT 2: " + preEvalBinMap.toString());
+				factorMap = transformIntoFactorMap(preEvalBinMap, noxMapMode, refNOxMap);
+			} else {
+				// B. Do not pre-evaluation if pre-evaluation is disabled
+				factorMap = transformIntoFactorMap(binMap, noxMapMode, refNOxMap);
+			}
 			//LOG.info("RESULT 3: " + factorMap.toString());
 			writeResultsToInfluxDB(influxDB, noxMapMode, factorMap);
 		}
@@ -72,20 +79,16 @@ public class DIAS {
 	
 	private Map<String, Map<String, Double>> getTargetNOxMap(InfluxDB influxDB, String noxMapMode) {
 		final Map<String, Map<String, Double>> binMap = new HashMap<String, Map<String, Double>>();
-		for (int i = 0; i < 12; i++) {
+		for (int i = 1; i <= 12; i++) {
 			final Map<String, Double> map = new HashMap<String, Double>();
-			final String bin = noxMapMode + "_" + (i + 1);
+			final String bin = noxMapMode + "_" + i;
 			//SHOW TAG VALUES FROM "cumulativeNOxDS_g" WITH KEY = "host"
 			final Double noxDSg = influxAPI.getTheLastMetricValueUnderHost(influxDB, NOxDS_G, bin);
 			map.put(NOxDS_G, noxDSg);
 			final Double samplingTime = influxAPI.getTheLastMetricValueUnderHost(influxDB, SAMPLING_TIME, bin);
 			map.put(SAMPLING_TIME, samplingTime);
 			final Double workKWh = influxAPI.getTheLastMetricValueUnderHost(influxDB, WORK_kWh, bin);
-			if (workKWh != null) {
-				map.put(WORK_kWh, workKWh);
-			} else {
-				map.put(WORK_kWh, null);
-			}
+			map.put(WORK_kWh, workKWh);
 			binMap.put(bin, map);
 		}
 		return binMap;
@@ -108,19 +111,24 @@ public class DIAS {
 	
 	private Map<String, Double> transformIntoFactorMap(Map<String, Map<String, Double>> binMap, String noxMapMode, double[] refNOxMap) {
 		final Map<String, Double> factorMap = new HashMap<String, Double>();
-		for (int i = 0; i < 12; i++) {
-			final String binName = noxMapMode + "_" + (i + 1);
+		for (int i = 1; i <= 12; i++) {
+			final String binName = noxMapMode + "_" + i;
 			final Map<String, Double> bin = binMap.get(binName);
 			if (bin != null) {
 				// (valid bin)
 				// 1. for each bin_i, take noxds_i and kwh_i
 				final Double noxds = bin.get(NOxDS_G);
 				final Double workkwh = bin.get(WORK_kWh);
-				// 2. noxForWork_i = noxds_i / kwh_i
-				final double noxForWork = noxds / workkwh;
-				final double factor = noxForWork / refNOxMap[i];
-				// 3. factor_i = noxForWork_i / refNOxMap[i-1]
-				factorMap.put(binName, factor);
+				if (workkwh != null && workkwh.compareTo(0d) != 0) {
+					// 2. noxForWork_i = noxds_i / kwh_i
+					final double noxForWork = noxds / workkwh;
+					final double factor = noxForWork / refNOxMap[i];
+					// 3. factor_i = noxForWork_i / refNOxMap[i-1]
+					factorMap.put(binName, factor);
+				} else {
+					// (invalid bin)
+					factorMap.put(binName, null);
+				}
 			} else { 
 				// (invalid bin)
 				factorMap.put(binName, null);
