@@ -1,7 +1,8 @@
 # DIAS-KUKSA: Cloud
 
-![DIAS-KUKSA: Cloud](../../images/dias-kuksa-cloud.png)
 The detailed tutorial for the DIAS-KUKSA cloud can be found [here](https://dias-kuksa-doc.readthedocs.io/en/latest/contents/cloud.html).
+
+![DIAS-KUKSA: Cloud](../../images/dias-kuksa-cloud.png)
 
 ## Spring Boot applications for the DIAS-KUKSA cloud
 
