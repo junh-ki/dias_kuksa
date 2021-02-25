@@ -8,14 +8,14 @@ The figure above illustrates the entire connectivity schema of the [DIAS](https:
 
 This repo provides means to establish Vehicle-to-Cloud connectivity in the context of DIAS-KUKSA.
 
-## In-vehicle
+## [In-vehicle](https://github.com/junh-ki/dias_kuksa/tree/master/utils/in-vehicle)
 
 In `./utils/in-vehicle/`, the supplementary in-vehicle components interacting with [KUKSA.val](https://github.com/eclipse/kuksa.val) are introduced.
 
-## Cloud
+## [Cloud](https://github.com/junh-ki/dias_kuksa/tree/master/utils/cloud)
 
 In `./utils/cloud/`, the web-applications and their deployment methodology to run the DIAS-KUKSA cloud in a local machine are introduced.
 
-## Canplayer
+## [Canplayer](https://github.com/junh-ki/dias_kuksa/tree/master/utils/canplayer)
 
 In `./utils/canplayer/`, the Python scripts to modify CAN trace log files for `canplayer` are introduced.
