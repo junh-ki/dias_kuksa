@@ -37,7 +37,7 @@ $ java -jar target/diagnostics-0.0.1-SNAPSHOT.jar --server.url=http://localhost:
 ~~~
 The above command follows the following format:
 ~~~
-$ java -jar ${Target-JAR-File-Directory} --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --nox.map.mode=${EVALUATION_TARGET} --eval.point=${EVALUATION_POINT} --pre.eval.disabled=${PRE_EVALUATION_DISABLED} --spring.config.location=${CONFIG_PROPERTIES_LOCATION}
+$ java -jar ${Target-JAR-File-Directory} --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --nox.map.mode=${EVALUATION_TARGET} --eval.point=${EVALUATION_POINT} --pre.eval.disabled=${PRE_EVALUATION_DISABLED} --spring.config.location=optional:./config/application.properties
 ~~~
 
 The startup can take up to 10 seconds.
