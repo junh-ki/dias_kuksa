@@ -39,6 +39,8 @@ INFLUXDB_DATABASE=dias_kuksa_tut
 GRAFANA_USERNAME=admin
 GRAFANA_PASSWORD=admin
 
+# Relative directory of the properties file that includes the reference NOx map to load.
+CONFIG_PROPERTIES_LOCATION=./diagnostics_config/
 # ex) EVALUATION_POINT=350
 EVALUATION_POINT=evaluation_duration_in_seconds
 # ex) EVALUATION_TARGET=tscr_bad
@@ -46,7 +48,10 @@ EVALUATION_TARGET=nox_map_for_evaluation
 # PRE_EVALUATION_DISABLED=false
 PRE_EVALUATION_DISABLED=true_or_false
 ```
-For EVALUATION_TARGET, choose one among the six following choices: 
+- For CONFIG_PROPERTIES_LOCATION, `/diagnostics_config/` can be found in the same directory where `docker-compose.yml` is located.)
+
+- For EVALUATION_TARGET, choose one among the six following choices: 
+
 1. `tscr_bad`
 2. `tscr_intermediate`
 3. `tscr_good` 
@@ -54,7 +59,7 @@ For EVALUATION_TARGET, choose one among the six following choices:
 5. `pems_cold`
 6. `pems_hot`
 
-For PRE_EVALUATION_DISABLED, choose one between the two following choices:
+- For PRE_EVALUATION_DISABLED, choose one between the two following choices:
 
 1. `false`
 
@@ -76,7 +81,7 @@ $ docker-compose up -d
 $ docker-compose down
 ~~~
 
-## Step 5-B: Take all the services down and also terminate volumes (for persistence)
+## Step 5-B: Take all the services down and also terminate volumes
 
 ~~~
 $ docker-compose down --volumes

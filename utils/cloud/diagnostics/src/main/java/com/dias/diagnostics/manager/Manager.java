@@ -2,10 +2,12 @@ package com.dias.diagnostics.manager;
 
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.dias.diagnostics.properties.MyConfigs;
 import com.dias.diagnostics.service.DIAS;
 
 import javax.annotation.PostConstruct;
@@ -14,6 +16,9 @@ import javax.annotation.PostConstruct;
 public class Manager {
 	private InfluxDB influxDB;
 	private DIAS dias;
+	
+	@Autowired
+	MyConfigs myconfigs;
 	
 	@Value(value = "${server.url:http://localhost:8086}")
 	protected String serverURL;
@@ -50,7 +55,7 @@ public class Manager {
 		this.noxMapMode = noxMapMode;
 	}
 	
-	@Value(value = "${eval.point:50}")
+	@Value(value = "${eval.point:350}")
 	protected int evalPoint;
 
 	void setEvalPoint(int evalPoint) {
@@ -74,25 +79,33 @@ public class Manager {
 		dias = new DIAS();
 		influxDB = InfluxDBFactory.connect(serverURL, username, password); // connectInfluxDBDatabase
 		influxDB.setDatabase(database);
+		final double[] refNOxMap = myconfigs.getRefNOxMap();
+		if (refNOxMap != null) {
+			System.out.println("\n# Initialized Reference NOx Map #");
+			for (int i = 0; i < refNOxMap.length; i++) {
+				System.out.print(refNOxMap[i] + " ");
+			}
+			System.out.println("\n# # # # # # # # # # # # # # # # #\n");
+		}
 	}
 	
 	@Scheduled(fixedRate=1000) // Executes every second until evalPoint
 	private void diagnose() {
 		if (noxMapMode.compareTo(DIAS.TSCR_BAD) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint, isPreEvalDisabled);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint, isPreEvalDisabled, myconfigs);
 		} else if (noxMapMode.compareTo(DIAS.TSCR_INTERMEDIATE) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_INTERMEDIATE, evalPoint, isPreEvalDisabled);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_INTERMEDIATE, evalPoint, isPreEvalDisabled, myconfigs);
 		} else if (noxMapMode.compareTo(DIAS.TSCR_GOOD) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_GOOD, evalPoint, isPreEvalDisabled);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_GOOD, evalPoint, isPreEvalDisabled, myconfigs);
 		} else if (noxMapMode.compareTo(DIAS.OLD_GOOD) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.OLD_GOOD, evalPoint, isPreEvalDisabled);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.OLD_GOOD, evalPoint, isPreEvalDisabled, myconfigs);
 		} else if (noxMapMode.compareTo(DIAS.PEMS_COLD) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.PEMS_COLD, evalPoint, isPreEvalDisabled);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.PEMS_COLD, evalPoint, isPreEvalDisabled, myconfigs);
 		} else if (noxMapMode.compareTo(DIAS.PEMS_HOT) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.PEMS_HOT, evalPoint, isPreEvalDisabled);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.PEMS_HOT, evalPoint, isPreEvalDisabled, myconfigs);
 		} else {
 			System.out.println("ERROR: Wrong NOx Map Mode Value! Proceed as \"tscr_bad\".");
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint, isPreEvalDisabled);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint, isPreEvalDisabled, myconfigs);
 		}
 	}
 }

@@ -50,12 +50,14 @@ services:
   diagnostics:
     image: mrki102/diagnostics
     container_name: diagnostics
-    command: --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --nox.map.mode=${EVALUATION_TARGET} --eval.point=${EVALUATION_POINT} --pre.eval.disabled=${PRE_EVALUATION_DISABLED}
+    command: --server.url=${INFLUXDB_URL} --username=${INFLUXDB_USERNAME} --password=${INFLUXDB_PASSWORD} --database=${INFLUXDB_DATABASE} --nox.map.mode=${EVALUATION_TARGET} --eval.point=${EVALUATION_POINT} --pre.eval.disabled=${PRE_EVALUATION_DISABLED} --spring.config.location=optional:/config/config.properties
     restart: always
     ports:
       - "4040:4040"
     networks:
       - monitor_network
+    volumes:
+      - ${CONFIG_PROPERTIES_LOCATION}:/config/
     depends_on:
       - influxdb
 
@@ -67,4 +69,5 @@ volumes:
   grafana-storage:
 
 # docker-compose up -d
+# docker-compose down
 # docker-compose down --volumes

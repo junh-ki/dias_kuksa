@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.dias.diagnostics.api.InfluxAPI;
+import com.dias.diagnostics.properties.MyConfigs;
 
 public class DIAS {
 	private static final Logger LOG = LoggerFactory.getLogger(DIAS.class);
@@ -17,7 +18,7 @@ public class DIAS {
 	private static final String NOxDS_G = "cumulativeNOxDS_g";
 	private static final String WORK_kWh = "cumulativePower_kWh";
 	private static final String SAMPLING_TIME = "samplingTime"; // a bin's sampling time
-	private static final double[] refNOxMap = {
+	private static final double[] defRefNOxMap = {
 			0.32, 0.4, 0.42, 0.4,
 			0.38, 0.31, 0.35, 0.38,
 			0.43, 0.45, 0.55, 0.6
@@ -43,7 +44,7 @@ public class DIAS {
 		binEvalMap = new HashMap<String, Integer>();
 	}
 	
-	public void diagnoseTargetNOxMap(InfluxDB influxDB, String noxMapMode, int evalPoint, boolean isPreEvalDisabled) {
+	public void diagnoseTargetNOxMap(InfluxDB influxDB, String noxMapMode, int evalPoint, boolean isPreEvalDisabled, MyConfigs myconfigs) {
 		if (isItEvalPointForTargetNOxMap(influxDB, evalPoint)) {
 			LOG.info("Let's evaluate!");
 			final Map<String, Map<String, Double>> binMap = getTargetNOxMap(influxDB, noxMapMode);
@@ -53,10 +54,10 @@ public class DIAS {
 				// A. Do pre-evaluation if pre-evaluation is not disabled 
 				final Map<String, Map<String, Double>> preEvalBinMap = doPreEvaluation(binMap);
 				//LOG.info("RESULT 2: " + preEvalBinMap.toString());
-				factorMap = transformIntoFactorMap(preEvalBinMap, noxMapMode, refNOxMap);
+				factorMap = transformIntoFactorMap(preEvalBinMap, noxMapMode, myconfigs);
 			} else {
 				// B. Do not pre-evaluation if pre-evaluation is disabled
-				factorMap = transformIntoFactorMap(binMap, noxMapMode, refNOxMap);
+				factorMap = transformIntoFactorMap(binMap, noxMapMode, myconfigs);
 			}
 			//LOG.info("RESULT 3: " + factorMap.toString());
 			writeResultsToInfluxDB(influxDB, noxMapMode, factorMap);
@@ -109,8 +110,9 @@ public class DIAS {
 		return preEvalBinMap;
 	}
 	
-	private Map<String, Double> transformIntoFactorMap(Map<String, Map<String, Double>> binMap, String noxMapMode, double[] refNOxMap) {
+	private Map<String, Double> transformIntoFactorMap(Map<String, Map<String, Double>> binMap, String noxMapMode, MyConfigs myconfigs) {
 		final Map<String, Double> factorMap = new HashMap<String, Double>();
+		final double[] exRefNOxMap = myconfigs.getRefNOxMap();
 		for (int i = 1; i <= 12; i++) {
 			final String binName = noxMapMode + "_" + i;
 			final Map<String, Double> bin = binMap.get(binName);
@@ -122,7 +124,12 @@ public class DIAS {
 				if (workkwh != null && workkwh.compareTo(0d) != 0) {
 					// 2. noxForWork_i = noxds_i / kwh_i
 					final double noxForWork = noxds / workkwh;
-					final double factor = noxForWork / refNOxMap[i-1];
+					double factor = 0;
+					if (exRefNOxMap != null && exRefNOxMap.length == 12 && exRefNOxMap[i-1] != 0) {
+						factor = noxForWork / exRefNOxMap[i-1];
+					} else {
+						factor = noxForWork / defRefNOxMap[i-1];
+					}
 					// 3. factor_i = noxForWork_i / refNOxMap[i-1]
 					factorMap.put(binName, factor);
 				} else {
