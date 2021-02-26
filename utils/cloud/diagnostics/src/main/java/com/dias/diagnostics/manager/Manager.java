@@ -69,6 +69,13 @@ public class Manager {
 		this.isPreEvalDisabled = isPreEvalDisabled;
 	}
 	
+	@Value(value = "${modified.classifier:false}")
+	protected boolean modifiedClassifer;
+	
+	void setModifiedClassifer(boolean modifiedClassifer) {
+		this.modifiedClassifer = modifiedClassifer;
+	}
+	
 	@PostConstruct
 	private void start() throws InterruptedException {
 		initialize();
@@ -92,20 +99,20 @@ public class Manager {
 	@Scheduled(fixedRate=1000) // Executes every second until evalPoint
 	private void diagnose() {
 		if (noxMapMode.compareTo(DIAS.TSCR_BAD) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint, isPreEvalDisabled, myconfigs);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint, isPreEvalDisabled, modifiedClassifer, myconfigs);
 		} else if (noxMapMode.compareTo(DIAS.TSCR_INTERMEDIATE) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_INTERMEDIATE, evalPoint, isPreEvalDisabled, myconfigs);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_INTERMEDIATE, evalPoint, isPreEvalDisabled, modifiedClassifer, myconfigs);
 		} else if (noxMapMode.compareTo(DIAS.TSCR_GOOD) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_GOOD, evalPoint, isPreEvalDisabled, myconfigs);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_GOOD, evalPoint, isPreEvalDisabled, modifiedClassifer, myconfigs);
 		} else if (noxMapMode.compareTo(DIAS.OLD_GOOD) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.OLD_GOOD, evalPoint, isPreEvalDisabled, myconfigs);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.OLD_GOOD, evalPoint, isPreEvalDisabled, modifiedClassifer, myconfigs);
 		} else if (noxMapMode.compareTo(DIAS.PEMS_COLD) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.PEMS_COLD, evalPoint, isPreEvalDisabled, myconfigs);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.PEMS_COLD, evalPoint, isPreEvalDisabled, modifiedClassifer, myconfigs);
 		} else if (noxMapMode.compareTo(DIAS.PEMS_HOT) == 0) {
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.PEMS_HOT, evalPoint, isPreEvalDisabled, myconfigs);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.PEMS_HOT, evalPoint, isPreEvalDisabled, modifiedClassifer, myconfigs);
 		} else {
 			System.out.println("ERROR: Wrong NOx Map Mode Value! Proceed as \"tscr_bad\".");
-			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint, isPreEvalDisabled, myconfigs);
+			dias.diagnoseTargetNOxMap(influxDB, DIAS.TSCR_BAD, evalPoint, isPreEvalDisabled, modifiedClassifer, myconfigs);
 		}
 	}
 }

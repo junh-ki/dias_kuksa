@@ -34,17 +34,15 @@ public class DIAS {
 	private final InfluxAPI influxAPI;
 	private int evalRound = 0;
 	private int binEvalResult = 0;
-	private final Map<String, Integer> binEvalMap;
 	private int avgEvalStatus;
 	private double factorAVG = 0;
 	private int avgEvalResult = 0;
 	
 	public DIAS() {
 		influxAPI = new InfluxAPI();
-		binEvalMap = new HashMap<String, Integer>();
 	}
 	
-	public void diagnoseTargetNOxMap(InfluxDB influxDB, String noxMapMode, int evalPoint, boolean isPreEvalDisabled, MyConfigs myconfigs) {
+	public void diagnoseTargetNOxMap(InfluxDB influxDB, String noxMapMode, int evalPoint, boolean isPreEvalDisabled, boolean modifiedClassifer, MyConfigs myconfigs) {
 		if (isItEvalPointForTargetNOxMap(influxDB, evalPoint)) {
 			LOG.info("Let's evaluate!");
 			final Map<String, Map<String, Double>> binMap = getTargetNOxMap(influxDB, noxMapMode);
@@ -60,7 +58,7 @@ public class DIAS {
 				factorMap = transformIntoFactorMap(binMap, noxMapMode, myconfigs);
 			}
 			//LOG.info("RESULT 3: " + factorMap.toString());
-			writeResultsToInfluxDB(influxDB, noxMapMode, factorMap);
+			writeResultsToInfluxDB(influxDB, noxMapMode, factorMap, modifiedClassifer);
 		}
 	}
 	
@@ -144,8 +142,8 @@ public class DIAS {
 		return factorMap;
 	}
 	
-	private boolean isTampering(Map<String, Double> factorMap, String noxMapMode) {
-		final boolean binEval = doBinWiseEvaluation(factorMap, noxMapMode);
+	private boolean isTampering(Map<String, Double> factorMap, String noxMapMode, boolean modifiedClassifer) {
+		final boolean binEval = doBinWiseEvaluation(factorMap, noxMapMode, modifiedClassifer);
 		final boolean avgEval = doAverageEvaluation(factorMap, noxMapMode);
 		if (binEval || avgEval) {
 			return true;
@@ -153,18 +151,21 @@ public class DIAS {
 		return false;
 	}
 	
-	private boolean doBinWiseEvaluation(Map<String, Double> factorMap, String noxMapMode) {
-		final int[] countList = { 0, 0, 0, 0, 0, 0 };
+	private boolean doBinWiseEvaluation(Map<String, Double> factorMap, String noxMapMode, boolean modifiedClassifer) {
+		int[] countList = null;
+		if (modifiedClassifer) {
+			countList = new int[]{ 0, 0, 0, 0, 0, 0, 0, 0};
+		} else {
+			countList = new int[]{ 0, 0, 0, 0, 0, 0 };
+		}
 		for (int i = 1; i <= 12; i++) {
 			final String bin = noxMapMode + "_" + i;
 			final Double factor = factorMap.get(bin);
 			if (factor != null) {
-				doDIASClassification(factor, countList, bin, binEvalMap);
-			} else {
-				binEvalMap.put(bin, 0);
+				doDIASClassification(factor, countList);
 			}
 		}
-		final int weight = doWeightNumberingEval(countList);
+		final double weight = doWeightNumberingEval(countList);
 		if (weight >= 12) { // tampering
 			binEvalResult = 1;
 			return true;
@@ -173,44 +174,81 @@ public class DIAS {
 		return false;
 	}
 	
-	private void doDIASClassification(double factor, int[] countList, String bin, Map<String, Integer> binEvalMap) {
-		if (factor < 0.3) { // suspiciously low
-			countList[0]++;
-			binEvalMap.put(bin, 1);
-		} else if (factor >= 0.3 && factor < 1) { // excellent
-			countList[1]++;
-			binEvalMap.put(bin, 2);
-		} else if (factor >= 1 && factor < 3) { // good
-			countList[2]++;
-			binEvalMap.put(bin, 3);
-		} else if (factor >= 3 && factor < 5) { // questionable
-			countList[3]++;
-			binEvalMap.put(bin, 4);
-		} else if (factor >= 5 && factor < 8) { // bad
-			countList[4]++;
-			binEvalMap.put(bin, 5);
-		} else if (factor >= 8) { // very bad
-			countList[5]++;
-			binEvalMap.put(bin, 6);
+	private void doDIASClassification(double factor, int[] countList) {
+		if (countList.length != 6) {
+			if (factor < 0.03) { // suspiciously low: 1.2
+				countList[0]++;
+			} else if (factor >= 0.03 && factor < 0.1) { // suspiciously low: 1.1
+				countList[1]++;
+			} else if (factor >= 0.1 && factor < 0.3) { // suspiciously low: 1
+				countList[2]++;
+			} else if (factor >= 0.3 && factor < 1) { // excellent
+				countList[3]++;
+			} else if (factor >= 1 && factor < 3) { // good
+				countList[4]++;
+			} else if (factor >= 3 && factor < 5) { // questionable
+				countList[5]++;
+			} else if (factor >= 5 && factor < 8) { // bad
+				countList[6]++;
+			} else if (factor >= 8) { // very bad
+				countList[7]++;
+			}
+		} else {
+			if (factor < 0.3) { // suspiciously low
+				countList[0]++;
+			} else if (factor >= 0.3 && factor < 1) { // excellent
+				countList[1]++;
+			} else if (factor >= 1 && factor < 3) { // good
+				countList[2]++;
+			} else if (factor >= 3 && factor < 5) { // questionable
+				countList[3]++;
+			} else if (factor >= 5 && factor < 8) { // bad
+				countList[4]++;
+			} else if (factor >= 8) { // very bad
+				countList[5]++;
+			}
 		}
 	}
 	
-	private int doWeightNumberingEval(int[] countList) {
-		int total = 0;
-		for (int i = 0; i < countList.length; i++) {
-			final int counts = countList[i];
-			if (i == 0) { // suspiciously low
-				total += counts * 1;
-			} else if (i == 1) { // excellent
-				total += counts * 0;
-			} else if (i == 2) { // good
-				total += counts * 0;
-			} else if (i == 3) { // questionable
-				total += counts * 1;
-			} else if (i == 4) { // bad
-				total += counts * 2;
-			} else if (i == 5) { // very bad
-				total += counts * 4;
+	private double doWeightNumberingEval(int[] countList) {
+		double total = 0;
+		if (countList.length != 6) {
+			for (int i = 0; i < countList.length; i++) {
+				final int counts = countList[i];
+				if (i == 0) { // suspiciously low: 1.2
+					total += counts * 1.2;
+				} else if (i == 1) { // suspiciously low: 1.1
+					total += counts * 1.1;
+				} else if (i == 2) { // suspiciously low: 1 
+					total += counts * 1;
+				} else if (i == 3) { // excellent
+					total += counts * 0;
+				} else if (i == 4) { // good
+					total += counts * 0;
+				} else if (i == 5) { // questionable
+					total += counts * 1;
+				} else if (i == 6) { // bad
+					total += counts * 2;
+				} else if (i == 7) { // very bad
+					total += counts * 4;
+				}
+			}
+		} else {
+			for (int i = 0; i < countList.length; i++) {
+				final int counts = countList[i];
+				if (i == 0) { // suspiciously low
+					total += counts * 1;
+				} else if (i == 1) { // excellent
+					total += counts * 0;
+				} else if (i == 2) { // good
+					total += counts * 0;
+				} else if (i == 3) { // questionable
+					total += counts * 1;
+				} else if (i == 4) { // bad
+					total += counts * 2;
+				} else if (i == 5) { // very bad
+					total += counts * 4;
+				}
 			}
 		}
 		return total;
@@ -245,10 +283,10 @@ public class DIAS {
 		return false;
 	}
 	
-	private void writeResultsToInfluxDB(InfluxDB influxDB, String noxMapMode, Map<String, Double> factorMap) {
+	private void writeResultsToInfluxDB(InfluxDB influxDB, String noxMapMode, Map<String, Double> factorMap, boolean modifiedClassifer) {
 		influxAPI.writeMetricDataUnderHost(influxDB, "eval_round", "eval", evalRound + ""); // 1-a eval_round		
 		int evalResult = 0;
-		if (isTampering(factorMap, noxMapMode)) {
+		if (isTampering(factorMap, noxMapMode, modifiedClassifer)) {
 			evalResult = 1;
 		}
 		influxAPI.writeMetricDataUnderHost(influxDB, "eval_result", "eval", evalResult + ""); // 1-b eval_result 0-N, 1-Y
@@ -270,7 +308,6 @@ public class DIAS {
 		for (int i = 1; i <= 12; i++) {
 			final String bin = noxMapMode + "_" + i;
 			Double factorVal = factorMap.get(bin);
-			final int binEvalVal = binEvalMap.get(bin);
 			if (factorVal != null) {
 				final BigDecimal bdFactorVal = new BigDecimal(factorVal).setScale(3, RoundingMode.HALF_EVEN);
 				factorVal = bdFactorVal.doubleValue();
@@ -278,7 +315,6 @@ public class DIAS {
 			} else {
 				influxAPI.writeMetricDataUnderHost(influxDB, "factor_val", "eval_" + i, "-1"); // 2-a  factor_val
 			}
-			influxAPI.writeMetricDataUnderHost(influxDB, "bin_eval_val", "eval_" + i, binEvalVal + ""); // 2-b  bin_eval_val
 		}
 		final BigDecimal bdFactorAVG = new BigDecimal(factorAVG).setScale(3, RoundingMode.HALF_EVEN);
 		factorAVG = bdFactorAVG.doubleValue();
