@@ -154,7 +154,7 @@ public class DIAS {
 	private boolean doBinWiseEvaluation(Map<String, Double> factorMap, String noxMapMode, boolean modifiedClassifer) {
 		int[] countList = null;
 		if (modifiedClassifer) {
-			countList = new int[]{ 0, 0, 0, 0, 0, 0, 0, 0};
+			countList = new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		} else {
 			countList = new int[]{ 0, 0, 0, 0, 0, 0 };
 		}
@@ -176,22 +176,26 @@ public class DIAS {
 	
 	private void doDIASClassification(double factor, int[] countList) {
 		if (countList.length != 6) {
-			if (factor < 0.03) { // suspiciously low: 1.2
+			if (factor < 0.05) { // suspiciously low: 2
 				countList[0]++;
-			} else if (factor >= 0.03 && factor < 0.1) { // suspiciously low: 1.1
+			} else if (factor >= 0.05 && factor < 0.1) { // suspiciously low: 1.6
 				countList[1]++;
-			} else if (factor >= 0.1 && factor < 0.3) { // suspiciously low: 1
+			} else if (factor >= 0.1 && factor < 0.15) { // suspiciously low: 1.3
 				countList[2]++;
-			} else if (factor >= 0.3 && factor < 1) { // excellent
+			} else if (factor >= 0.15 && factor < 0.2) { // suspiciously low: 1.1
 				countList[3]++;
-			} else if (factor >= 1 && factor < 3) { // good
+			} else if (factor >= 0.2 && factor < 0.3) { // suspiciously low: 1
 				countList[4]++;
-			} else if (factor >= 3 && factor < 5) { // questionable
+			} else if (factor >= 0.3 && factor < 1) { // excellent
 				countList[5]++;
-			} else if (factor >= 5 && factor < 8) { // bad
+			} else if (factor >= 1 && factor < 3) { // good
 				countList[6]++;
-			} else if (factor >= 8) { // very bad
+			} else if (factor >= 3 && factor < 5) { // questionable
 				countList[7]++;
+			} else if (factor >= 5 && factor < 8) { // bad
+				countList[8]++;
+			} else if (factor >= 8) { // very bad
+				countList[9]++;
 			}
 		} else {
 			if (factor < 0.3) { // suspiciously low
@@ -215,21 +219,25 @@ public class DIAS {
 		if (countList.length != 6) {
 			for (int i = 0; i < countList.length; i++) {
 				final int counts = countList[i];
-				if (i == 0) { // suspiciously low: 1.2
-					total += counts * 1.2;
-				} else if (i == 1) { // suspiciously low: 1.1
-					total += counts * 1.1;
-				} else if (i == 2) { // suspiciously low: 1 
-					total += counts * 1;
-				} else if (i == 3) { // excellent
-					total += counts * 0;
-				} else if (i == 4) { // good
-					total += counts * 0;
-				} else if (i == 5) { // questionable
-					total += counts * 1;
-				} else if (i == 6) { // bad
+				if (i == 0) { // suspiciously low: 2
 					total += counts * 2;
-				} else if (i == 7) { // very bad
+				} else if (i == 1) { // suspiciously low: 1.6
+					total += counts * 1.6;
+				} else if (i == 2) { // suspiciously low: 1.3
+					total += counts * 1.3;
+				} else if (i == 3) { // suspiciously low: 1.1
+					total += counts * 1.1;
+				} else if (i == 4) { // suspiciously low: 1
+					total += counts * 1;
+				} else if (i == 5) { // excellent
+					total += counts * 0;
+				} else if (i == 6) { // good
+					total += counts * 0;
+				} else if (i == 7) { // questionable
+					total += counts * 1;
+				} else if (i == 8) { // bad
+					total += counts * 2;
+				} else if (i == 9) { // very bad
 					total += counts * 4;
 				}
 			}
