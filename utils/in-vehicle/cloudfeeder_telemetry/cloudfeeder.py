@@ -191,7 +191,7 @@ while True:
     # 1. Time delay
     time.sleep(0.8)
     print("\n\n\n")
-    
+
     # 2. Store signals' values from the target path to the dictionary keys
     binPro.signals["Aftrtrtmnt1SCRCtlystIntkGasTemp"] = 220
     #binPro.signals["Aftrtrtmnt1SCRCtlystIntkGasTemp"] = checkPath(client, "Vehicle.AfterTreatment.Aftrtrtmnt1SCRCtlystIntkGasTemp") # Missing (Not available in EDC17 but MD1)(19/11/2020)
@@ -225,27 +225,29 @@ while True:
     if binPro.signals["Aftertreatment1OutletNOx"] < 0:
         binPro.signals["Aftertreatment1OutletNOx"] = 0
 
-    # 4. Show collected signal values
-    preprocessor_bosch.printSignalValues(binPro)
-    
-    # A. Proceed to sample data if the aftertreatment system is ready
-    if binPro.signals["Aftertreatment1IntakeNOx"] != 3012.75 and binPro.signals["Aftertreatment1OutletNOx"] != 3012.75:
-        # 5. Preprocess the data set
-        tel_dict = preprocessor_bosch.preprocessing(binPro)
-        preprocessor_bosch.printTelemetry(tel_dict)
-        print("")
+    # Only sample data when ActualEngPercentTorque is bigger than NominalFrictionPercentTorque
+    if binPro.signals["ActualEngPercentTorque"] > binPro.signals["NominalFrictionPercentTorque"]:
+        # 4. Show collected signal values
+        preprocessor_bosch.printSignalValues(binPro)
 
-        # 6. Format telemetry
-        tel_json = json.dumps(tel_dict)
-        # Sending device data via Mosquitto_pub (MQTT - Device to Cloud)
-        comb =['mosquitto_pub', '-d', '-h', args.host, '-p', args.port, '-u', args.username, '-P', args.password, '--cafile', args.cafile, '-t', args.type, '-m', tel_json]
-    
-        # 7. MQTT: Send telemetry to the cloud. (in a JSON format)
-        send_telemetry(args.host, args.port, comb, telemetry_queue)
-        
-        # 8. Saving telemetry dictionary
-        save_data(binPro, telemetry_queue)
-        
-    # B. Do not sample data if the aftertreatment system is not ready
-    else:
-        print("\n# One or both NOx sensors is(are) not ready (default value: 3012.75).\n# No bin sampling.")
+        # A. Proceed to sample data if the aftertreatment system is ready
+        if binPro.signals["Aftertreatment1IntakeNOx"] != 3012.75 and binPro.signals["Aftertreatment1OutletNOx"] != 3012.75:
+            # 5. Preprocess the data set
+            tel_dict = preprocessor_bosch.preprocessing(binPro)
+            preprocessor_bosch.printTelemetry(tel_dict)
+            print("")
+
+            # 6. Format telemetry
+            tel_json = json.dumps(tel_dict)
+            # Sending device data via Mosquitto_pub (MQTT - Device to Cloud)
+            comb =['mosquitto_pub', '-d', '-h', args.host, '-p', args.port, '-u', args.username, '-P', args.password, '--cafile', args.cafile, '-t', args.type, '-m', tel_json]
+
+            # 7. MQTT: Send telemetry to the cloud. (in a JSON format)
+            send_telemetry(args.host, args.port, comb, telemetry_queue)
+
+            # 8. Saving telemetry dictionary
+            save_data(binPro, telemetry_queue)
+
+        # B. Do not sample data if the aftertreatment system is not ready
+        else:
+            print("\n# One or both NOx sensors is(are) not ready (default value: 3012.75).\n# No bin sampling.")
