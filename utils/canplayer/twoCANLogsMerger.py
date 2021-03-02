@@ -42,17 +42,17 @@ log2 = args.log2
 # The name of the CAN interface your hardware has (e.g., can0 or vcan0 or, ...)
 interface = args.can
 
-# Create intermediary log strings by using asc2log from can-utils
-cmd = 'cat ' + log1
-logstr1 = os.popen(cmd).read()
-cmd = 'cat ' + log2
-logstr2 = os.popen(cmd).read()
+# Make a list of lines from log1
+with open(log1) as file_object:
+    sl1 = [line.rstrip('\n') for line in file_object.readlines() if line.strip()]
+
+# Make a list of lines from log2
+with open(log2) as file_object:
+    sl2 = [line.rstrip('\n') for line in file_object.readlines() if line.strip()]
 
 # Merge two lists of log strings based on timestamp with the interface, vcan0.
 mergedLines = []
 index = 0
-sl1 = logstr1.splitlines()
-sl2 = logstr2.splitlines()
 while index < len(sl1):
     l1 = sl1[index]
     ts1 = float(l1.split()[0][1:-1])
