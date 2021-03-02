@@ -48,19 +48,19 @@ with open('mergedCAN.log', 'w') as f:
         enum1 = enumerate(f1)
         enum2 = enumerate(f2)
         try:
-            l1 = repCANInterface(next(enum1)[1].rstrip('\n'), interface)
-            l2 = repCANInterface(next(enum2)[1].rstrip('\n'), interface)
+            l1 = repCANInterface(next(enum1)[1], interface)
+            l2 = repCANInterface(next(enum2)[1], interface)
             while True:
                 tf1 = float(l1.split()[0][1:-1])
                 tf2 = float(l2.split()[0][1:-1])
                 if tf1 < tf2:
                     f.write(l1)
                     print(l1)
-                    l1 = repCANInterface(next(enum1)[1].rstrip('\n'), interface)
+                    l1 = repCANInterface(next(enum1)[1], interface)
                 else:
                     f.write(l2)
                     print(l2)
-                    l2 = repCANInterface(next(enum2)[1].rstrip('\n'), interface)
+                    l2 = repCANInterface(next(enum2)[1], interface)
 
         except StopIteration:
             f.close()
