@@ -42,47 +42,27 @@ log2 = args.log2
 # The name of the CAN interface your hardware has (e.g., can0 or vcan0 or, ...)
 interface = args.can
 
-# Make a list of lines from log1
-with open(log1) as file_object:
-    sl1 = [line.rstrip('\n') for line in file_object.readlines() if line.strip()]
+# Merge with the name of the given interface
+with open('mergedCAN.log', 'w') as f:
+    with open(log1) as f1, open(log2) as f2:
+        enum1 = enumerate(f1)
+        enum2 = enumerate(f2)
+        try:
+            l1 = repCANInterface(next(enum1)[1].rstrip('\n'), interface)
+            l2 = repCANInterface(next(enum2)[1].rstrip('\n'), interface)
+            while True:
+                tf1 = float(l1.split()[0][1:-1])
+                tf2 = float(l2.split()[0][1:-1])
+                if tf1 < tf2:
+                    f.write(l1)
+                    print(l1)
+                    l1 = repCANInterface(next(enum1)[1].rstrip('\n'), interface)
+                else:
+                    f.write(l2)
+                    print(l2)
+                    l2 = repCANInterface(next(enum2)[1].rstrip('\n'), interface)
 
-# Make a list of lines from log2
-with open(log2) as file_object:
-    sl2 = [line.rstrip('\n') for line in file_object.readlines() if line.strip()]
+        except StopIteration:
+            f.close()
 
-# Merge two lists of log strings based on timestamp with the interface, vcan0.
-mergedLines = []
-index = 0
-while index < len(sl1):
-    l1 = sl1[index]
-    ts1 = float(l1.split()[0][1:-1])
-    l2 = sl2[0]
-    ts2 = float(l2.split()[0][1:-1])
-    l1 = repCANInterface(l1, interface)
-    if ts1 < ts2:
-        mergedLines.append(l1)
-        index += 1
-    elif ts1 == ts2:
-        mergedLines.append(l1)
-        sl2.remove(l2)
-        l2 = repCANInterface(l2, interface)
-        mergedLines.append(l2)
-        index += 1
-    else:
-        sl2.remove(l2)
-        l2 = repCANInterface(l2, interface)
-        mergedLines.append(l2)
-
-# Append the rest of the remaining log string list (if there are)
-if len(sl2) > 0:
-    for line in sl2:
-        line = repCANInterface(line, interface)
-        mergedLines.append(line)
-
-# Create the merged logfile with the interface, vcan0.
-if len(mergedLines) != 0:
-    with open('mergedCAN.log', 'w') as f:
-        for item in mergedLines:
-            f.write("%s\n" % item)
-        f.close()
-    print("Successfully done.")
+print("Successfully done.")
