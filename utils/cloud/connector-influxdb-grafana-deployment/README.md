@@ -1,5 +1,9 @@
 # Docker Compose Deployment for The DIAS-KUKSA Cloud
 
+![DIAS-KUKSA](../../../images/docker-compose-deployment.png)
+
+The figure above illustrates the schema of the Docker Compose deployment for the [DIAS](https://dias-project.com/)-KUKSA cloud.
+
 This script is to deploy all services required for operating the DIAS-KUKSA cloud.
 These services include: `InfluxDB`, `Hono-InfluxDB-Connector`, `Diagnostics`, and `Grafana`.
 
